@@ -1,0 +1,96 @@
+{% extends 'front-end/form.html' %}
+{% load static %}
+{% block content %}
+    <form id="form" method="post">
+        <div class="row">
+            <div class="col-lg-2 col-xs-1"></div>
+            <div class="col-xs-12 col-sm-4 col-lg-8">
+                <div class="widget-box">
+                    <div class="widget-header">
+                        <h4 class="widget-title"><i class="fa fa-rocket"></i> {{ titulo }}</h4>
+
+                        <div class="widget-toolbar">
+                            <a href="#" data-action="collapse">
+                                <i class="ace-icon fa fa-chevron-up"></i>
+                            </a>
+
+                            <a href="#" data-action="close">
+                                <i class="ace-icon fa fa-times"></i>
+                            </a>
+                        </div>
+                    </div>
+
+                    <div class="widget-body">
+                        <div class="widget-main">
+                            <div class="form-group">
+                                <label for="id_tipo_maquina">{{ form.tipo.label_tag }}</label>
+                                <div class="input-group">
+                                    {{ form.tipo }}
+                                    <span class="input-group-btn">
+                                    <button class="btn btn-sm btn-primary" id="id_new_tipo" type="button"
+                                            data-toggle="tooltip" title="Agregar">
+                                        <i class="ace-icon fa fa-plus"></i>
+                                    </button>
+                                    <button class="btn btn-sm btn-success" id="search_maquina" type="button"
+                                            data-toggle="tooltip" title="Buscar">
+                                        <i class="ace-icon fa fa-search-minus"></i>
+                                    </button>
+                                </span>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label for="id_tipo_maquina">{{ form.serie.label_tag }}</label>
+                                {{ form.serie }}
+
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-actions center">
+                        <button class="btn btn-white btn-info btn-bold" type="submit">
+                            <i class="ace-icon fa fa-floppy-o bigger-120 blue"></i>
+                            Guardar
+                        </button>
+                        <button class="btn btn-white btn-danger btn-round" onclick="window.history.back();">
+                            <i class="ace-icon fa fa-times red2"></i>
+                            Cancelar
+                        </button>
+                    </div>
+                </div>
+            </div><!-- /.span -->
+            <div class="col-lg-2 col-xs-1"></div>
+        </div>
+    </form>
+{% endblock %}
+{% block modals %}
+    <div id="modal-table" class="modal fade in" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header no-padding">
+                    <h2>Nuevo Tipo de Equipo</h2>
+                </div>
+                <form id="form_tipo" method="post">
+                    <div class="container-fluid">
+                        <div class="modal-body no-padding">
+                            <div class="form-group">
+                                {{ form_tipo.as_p }}
+                            </div>
+                        </div>
+                        <div class="modal-footer no-margin-top">
+                            <button class="btn btn-sm btn-success pull-left" type="submit">
+                                <i class="ace-icon fa fa-save"></i>
+                                Guardar
+                            </button>
+                            <button class="btn btn-sm btn-danger pull-left" data-dismiss="modal">
+                                <i class="ace-icon fa fa-times"></i>
+                                Cerrar
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </div><!-- /.modal-content -->
+        </div><!-- /.modal-dialog -->
+    </div>
+{% endblock %}
+{% block extra %}
+    <script src="{% static 'apps/maquina/form.js' %}"></script>
+{% endblock %}

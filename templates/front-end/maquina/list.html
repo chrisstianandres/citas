@@ -1,0 +1,20 @@
+{% extends 'front-end/list.html' %}
+{% load static %}
+{% block table_content %}
+    <thead>
+    <tr>
+        <th style="width: 15%">ID</th>
+        <th style="width: 25%">EQUIPO</th>
+        <th style="width: 25%">DESCRIPCION</th>
+        <th style="width: 25%">N° SERIE</th>
+        <th style="width: 25%">ESTADO</th>
+        <th class="text-center" style="width: 25%">OPCIONES</th>
+    </tr>
+    </thead>
+    <tbody>
+
+    </tbody>
+{% endblock %}
+{% block extra %}
+    <script src="{% static 'apps/maquina/list.js' %}"></script>
+{% endblock %}

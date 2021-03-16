@@ -13,15 +13,15 @@ from apps.mixins import ValidatePermissionRequiredMixin
 from apps.maquina.forms import MaquinaForm, TipomaquinaForm
 from apps.maquina.models import Maquina, Tipo_maquina
 
-opc_icono = 'fas fa-subway'
-opc_entidad = 'Maquinas'
-crud = '/maquina/crear'
+opc_icono = 'fa fa-rocket'
+opc_entidad = 'Equipos'
+crud = '/equipos/crear'
 empresa = nombre_empresa()
 
 
 class lista(ValidatePermissionRequiredMixin, ListView):
     model = Maquina
-    template_name = 'front-end/maquina/maquina_list.html'
+    template_name = 'front-end/maquina/list.html'
     permission_required = 'maquina.view_maquina'
 
     @csrf_exempt
@@ -61,8 +61,8 @@ class lista(ValidatePermissionRequiredMixin, ListView):
         data['icono'] = opc_icono
         data['entidad'] = opc_entidad
         data['boton'] = 'Nueva maquina'
-        data['titulo'] = 'Listado de Maquina'
-        data['nuevo'] = '/maquina/nuevo'
+        data['titulo'] = 'Listado de Equipos'
+        data['nuevo'] = '/equipos/nuevo'
         data['empresa'] = empresa
         data['action'] = 'add'
         return data
@@ -70,7 +70,7 @@ class lista(ValidatePermissionRequiredMixin, ListView):
 
 class CrudView(ValidatePermissionRequiredMixin, TemplateView):
     form_class = MaquinaForm
-    template_name = 'front-end/maquina/maquna_form.html'
+    template_name = 'front-end/maquina/form.html'
     permission_required = 'maquina.add_maquina'
 
     @method_decorator(csrf_exempt)
@@ -125,7 +125,7 @@ class CrudView(ValidatePermissionRequiredMixin, TemplateView):
 class Updateview(ValidatePermissionRequiredMixin, UpdateView):
     form_class = MaquinaForm
     model = Maquina
-    template_name = 'front-end/maquina/maquna_form.html'
+    template_name = 'front-end/maquina/form.html'
     permission_required = 'maquina.change_maquina'
 
     @method_decorator(csrf_exempt)
