@@ -145,6 +145,7 @@ def check_ced(request):
     return JsonResponse(data)
 
 
+@csrf_exempt
 def verificar(nro):
     l = len(nro)
     if l == 10 or l == 13:  # verificar la longitud correcta

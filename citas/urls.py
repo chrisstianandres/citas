@@ -22,5 +22,9 @@ from apps import backEnd
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('menu', login_required(backEnd.menu), name='menu'),
+    path('verificar/', backEnd.check_ced, name='verificar'),
     path('equipos/', include('apps.maquina.urls', namespace='equipos')),
+    path('categoria/', include('apps.categoria.urls', namespace='categoria')),
+    path('presentacion/', include('apps.presentacion.urls', namespace='presentacion')),
+    path('empleado/', include('apps.empleado.urls', namespace='empleado')),
 ]

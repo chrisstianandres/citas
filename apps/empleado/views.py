@@ -9,7 +9,7 @@ from apps.backEnd import nombre_empresa, verificar
 from apps.empleado.forms import EmpleadoForm
 from apps.empleado.models import Empleado
 from apps.mixins import ValidatePermissionRequiredMixin
-from apps.ubicacion.models import *
+# from apps.ubicacion.models import *
 
 opc_icono = 'fas fa-people-carry'
 opc_entidad = 'Empleados'
@@ -34,15 +34,6 @@ class lista(ValidatePermissionRequiredMixin, ListView):
                 data = []
                 for c in Empleado.objects.all():
                     data.append(c.toJSON())
-            elif action == 'list_lote':
-                import json
-                data = []
-                ids = json.loads(request.POST['ids'])
-                query = Empleado.objects.filter(estado=0)
-                for a in query.exclude(id__in=ids):
-                    item = a.toJSON()
-                    item['text'] = a.__str__()
-                    data.append(item)
             elif action == 'search':
                 data = []
                 term = request.POST['term']
@@ -76,7 +67,9 @@ class lista(ValidatePermissionRequiredMixin, ListView):
 
 class CrudView(ValidatePermissionRequiredMixin, TemplateView):
     form_class = EmpleadoForm
-    template_name = 'front-end/cliente/form.html'
+    model = Empleado
+    template_name = 'front-end/empleado/form.html'
+    permission_required = 'empleado.add_empleado'
 
     @method_decorator(csrf_exempt)
     def dispatch(self, request, *args, **kwargs):
@@ -87,18 +80,21 @@ class CrudView(ValidatePermissionRequiredMixin, TemplateView):
         action = request.POST['action']
         try:
             if action == 'add':
-                f = EmpleadoForm(request.POST)
+                f = self.form_class(request.POST)
                 data = self.save_data(f)
-            elif action == 'edit':
+            elif action == 'search':
+                data = []
+                term = request.POST['term']
+                query = self.model.objects.filter(nombre__icontains=term)
+                for a in query[0:10]:
+                    result = {'id': int(a.id), 'text': str(a.nombre)}
+                    data.append(result)
+            elif action == 'get':
+                data = []
                 pk = request.POST['id']
-                cliente = Empleado.objects.get(pk=int(pk))
-                f = EmpleadoForm(request.POST, instance=cliente)
-                data = self.save_data(f)
-            elif action == 'delete':
-                pk = request.POST['id']
-                cli = Empleado.objects.get(pk=pk)
-                cli.delete()
-                data['resp'] = True
+                query = self.model.objects.get(id=pk)
+                item = query.toJSON()
+                data.append(item)
             else:
                 data['error'] = 'No ha seleccionado ninguna opción'
         except Exception as e:
@@ -119,6 +115,93 @@ class CrudView(ValidatePermissionRequiredMixin, TemplateView):
         else:
             data['error'] = f.errors
         return data
+
+    def get_context_data(self, **kwargs):
+        data = super().get_context_data(**kwargs)
+        data['icono'] = opc_icono
+        data['entidad'] = opc_entidad
+        data['titulo'] = 'Nueva Presentacion'
+        data['nuevo'] = '/presentacion/nuevo'
+        data['action'] = 'add'
+        data['empresa'] = empresa
+        data['form'] = self.form_class
+        return data
+
+
+class UpdateView(ValidatePermissionRequiredMixin, UpdateView):
+    form_class = EmpleadoForm
+    model = Empleado
+    template_name = 'front-end/empleado/form.html'
+    permission_required = 'empleado.change_empleado'
+
+    @method_decorator(csrf_exempt)
+    def dispatch(self, request, *args, **kwargs):
+        return super().dispatch(request, *args, **kwargs)
+
+    def post(self, request, *args, **kwargs):
+        data = {}
+        action = request.POST['action']
+        try:
+            if action == 'edit':
+                pk = self.kwargs['pk']
+                cat = self.model.objects.get(pk=int(pk))
+                f = self.form_class(request.POST, instance=cat)
+                data = self.save_data(f)
+            else:
+                data['error'] = 'No ha seleccionado ninguna opción'
+        except Exception as e:
+            data['error'] = str(e)
+        return HttpResponse(json.dumps(data), content_type='application/json')
+
+    def save_data(self, f):
+        data = {}
+        if f.is_valid():
+            f.save(commit=False)
+            if verificar(f.data['cedula']):
+                cli = f.save()
+                data['resp'] = True
+                data['empleado'] = cli.toJSON()
+            else:
+                f.add_error("cedula", "Numero de Cedula no valido para Ecuador")
+                data['error'] = f.errors
+        else:
+            data['error'] = f.errors
+        return data
+
+    def get_context_data(self, **kwargs):
+        data = super().get_context_data(**kwargs)
+        data['icono'] = opc_icono
+        data['entidad'] = opc_entidad
+        data['titulo'] = 'Editar una Empleado'
+        data['action'] = 'edit'
+        data['empresa'] = empresa
+        dato = self.model.objects.get(pk=self.kwargs['pk'])
+        data['form'] = self.form_class(instance=dato)
+        return data
+
+
+class DeleteView(ValidatePermissionRequiredMixin, DeleteView):
+    model = Empleado
+    permission_required = 'empleado.delete_empleado'
+
+    @method_decorator(csrf_exempt)
+    def dispatch(self, request, *args, **kwargs):
+        return super().dispatch(request, *args, **kwargs)
+
+    def post(self, request, *args, **kwargs):
+        data = {}
+        action = request.POST['action']
+        try:
+            if action == 'delete':
+                pk = request.POST['id']
+                cat = self.model.objects.get(pk=pk)
+                cat.delete()
+                data['resp'] = True
+            else:
+                data['error'] = 'No ha seleccionado ninguna opción'
+        except Exception as e:
+            data['error'] = str(e)
+        return HttpResponse(json.dumps(data), content_type='application/json')
 
 
 class report(ValidatePermissionRequiredMixin, ListView):
@@ -161,23 +244,24 @@ class report(ValidatePermissionRequiredMixin, ListView):
         return data
 
 
-def ciudad(request):
-    data = {}
-    with open('D:/PycharmProjects/ferreteria/apps/ciudades.json', encoding="utf8") as f:
-        data = json.load(f)
-        for c in data:
-            pro = Provincia()
-            pro.nombre = str(data[c]['provincia'])
-            pro.save()
-            for x in data[c]['cantones']:
-                can = Canton()
-                can.provincia_id = pro.id
-                can.nombre = str(data[c]['cantones'][x]['canton'])
-                can.save()
-                for p in data[c]['cantones'][x]['parroquias']:
-                    par = Parroquia()
-                    par.canton_id = can.id
-                    par.nombre = str(data[c]['cantones'][x]['parroquias'][p])
-                    par.save()
-        data = Parroquia.objects.all()
-    return HttpResponse(data)
+
+# def ciudad(request):
+#     data = {}
+#     with open('D:/PycharmProjects/ferreteria/apps/ciudades.json', encoding="utf8") as f:
+#         data = json.load(f)
+#         for c in data:
+#             pro = Provincia()
+#             pro.nombre = str(data[c]['provincia'])
+#             pro.save()
+#             for x in data[c]['cantones']:
+#                 can = Canton()
+#                 can.provincia_id = pro.id
+#                 can.nombre = str(data[c]['cantones'][x]['canton'])
+#                 can.save()
+#                 for p in data[c]['cantones'][x]['parroquias']:
+#                     par = Parroquia()
+#                     par.canton_id = can.id
+#                     par.nombre = str(data[c]['cantones'][x]['parroquias'][p])
+#                     par.save()
+#         data = Parroquia.objects.all()
+#     return HttpResponse(data)

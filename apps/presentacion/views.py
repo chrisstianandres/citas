@@ -1,7 +1,6 @@
 import json
 
-from django.http import HttpResponseRedirect, JsonResponse, HttpResponse
-from django.shortcuts import render, redirect
+from django.http import JsonResponse, HttpResponse
 from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt
 from django.views.generic import *
@@ -17,7 +16,7 @@ crud = '/presentacion/crear'
 empresa = nombre_empresa()
 
 
-class lista(ListView):
+class lista(ValidatePermissionRequiredMixin, ListView):
     model = Presentacion
     template_name = 'front-end/presentacion/list.html'
     permission_required = 'presentacion.view_presentacion'
@@ -32,7 +31,7 @@ class lista(ListView):
             action = request.POST['action']
             if action == 'list':
                 data = []
-                for c in Presentacion.objects.all():
+                for c in self.model.objects.all():
                     data.append(c.toJSON())
             else:
                 data['error'] = 'No ha seleccionado una opcion'
@@ -44,18 +43,18 @@ class lista(ListView):
         data = super().get_context_data(**kwargs)
         data['icono'] = opc_icono
         data['entidad'] = opc_entidad
-        data['boton'] = 'Guardar'
+        data['boton'] = 'Nueva Presentacion'
         data['titulo'] = 'Listado de Presentaciones'
         data['nuevo'] = '/presentacion/nuevo'
-        data['titulo_lista'] = 'Listado de Presentaciones'
-        data['titulo_formulario'] = 'Formulario de Registro'
         data['empresa'] = empresa
-        data['form'] = PresentacionForm
         return data
 
 
 class CrudView(ValidatePermissionRequiredMixin, TemplateView):
     form_class = PresentacionForm
+    model = Presentacion
+    template_name = 'front-end/presentacion/form.html'
+    permission_required = 'presentacion.add_presentacion'
 
     @method_decorator(csrf_exempt)
     def dispatch(self, request, *args, **kwargs):
@@ -64,34 +63,24 @@ class CrudView(ValidatePermissionRequiredMixin, TemplateView):
     def post(self, request, *args, **kwargs):
         data = {}
         action = request.POST['action']
+        print(request.POST['action'])
         try:
             if action == 'add':
-                f = PresentacionForm(request.POST)
+                f = self.form_class(request.POST)
                 data = self.save_data(f)
-            elif action == 'edit':
-                pk = request.POST['id']
-                cat = Presentacion.objects.get(pk=int(pk))
-                f = PresentacionForm(request.POST, instance=cat)
-                data = self.save_data(f)
-            elif action == 'delete':
-                pk = request.POST['id']
-                cat = Presentacion.objects.get(pk=pk)
-                cat.delete()
-                data['resp'] = True
             elif action == 'search':
                 data = []
                 term = request.POST['term']
-                query = Presentacion.objects.filter(nombre__icontains=term)[0:10]
-                for a in query:
+                query = self.model.objects.filter(nombre__icontains=term)
+                for a in query[0:10]:
                     result = {'id': int(a.id), 'text': str(a.nombre)}
                     data.append(result)
             elif action == 'get':
                 data = []
-                id = request.POST['id']
-                producto = Presentacion.objects.filter(pk=id)
-                for i in producto:
-                    item = i.toJSON()
-                    data.append(item)
+                pk = request.POST['id']
+                query = self.model.objects.get(id=pk)
+                item = query.toJSON()
+                data.append(item)
             else:
                 data['error'] = 'No ha seleccionado ninguna opción'
         except Exception as e:
@@ -101,13 +90,137 @@ class CrudView(ValidatePermissionRequiredMixin, TemplateView):
     def save_data(self, f):
         data = {}
         if f.is_valid():
-            var = f.save()
-            data['resp'] = True
-            data = var.toJSON()
-            data['resp'] = True
+            f.save(commit=False)
+            if self.model.objects.filter(nombre__icontains=f.data['nombre']):
+                f.add_error("nombre", "Ya existe una Presentacion este nombre")
+                data['error'] = f.errors
+            else:
+                var = f.save()
+                data['resp'] = True
+                data['presentacion'] = var.toJSON()
+                data['resp'] = True
         else:
             data['error'] = f.errors
-            print(f.errors)
         return data
+
+    def edit_data(self, f, pk):
+        data = {}
+        if f.is_valid():
+            f.save(commit=False)
+            if self.model.objects.filter(nombre__icontains=f.data['nombre']).exclude(pk=pk):
+                f.add_error("nombre", "Ya existe una Presentacion este nombre")
+                data['error'] = f.errors
+            else:
+                var = f.save()
+                data['resp'] = True
+                data['Presentacion'] = var.toJSON()
+                data['resp'] = True
+        else:
+            data['error'] = f.errors
+        return data
+
+    def get_context_data(self, **kwargs):
+        data = super().get_context_data(**kwargs)
+        data['icono'] = opc_icono
+        data['entidad'] = opc_entidad
+        data['titulo'] = 'Nueva Presentacion'
+        data['nuevo'] = '/presentacion/nuevo'
+        data['action'] = 'add'
+        data['empresa'] = empresa
+        data['form'] = self.form_class
+        return data
+
+
+class UpdateView(ValidatePermissionRequiredMixin, UpdateView):
+    form_class = PresentacionForm
+    model = Presentacion
+    template_name = 'front-end/presentacion/form.html'
+    permission_required = 'presentacion.change_presentacion'
+
+    @method_decorator(csrf_exempt)
+    def dispatch(self, request, *args, **kwargs):
+        return super().dispatch(request, *args, **kwargs)
+
+    def post(self, request, *args, **kwargs):
+        data = {}
+        action = request.POST['action']
+        try:
+            if action == 'edit':
+                pk = self.kwargs['pk']
+                cat = self.model.objects.get(pk=int(pk))
+                f = self.form_class(request.POST, instance=cat)
+                data = self.edit_data(f, pk)
+            else:
+                data['error'] = 'No ha seleccionado ninguna opción'
+        except Exception as e:
+            data['error'] = str(e)
+        return HttpResponse(json.dumps(data), content_type='application/json')
+
+    def save_data(self, f):
+        data = {}
+        if f.is_valid():
+            f.save(commit=False)
+            if self.model.objects.filter(nombre__icontains=f.data['nombre']):
+                f.add_error("nombre", "Ya existe una Presentacion este nombre")
+                data['error'] = f.errors
+            else:
+                var = f.save()
+                data['resp'] = True
+                data['presentacion'] = var.toJSON()
+                data['resp'] = True
+        else:
+            data['error'] = f.errors
+        return data
+
+    def edit_data(self, f, pk):
+        data = {}
+        if f.is_valid():
+            f.save(commit=False)
+            if self.model.objects.filter(nombre__icontains=f.data['nombre']).exclude(pk=pk):
+                f.add_error("nombre", "Ya existe una Presentacion este nombre")
+                data['error'] = f.errors
+            else:
+                var = f.save()
+                data['resp'] = True
+                data['presentacion'] = var.toJSON()
+                data['resp'] = True
+        else:
+            data['error'] = f.errors
+        return data
+
+    def get_context_data(self, **kwargs):
+        data = super().get_context_data(**kwargs)
+        data['icono'] = opc_icono
+        data['entidad'] = opc_entidad
+        data['titulo'] = 'Editar una Presentacion'
+        data['action'] = 'edit'
+        data['empresa'] = empresa
+        dato = self.model.objects.get(pk=self.kwargs['pk'])
+        data['form'] = self.form_class(instance=dato)
+        return data
+
+
+class DeleteView(ValidatePermissionRequiredMixin, DeleteView):
+    model = Presentacion
+    permission_required = 'presentacion.delete_presentacion'
+
+    @method_decorator(csrf_exempt)
+    def dispatch(self, request, *args, **kwargs):
+        return super().dispatch(request, *args, **kwargs)
+
+    def post(self, request, *args, **kwargs):
+        data = {}
+        action = request.POST['action']
+        try:
+            if action == 'delete':
+                pk = request.POST['id']
+                cat = self.model.objects.get(pk=pk)
+                cat.delete()
+                data['resp'] = True
+            else:
+                data['error'] = 'No ha seleccionado ninguna opción'
+        except Exception as e:
+            data['error'] = str(e)
+        return HttpResponse(json.dumps(data), content_type='application/json')
 
 

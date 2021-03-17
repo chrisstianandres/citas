@@ -19,7 +19,7 @@ empresa = nombre_empresa()
 
 class lista(ValidatePermissionRequiredMixin, ListView):
     model = Categoria
-    template_name = 'front-end/categoria/categoria_list.html'
+    template_name = 'front-end/categoria/list.html'
     permission_required = 'categoria.view_categoria'
 
     @csrf_exempt
@@ -54,6 +54,8 @@ class lista(ValidatePermissionRequiredMixin, ListView):
 
 class CrudView(ValidatePermissionRequiredMixin, TemplateView):
     form_class = CategoriaForm
+    template_name = 'front-end/categoria/form.html'
+    permission_required = 'categoria.add_categoria'
 
     @method_decorator(csrf_exempt)
     def dispatch(self, request, *args, **kwargs):
@@ -127,3 +129,107 @@ class CrudView(ValidatePermissionRequiredMixin, TemplateView):
         else:
             data['error'] = f.errors
         return data
+
+    def get_context_data(self, **kwargs):
+        data = super().get_context_data(**kwargs)
+        data['icono'] = opc_icono
+        data['entidad'] = opc_entidad
+        data['titulo'] = 'Nueva Categoria'
+        data['nuevo'] = '/categoria/nuevo'
+        data['action'] = 'add'
+        data['empresa'] = empresa
+        data['form'] = CategoriaForm
+        return data
+
+
+class UpdateView(ValidatePermissionRequiredMixin, UpdateView):
+    form_class = CategoriaForm
+    model = Categoria
+    template_name = 'front-end/categoria/form.html'
+    permission_required = 'categoria.change_categoria'
+
+    @method_decorator(csrf_exempt)
+    def dispatch(self, request, *args, **kwargs):
+        return super().dispatch(request, *args, **kwargs)
+
+    def post(self, request, *args, **kwargs):
+        data = {}
+        action = request.POST['action']
+        try:
+            if action == 'edit':
+                pk = self.kwargs['pk']
+                cat = Categoria.objects.get(pk=int(pk))
+                f = CategoriaForm(request.POST, instance=cat)
+                data = self.edit_data(f, pk)
+            else:
+                data['error'] = 'No ha seleccionado ninguna opción'
+        except Exception as e:
+            data['error'] = str(e)
+        return HttpResponse(json.dumps(data), content_type='application/json')
+
+    def save_data(self, f):
+        data = {}
+        if f.is_valid():
+            f.save(commit=False)
+            if Categoria.objects.filter(nombre__icontains=f.data['nombre']):
+                f.add_error("nombre", "Ya existe una categoria este nombre")
+                data['error'] = f.errors
+            else:
+                var = f.save()
+                data['resp'] = True
+                data['categoria'] = var.toJSON()
+                data['resp'] = True
+        else:
+            data['error'] = f.errors
+        return data
+
+    def edit_data(self, f, pk):
+        data = {}
+        if f.is_valid():
+            f.save(commit=False)
+            if Categoria.objects.filter(nombre__icontains=f.data['nombre']).exclude(pk=pk):
+                f.add_error("nombre", "Ya existe una categoria este nombre")
+                data['error'] = f.errors
+            else:
+                var = f.save()
+                data['resp'] = True
+                data['categoria'] = var.toJSON()
+                data['resp'] = True
+        else:
+            data['error'] = f.errors
+        return data
+
+    def get_context_data(self, **kwargs):
+        data = super().get_context_data(**kwargs)
+        data['icono'] = opc_icono
+        data['entidad'] = opc_entidad
+        data['titulo'] = 'Editar una Categoria'
+        data['action'] = 'edit'
+        data['empresa'] = empresa
+        dato = self.model.objects.get(pk=self.kwargs['pk'])
+        data['form'] = CategoriaForm(instance=dato)
+        return data
+
+
+class DeleteView(ValidatePermissionRequiredMixin, DeleteView):
+    model = Categoria
+    permission_required = 'categoria.delete_categoria'
+
+    @method_decorator(csrf_exempt)
+    def dispatch(self, request, *args, **kwargs):
+        return super().dispatch(request, *args, **kwargs)
+
+    def post(self, request, *args, **kwargs):
+        data = {}
+        action = request.POST['action']
+        try:
+            if action == 'delete':
+                pk = request.POST['id']
+                cat = Categoria.objects.get(pk=pk)
+                cat.delete()
+                data['resp'] = True
+            else:
+                data['error'] = 'No ha seleccionado ninguna opción'
+        except Exception as e:
+            data['error'] = str(e)
+        return HttpResponse(json.dumps(data), content_type='application/json')
