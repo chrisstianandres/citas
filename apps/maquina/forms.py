@@ -43,7 +43,7 @@ class MaquinaForm(forms.ModelForm):
             })
 
             self.fields['tipo'].widget.attrs = {
-                'class': 'form-control select2'
+                'class': 'form-control select2 select2-offscreen'
 
             }
             self.fields['serie'].widget.attrs = {
@@ -55,8 +55,8 @@ class MaquinaForm(forms.ModelForm):
         model = Maquina
         fields = ['tipo', 'serie']
         labels = {
-            'tipo': 'Tipo de Maquina', 'serie': 'Serie',
+            'tipo': 'Equipo', 'serie': 'Serie',
         }
         widgets = {
-            'serie': forms.TextInput()
+            'serie': forms.TextInput(), 'tipo': forms.Select()
         }

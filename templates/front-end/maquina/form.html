@@ -1,6 +1,7 @@
 {% extends 'front-end/form.html' %}
 {% load static %}
 {% block content %}
+    <input type="hidden" id="action" value="{{ action }}">
     <form id="form" method="post">
         <div class="row">
             <div class="col-lg-2 col-xs-1"></div>
@@ -25,13 +26,16 @@
                             <div class="form-group">
                                 <label for="id_tipo_maquina">{{ form.tipo.label_tag }}</label>
                                 <div class="input-group">
+                                     <span class="input-group-addon">
+                                    <i class="ace-icon fa fa-check"></i>
+                                    </span>
                                     {{ form.tipo }}
                                     <span class="input-group-btn">
-                                    <button class="btn btn-sm btn-primary" id="id_new_tipo" type="button"
+                                    <button class="btn btn-xs btn-primary rounded" id="id_new_tipo" type="button"
                                             data-toggle="tooltip" title="Agregar">
                                         <i class="ace-icon fa fa-plus"></i>
                                     </button>
-                                    <button class="btn btn-sm btn-success" id="search_maquina" type="button"
+                                    <button class="btn btn-xs btn-success" id="search_maquina" type="button"
                                             data-toggle="tooltip" title="Buscar">
                                         <i class="ace-icon fa fa-search-minus"></i>
                                     </button>
@@ -65,32 +69,59 @@
     <div id="modal-table" class="modal fade in" tabindex="-1">
         <div class="modal-dialog">
             <div class="modal-content">
-                <div class="modal-header no-padding">
-                    <h2>Nuevo Tipo de Equipo</h2>
-                </div>
-                <form id="form_tipo" method="post">
-                    <div class="container-fluid">
+                <div class="container-fluid">
+                    <div class="modal-header no-padding">
+                        <h2><i class="fa fa-plus-circle" aria-hidden="true"></i> Nuevo Tipo de Equipo</h2>
+                    </div>
+                    <form id="form_tipo" method="post">
                         <div class="modal-body no-padding">
                             <div class="form-group">
                                 {{ form_tipo.as_p }}
                             </div>
                         </div>
                         <div class="modal-footer no-margin-top">
-                            <button class="btn btn-sm btn-success pull-left" type="submit">
-                                <i class="ace-icon fa fa-save"></i>
+                            <button class="btn btn-white btn-info btn-bold" type="submit">
+                                <i class="ace-icon fa fa-floppy-o bigger-120 blue"></i>
                                 Guardar
                             </button>
-                            <button class="btn btn-sm btn-danger pull-left" data-dismiss="modal">
-                                <i class="ace-icon fa fa-times"></i>
-                                Cerrar
+                            <button class="btn btn-white btn-danger btn-round" data-dismiss="modal">
+                                <i class="ace-icon fa fa-times red2"></i>
+                                Cancelar
                             </button>
                         </div>
-                    </div>
-                </form>
+                    </form>
+                </div>
             </div><!-- /.modal-content -->
+
+        </div><!-- /.modal-dialog -->
+    </div>
+    <div id="modal-table_search" class="modal fade in" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="container-fluid">
+                    <div class="modal-header no-padding">
+                        <h2><i class="fa fa-plus-circle" aria-hidden="true"></i> Seleccione un Tipo de Equipo</h2>
+                    </div>
+                    <br>
+                    <table class="table" id="table_search">
+                        <thead>
+                        <tr>
+                            <th scope="col">EQUIPO</th>
+                            <th scope="col">DESCRIPCION</th>
+                            <th scope="col">ELEGIR</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+
+                        </tbody>
+                    </table>
+                </div>
+            </div><!-- /.modal-content -->
+
         </div><!-- /.modal-dialog -->
     </div>
 {% endblock %}
 {% block extra %}
+
     <script src="{% static 'apps/maquina/form.js' %}"></script>
 {% endblock %}

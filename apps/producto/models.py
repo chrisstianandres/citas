@@ -3,22 +3,30 @@ from django.forms import model_to_dict
 
 from apps.categoria.models import Categoria
 from apps.presentacion.models import Presentacion
-from citas.settings import STATIC_URL
+from citas.settings import STATIC_URL, MEDIA_URL
 
 
 class Producto(models.Model):
-    caategoria = models.ForeignKey(Categoria, on_delete=models.PROTECT)
+    categoria = models.ForeignKey(Categoria, on_delete=models.PROTECT)
     presentacion = models.ForeignKey(Presentacion, on_delete=models.PROTECT)
     nombre = models.CharField(max_length=50)
     descripcion = models.CharField(max_length=50)
+    imagen = models.ImageField(upload_to='productos', blank=True, null=True)
 
     def __str__(self):
         return '{}'.format(self.nombre)
 
+    def get_image(self):
+        if self.imagen:
+            return '{}{}'.format(MEDIA_URL, self.imagen)
+        else:
+            return '{}{}'.format(MEDIA_URL, 'productos/no_disponible.jpg')
+
     def toJSON(self):
         item = model_to_dict(self)
         item['presentacion'] = self.presentacion.toJSON()
-        item['caategoria'] = self.caategoria.toJSON()
+        item['categoria'] = self.categoria.toJSON()
+        item['imagen'] = self.get_image()
         return item
 
     class Meta:

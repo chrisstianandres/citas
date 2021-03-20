@@ -1,0 +1,43 @@
+{% extends 'front-end/base.html' %}
+{% load static %}
+{% block content %}
+    <div class="row">
+        <div class="container">
+            <a type="button" class="btn btn-white btn-success" href="{{ nuevo }}"><i class="fa fa-plus-circle"></i>
+                Nuevo</a>
+            <button type="button" class="btn btn-white btn-danger" onclick="window.location.reload();"><span
+                    class="glyphicon glyphicon-refresh"></span> Actualizar
+            </button>
+        </div>
+        <br>
+        <div class="col-xs-12">
+            <br>
+            <div class="table-header">
+                <i class="fa fa-list"></i> {{ titulo }}
+            </div>
+            <div>
+                <table id="datatable" class="table table-striped table-bordered table-hover dataTable no-footer">
+                    {% block table_content %}
+
+                    {% endblock %}
+
+                </table>
+            </div>
+        </div>
+    </div>
+    {% block modal %}
+
+    {% endblock %}
+{% endblock %}
+{% block script %}
+    <!-- daterangepicker -->
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/momentjs/latest/moment.min.js"></script>
+    <script src="{% static "lib/daterangepicker-3.1/spanish.js" %}"></script>
+    <script src="{% static "lib/daterangepicker-3.1/daterangepicker.js" %}"></script>
+    <link rel="stylesheet" href="{% static 'lib/daterangepicker-3.1/daterangepicker.css' %}">
+    <script src="{% static "lib/bootstrap-touchspin-4.3.0/jquery.bootstrap-touchspin.js" %}"></script>
+    <script src="{% static "lib/jquery-ecuador/dist/ruc_jquery_validator.min.js" %}"></script>
+
+
+{% endblock %}
+

@@ -1,6 +1,4 @@
 $(function () {
-    var action = '';
-    var pk = '';
     var datatable = $("#datatable").DataTable({
         responsive: true,
         autoWidth: false,
@@ -33,9 +31,9 @@ $(function () {
                 class: 'text-center',
                 orderable: false,
                 render: function (data, type, row) {
-                    var edit = '<a style="color: white" type="button" class="btn btn-warning btn-sm" rel="edit" ' +
-                        'data-toggle="tooltip" href="/maquina/editar/' + data + '" title="Editar Datos"><i class="fa fa-user-edit"></i></a>' + ' ';
-                    var del = '<a type="button" class="btn btn-danger btn-sm"  style="color: white" rel="del" ' +
+                    var edit = '<a style="color: white" type="button" class="btn btn-warning btn-xs" rel="edit" ' +
+                        'data-toggle="tooltip" href="/equipos/editar/' + data + '" title="Editar Datos"><i class="fa fa-pencil"></i></a>' + ' ';
+                    var del = '<a type="button" class="btn btn-danger btn-xs"  style="color: white" rel="del" ' +
                         'data-toggle="tooltip" title="Eliminar"><i class="fa fa-trash"></i></a>' + ' ';
                     return edit + del
 
@@ -59,9 +57,9 @@ $(function () {
             var parametros = {'id': data.id};
             parametros['action'] = 'delete';
             save_estado('Alerta',
-                '/maquina/nuevo', 'Esta seguro que desea eliminar esta maquina?', parametros,
+                'equipo/eliminar/'+data.id, 'Esta seguro que desea eliminar este equipo?', parametros,
                 function () {
-                    menssaje_ok('Exito!', 'Exito al eliminar esta maquina!', 'far fa-smile-wink', function () {
+                    menssaje_ok('Exito!', 'Exito al eliminar este equipo!', 'far fa-smile-wink', function () {
                         datatable.ajax.reload(null, false)
                     })
                 })
@@ -69,27 +67,7 @@ $(function () {
 
 
     $('#nuevo').on('click', function () {
-        window.location.replace('/maquina/nuevo')
-    });
-
-    //enviar formulario de nuevo tipo de gasto
-    $('#form').on('submit', function (e) {
-        e.preventDefault();
-        var parametros = new FormData(this);
-        parametros.append('action', action);
-        parametros.append('id', pk);
-        var isvalid = $(this).valid();
-        if (isvalid) {
-            save_with_ajax2('Alerta',
-                '/maquina/nuevo', 'Esta seguro que desea guardar esta maquina?', parametros,
-                function (response) {
-                    menssaje_ok('Exito!', 'Exito al guardar esta maquina!', 'far fa-smile-wink', function () {
-                        $('#Modal').modal('hide');
-                        reset();
-                        datatable.ajax.reload(null, false);
-                    });
-                });
-        }
+        window.location.href='/equipos/nuevo'
     });
 
 

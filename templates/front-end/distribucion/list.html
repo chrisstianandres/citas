@@ -1,0 +1,664 @@
+{% extends 'front-end/list.html' %}
+{% load static %}
+{% block formulario %}
+    <div class="card col-xl-12">
+        <div class="card-body">
+            <div class="col-xl-12 col-lg-12" id="div_form">
+                <div class="panel panel-primary">
+                    <!-- Card Header -->
+                    <div class="panel-heading py-3">
+                        <div class="container">
+                            <h4 class="m-0 font-weight-bold"><i
+                                    class="far fa-search"></i> Buscar Galpon</h4>
+                        </div>
+                    </div>
+                    <!-- Card Body -->
+                    <div class="panel-body">
+                        <div class="row">
+                            <div class="col-lg-4">
+                                <label class="control-label">{{ form.galpon.label_tag }}</label>
+                                <div class="input-group">
+                                    {{ form.galpon }}
+                                    <span class="input-group-btn">
+                                    <button class="btn btn-primary btn-sm" id="id_search_galpon"
+                                            data-toggle="tooltip" title="Buscar Galpon" type="button">
+                                        <i class="fab fa-searchengin"></i>
+                                    </button>
+                                        </span>
+                                </div>
+                            </div>
+                            <div class="col-lg-3">
+                                <label class="control-label" for="id_capacidad">Capacidad Galpon: </label>
+                                <input type="text" class="form-control" readonly="readonly" name="capacidad"
+                                       id="id_capacidad">
+                            </div>
+                            <div class="col-lg-3">
+                                <label class="control-label" for="id_cantidad_in_galpon">Pollos en Galpon: </label>
+                                <input type="text" class="form-control" readonly="readonly" name="cantidad_in_galpon"
+                                       id="id_cantidad_in_galpon">
+                            </div>
+
+                        </div>
+                        <br>
+                        <div class="row">
+                            <div class="col-lg-3">
+                                <label class="control-label" for="id_lote">Lote N°: </label>
+                                <input type="text" class="form-control" readonly="readonly" name="lote" id="id_lote">
+                            </div>
+                            <div class="col-lg-3">
+                                <label class="control-label" for="id_lote_cantidad">Cantidad Aves Lote:</label>
+                                <input type="text" class="form-control" readonly="readonly" name="lote_cantidad"
+                                       id="id_lote_cantidad">
+                            </div>
+                            <div class="col-lg-3">
+                                <label class="control-label" for="id_lote_fecha">Fecha Lote:</label>
+                                <input type="text" class="form-control" readonly="readonly" name="lote_fecha"
+                                       id="id_lote_fecha">
+                            </div>
+                            <div class="col-lg-3">
+                                <label class="control-label" for="id_tipo_ave">Tipo de Ave:</label>
+                                <input type="text" class="form-control" readonly="readonly" name="tipo_ave"
+                                       id="id_tipo_ave">
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-lg-5">
+                                <label class="control-label">{{ form.fecha.label_tag }}</label>
+                                {{ form.fecha }}
+                            </div>
+                            <div class="col-lg-5">
+                                <label class="control-label">{{ form2.raza.label_tag }}</label>
+                                {{ form2.raza }}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+{% endblock %}
+{% block transaccion %}
+    <div class="col-xl-12 col-sm-12">
+        <!-- Tabla Listado -->
+        <div class="panel panel-success">
+            <div class="panel-heading">
+                <div class="container">
+                    <h4 class="m-0 font-weight-bold"><i class="fab fa-algolia"></i> Control de Produccion
+                    </h4>
+                </div>
+            </div>
+            <div class="panel-body">
+                <ul class="nav nav-pills nav-justified">
+                    <li class="active"><a data-toggle="tab" href="#medicina"><i class="fas fa-capsules"></i>
+                        Medicinas</a></li>
+                    <li><a data-toggle="tab" href="#alimento"><i class="fas fa-utensils"></i> Alimento</a></li>
+                    <li><a data-toggle="tab" href="#mortalidad"><i class="fas fa-skull-crossbones"></i> Mortalidad</a>
+                    </li>
+                    <li><a data-toggle="tab" href="#peso"><i class="fas fa-balance-scale-right"></i> Pesos</a></li>
+                    <li><a data-toggle="tab" href="#gastos"><i class="fas fa-hand-holding-usd"></i> Gastos</a></li>
+                </ul>
+
+                <div class="tab-content">
+                    <br>
+                    <div id="medicina" class="tab-pane fade in active">
+                        <br>
+                        <button type="button" class="btn btn-danger" id="add_medicacion"><i class="fas fa-capsules"></i>
+                            Agregar Medicacion
+                        </button>
+                        <br><br>
+                        <table id="datatable_medicacion"
+                               class="table table-bordered table-condensed table-hover table-striped"
+                               style="width: 100%">
+                            <thead>
+                            <tr>
+                                <th>Fecha</th>
+                                <th>Nombre</th>
+                                <th>Tipo</th>
+                                <th>Cantidad</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            </tbody>
+
+                        </table>
+                    </div>
+                    <div id="alimento" class="tab-pane fade">
+                        <br>
+                        <button type="button" class="btn btn-danger" id="add_alimentacion"><i class="fas fa-utensils"></i>
+                            Agregar Alimentacion
+                        </button>
+                        <br><br>
+                        <table id="datatable_alimentacion"
+                               class="table table-bordered table-condensed table-hover table-striped"
+                               style="width: 100%">
+                            <thead>
+                            <tr>
+                                <th>Fecha</th>
+                                <th>Nombre</th>
+                                <th>Presentacion</th>
+                                <th>Cantidad</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div id="mortalidad" class="tab-pane fade">
+                        <br>
+                        <button type="button" class="btn btn-danger" id="add_mortalidad">
+                            <i class="fas fa-skull-crossbones"></i> Agregar Bajas
+                        </button>
+                        <br><br>
+                        <table id="datatable_mortalidad"
+                               class="table table-bordered table-condensed table-hover table-striped"
+                               style="width: 100%">
+                            <thead>
+                            <tr>
+                                <th>Fecha</th>
+                                <th>Causa</th>
+                                <th>Cantidad</th>
+                                <th>Descripcion</th>
+                                <th>Opciones</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            </tbody>
+
+                        </table>
+                    </div>
+                    <div id="peso" class="tab-pane fade">
+                        <br>
+                        <button type="button" class="btn btn-danger" id="add_peso"><i
+                                class="fas fa-balance-scale-left"></i> Agregar nuevo valor de peso
+                        </button>
+                        <br><br>
+                        <table id="datatable_peso"
+                               class="table table-bordered table-condensed table-hover table-striped"
+                               style="width: 100%">
+                            <thead>
+                            <tr>
+                                <th style="width: 10%">Fecha</th>
+                                <th style="width: 80%">Peso Promedio</th>
+                                <th style="width: 10%">Opciones</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div id="gastos" class="tab-pane fade">
+                        <br>
+                        <button type="button" class="btn btn-danger" id="add_gasto">
+                            <i class="fas fa-hand-holding-usd"></i> Agregar Gastos
+                        </button>
+                        <br><br>
+                        <table id="datatable_gasto"
+                               class="table table-bordered table-condensed table-hover table-striped"
+                               style="width: 100%">
+                            <thead>
+                            <tr>
+                                <th>Fecha</th>
+                                <th>Tipo de gasto</th>
+                                <th>Valor</th>
+                                <th>Detalle</th>
+                                <th>Opciones</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            </tbody>
+
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+{% block tablas %}
+
+{% endblock %}
+{% block modal %}
+    <div class="modal fade" id="modal_search_galpon" tabindex="-1" aria-labelledby="exampleModalLabel"
+         aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title"><i class="fas fa-search"></i>&nbsp;Buscar Galpon</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div class="container-fluid">
+                        <div class="row">
+                            <div class="col-lg-12">
+                                <table id="datatable_search_galpon"
+                                       class="table table-bordered table-condensed table-hover table-striped"
+                                       style="width: 100%">
+                                    <thead>
+                                    <tr>
+                                        <th style="width: 30%">Galpon N°</th>
+                                        <th style="width: 30%">Estado</th>
+                                        <th style="width: 10%"><i class="far fa-check"></i></th>
+                                    </tr>
+                                    </thead>
+                                    <tbody>
+
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-danger" data-dismiss="modal">
+                        <i class="far fa-window-close"></i> Cancelar
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="modal fade" id="modal_form_medicacion" tabindex="-1" aria-labelledby="exampleModalLabel"
+         aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title"><i class="fas fa-capsules"></i>&nbsp;Agregar Medicacion</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div class="container-fluid">
+                        <div class="row">
+                            <div class="form-group">
+                                <label for="id_fecha_medicacion">{{ form_medicacion.fecha.label_tag }}</label>
+                                <div class="input-group">
+                                    <div class="input-group-addon">
+                                        <i class="far fa-calendar-alt"></i>
+                                    </div>
+                                    {{ form_medicacion.fecha }}
+
+                                </div>
+
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="form-group">
+                                <label for="id_medicina">{{ form_medicacion.medicina.label_tag }}</label>
+                                <div class="input-group">
+                                    {{ form_medicacion.medicina }}
+                                    <div class="input-group-btn">
+                                        <button class="btn btn-primary btn-sm" type="button" id="id_search_medicina"><i
+                                                class="fa fa-search"></i></button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div id="dosis_cantidad" style="display:none;">
+                            <div class="row">
+                                <div class="form-group">
+                                    <label for="id_dosis">{{ form_medicacion.dosis.label_tag }}</label>
+                                    {{ form_medicacion.dosis }}
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-primary" id=save_medicacion>
+                        <i class="fa fa-save"></i> Guardar
+                    </button>
+                    <button type="button" class="btn btn-danger" data-dismiss="modal">
+                        <i class="far fa-window-close"></i> Cancelar
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="modal fade" id="modal_search_medicacion" tabindex="-1" aria-labelledby="exampleModalLabel"
+         aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title"><i class="fas fa-capsules"></i>&nbsp;Lista de Medicinas</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div class="container-fluid">
+                        <table id="datatable_search_medicacion"
+                               class="table table-bordered table-condensed table-hover table-striped"
+                               style="width: 100%">
+                            <thead>
+                            <tr>
+                                <th>Nombre</th>
+                                <th>Tipo</th>
+                                <th>Stock</th>
+                                <th>Opciones</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="modal fade" id="modal_form_alimentacion" tabindex="-1" aria-labelledby="exampleModalLabel"
+         aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title"><i class="fas fa-utensils"></i>&nbsp;Agregar Alimentacion</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div class="container-fluid">
+                        <div class="row">
+                            <div class="form-group">
+                                <label for="id_fecha_alimentacion">{{ form_alimentacion.fecha.label_tag }}</label>
+                                <div class="input-group">
+                                    <div class="input-group-addon">
+                                        <i class="far fa-calendar-alt"></i>
+                                    </div>
+                                    {{ form_alimentacion.fecha }}
+
+                                </div>
+
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="form-group">
+                                <label for="id_alimento">{{ form_alimentacion.alimento.label_tag }}</label>
+                                <div class="input-group">
+                                    {{ form_alimentacion.alimento }}
+                                    <div class="input-group-btn">
+                                        <button class="btn btn-primary btn-sm" type="button" id="id_search_alimento"><i
+                                                class="fa fa-search"></i></button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div id="cantidad_alimento" style="display:none;">
+                            <div class="row">
+                                <div class="form-group">
+                                    <label for="id_cantidad">{{ form_alimentacion.cantidad.label_tag }}</label>
+                                    {{ form_alimentacion.cantidad }}
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-primary" id=save_alimentacion>
+                        <i class="fa fa-save"></i> Guardar
+                    </button>
+                    <button type="button" class="btn btn-danger" data-dismiss="modal">
+                        <i class="far fa-window-close"></i> Cancelar
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="modal fade" id="modal_search_alimentacion" tabindex="-1" aria-labelledby="exampleModalLabel"
+         aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title"><i class="fas fa-utensils"></i>&nbsp;Lista de Alimentos</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div class="container-fluid">
+                        <table id="datatable_search_alimentacion"
+                               class="table table-bordered table-condensed table-hover table-striped"
+                               style="width: 100%">
+                            <thead>
+                            <tr>
+                                <th>Nombre</th>
+                                <th>Presentacion</th>
+                                <th>Stock</th>
+                                <th>Opciones</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="modal fade" id="modal_form_peso" tabindex="-1" aria-labelledby="exampleModalLabel"
+         aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title"><i class="fas fa-balance-scale-left"></i>&nbsp;Agregar Peso promedio</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div class="container-fluid">
+                        <div class="row">
+                            {{ form_peso.as_p }}
+                        </div>
+                    </div>
+
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-primary" id=save_peso>
+                        <i class="fa fa-save"></i> Guardar
+                    </button>
+                    <button type="button" class="btn btn-danger" data-dismiss="modal">
+                        <i class="far fa-window-close"></i> Cancelar
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="modal fade" id="modal_form_mortalidad" tabindex="-1" aria-labelledby="exampleModalLabel"
+         aria-hidden="true">
+        <form id="form_mortalidad" method="post">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title"><i class="fas fa-skull-crossbones"></i>&nbsp;Agregar Bajas</h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="container-fluid">
+                            <div class="row">
+                                <div class="col-lg-5">
+                                    <label for="id_fecha_mortalidad">{{ form_mortalidad.fecha.label_tag }}</label>
+                                    <div class="input-group">
+                                        <div class="input-group-addon">
+                                            <i class="far fa-calendar-alt"></i>
+                                        </div>
+                                        {{ form_mortalidad.fecha }}
+                                    </div>
+                                </div>
+                                <div class="col-lg-5">
+                                    <label for="id_causa">{{ form_mortalidad.causa.label_tag }}</label>
+                                    <div class="input-group">
+                                        {{ form_mortalidad.causa }}
+                                        <div class="input-group-btn">
+                                            <button class="btn btn-primary btn-sm" type="button" data-toggle="tooltip"
+                                                    id="add_causa_muerte"
+                                                    title="Agregar Causa de muerte"><i class="fa fa-plus"></i></button>
+                                        </div>
+                                    </div>
+
+                                </div>
+                            </div>
+                            <br>
+                            <div class="row">
+                                <div class="col-lg-5">
+                                    <label for="id_cantidad_muertes">{{ form_mortalidad.cantidad_muertes.label_tag }}</label>
+                                    {{ form_mortalidad.cantidad_muertes }}
+                                </div>
+                                <div class="col-lg-5">
+                                    <label for="id_descrpcion_mortalidad">{{ form_mortalidad.descrpcion.label_tag }}</label>
+                                    {{ form_mortalidad.descrpcion }}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="submit" class="btn btn-primary" id=save_mortalidad>
+                            <i class="fa fa-save"></i> Guardar
+                        </button>
+                        <button type="button" class="btn btn-danger" data-dismiss="modal">
+                            <i class="far fa-window-close"></i> Cancelar
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </form>
+
+    </div>
+    <div class="modal fade" id="modal_form_causa_muerte" tabindex="-1" aria-labelledby="exampleModalLabel"
+         aria-hidden="true">
+        <form id="form_causa_muerte" method="post">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title"><i class="fas fa-book-dead"></i>&nbsp;Agregar Causa de muerte</h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="container-fluid">
+                            <div class="row">
+                                {{ form_causa_muerte.as_p }}
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fa fa-save"></i> Guardar
+                        </button>
+                        <button type="button" class="btn btn-danger" data-dismiss="modal">
+                            <i class="far fa-window-close"></i> Cancelar
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </form>
+
+    </div>
+    <div class="modal fade" id="modal_form_gasto" tabindex="-1" aria-labelledby="exampleModalLabel"
+         aria-hidden="true">
+        <form id="form_gasto" method="post">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title"><i class="fas fa-hand-holding-usd"></i>&nbsp;Agregar Gasto</h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="container-fluid">
+                            <div class="row">
+                                <div class="col-lg-5">
+                                    <label for="id_fecha_pago">{{ form_gasto.fecha_pago.label_tag }}</label>
+                                    <div class="input-group">
+                                        <div class="input-group-addon">
+                                            <i class="fas fa-calendar-alt"></i>
+                                        </div>
+                                        {{ form_gasto.fecha_pago }}
+                                    </div>
+                                </div>
+                                <div class="col-lg-5">
+                                    <label for="id_tipo_gasto">{{ form_gasto.tipo_gasto.label_tag }}</label>
+                                    <div class="input-group">
+                                        {{ form_gasto.tipo_gasto }}
+                                        <div class="input-group-btn">
+                                            <button class="btn btn-primary btn-sm" type="button" data-toggle="tooltip"
+                                                    id="add_tipo_gasto"
+                                                    title="Agregar tipo de Gasto"><i class="fa fa-plus"></i></button>
+                                        </div>
+                                    </div>
+
+                                </div>
+                            </div>
+                            <br>
+                            <div class="row">
+                                <div class="col-lg-5">
+                                    <label for="id_valor">{{ form_gasto.valor.label_tag }}</label>
+                                    {{ form_gasto.valor }}
+                                </div>
+                                <div class="col-lg-5">
+                                    <label for="id_detalle">{{ form_gasto.detalle.label_tag }}</label>
+                                    {{ form_gasto.detalle }}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fa fa-save"></i> Guardar
+                        </button>
+                        <button type="button" class="btn btn-danger" data-dismiss="modal">
+                            <i class="far fa-window-close"></i> Cancelar
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </form>
+
+    </div>
+    <div class="modal fade" id="modal_form_tipo_gasto" tabindex="-1" aria-labelledby="exampleModalLabel"
+         aria-hidden="true">
+        <form id="form_tipo_gasto" method="post">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title"><i class="fas fa-search-dollar"></i>&nbsp;Agregar Tipo de Gasto</h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="container-fluid">
+                            <div class="row">
+                                {{ form_tipo_gasto.as_p }}
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fa fa-save"></i> Guardar
+                        </button>
+                        <button type="button" class="btn btn-danger" data-dismiss="modal">
+                            <i class="far fa-window-close"></i> Cancelar
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </form>
+
+    </div>
+{% endblock %}
+{% block extra %}
+    <script src="{% static 'apps/distribucion/form.js' %}"></script>
+    <script src="{% static 'apps/distribucion/validacion_form.js' %}"></script>
+{% endblock %}

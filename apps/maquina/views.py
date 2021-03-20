@@ -84,15 +84,21 @@ class CrudView(ValidatePermissionRequiredMixin, TemplateView):
             if action == 'add':
                 f = MaquinaForm(request.POST)
                 data = self.save_data(f)
-                return HttpResponseRedirect('/maquina/lista')
-            if action == 'add_tipo':
+            elif action == 'add_tipo':
                 f = TipomaquinaForm(request.POST)
                 data = self.save_data(f)
-            elif action == 'delete':
-                pk = request.POST['id']
-                cat = Maquina.objects.get(pk=pk)
-                cat.delete()
-                data['resp'] = True
+            elif action == 'search':
+                data = []
+                term = request.POST['term']
+                query = Tipo_maquina.objects.filter(nombre__icontains=term)[0:10]
+                for a in query:
+                    result = {'id': int(a.id), 'text': str(a.nombre)}
+                    data.append(result)
+            elif action == 'list_search':
+                data = []
+                query = Tipo_maquina.objects.all()
+                for a in query:
+                    data.append(a.toJSON())
             else:
                 data['error'] = 'No ha seleccionado ninguna opción'
         except Exception as e:
@@ -141,7 +147,18 @@ class Updateview(ValidatePermissionRequiredMixin, UpdateView):
                 tpg = Maquina.objects.get(pk=int(pk))
                 f = MaquinaForm(request.POST, instance=tpg)
                 data = self.save_data(f)
-                return HttpResponseRedirect('/maquina/lista')
+            elif action == 'search':
+                data = []
+                term = request.POST['term']
+                query = Tipo_maquina.objects.filter(nombre__icontains=term)[0:10]
+                for a in query:
+                    result = {'id': int(a.id), 'text': str(a.nombre)}
+                    data.append(result)
+            elif action == 'list_search':
+                data = []
+                query = Tipo_maquina.objects.all()
+                for a in query:
+                    data.append(a.toJSON())
             else:
                 data['error'] = 'No ha seleccionado ninguna opción'
         except Exception as e:
@@ -167,8 +184,7 @@ class Updateview(ValidatePermissionRequiredMixin, UpdateView):
         data['empresa'] = empresa
         data['action'] = 'edit'
         maquina = Maquina.objects.get(id=self.kwargs['pk'])
-        print(maquina.serie)
-        data['crud'] = '/maquina/editar/' + str(self.kwargs['pk'])
+        data['crud'] = '/equipos/editar/' + str(self.kwargs['pk'])
         data['form'] = MaquinaForm(instance=maquina)
         data['form_tipo'] = TipomaquinaForm()
         return data

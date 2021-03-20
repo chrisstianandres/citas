@@ -11,7 +11,7 @@ from apps.empleado.models import Empleado
 from apps.mixins import ValidatePermissionRequiredMixin
 # from apps.ubicacion.models import *
 
-opc_icono = 'fas fa-people-carry'
+opc_icono = 'fa fa-users'
 opc_entidad = 'Empleados'
 crud = '/empleado/nuevo'
 empresa = nombre_empresa()
@@ -121,7 +121,7 @@ class CrudView(ValidatePermissionRequiredMixin, TemplateView):
         data['icono'] = opc_icono
         data['entidad'] = opc_entidad
         data['titulo'] = 'Nueva Presentacion'
-        data['nuevo'] = '/presentacion/nuevo'
+        data['nuevo'] = '/empleado/nuevo'
         data['action'] = 'add'
         data['empresa'] = empresa
         data['form'] = self.form_class
