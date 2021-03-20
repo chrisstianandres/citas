@@ -48,7 +48,7 @@
       boostat: 10,
       maxboostedstep: false,
       mousewheel: true,
-      buttondown_class: 'btn btn-danger',
+      buttondown_class: 'btn btn-primary',
       buttonup_class: 'btn btn-primary',
       buttondown_txt: '-',
       buttonup_txt: '+',

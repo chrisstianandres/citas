@@ -42,10 +42,12 @@ class lista(ValidatePermissionRequiredMixin, ListView):
                 data = []
                 for c in self.model.objects.all():
                     data.append(c.toJSON())
-            # elif action == 'list_add':
-            #     data = []
-            #     for c in Producto_base.objects.filter(tipo=0):
-            #         data.append(c.toJSON())
+            elif action == 'list_list':
+                data = []
+                ids = json.loads(request.POST['ids'])
+                query = self.model.objects.all()
+                for c in query.exclude(id__in=ids):
+                    data.append(c.toJSON())
             # elif action == 'list_venta':
             #     data = []
             #     vent = Producto.objects.filter(stock__gte=1)
@@ -330,7 +332,6 @@ class Createview(ValidatePermissionRequiredMixin, CreateView):
                 pk = request.POST['id']
                 query = self.model.objects.get(id=pk)
                 item = query.toJSON()
-                # item['presentacion'] = query.toJSON()
                 data.append(item)
             else:
                 data['error'] = 'No ha seleccionado ninguna opción'

@@ -11,24 +11,28 @@ class CompraForm(forms.ModelForm):
             self.fields[field].widget.attrs.update({
                 'class': 'form-control'
             })
-            self.fields['fecha_compra'].widget.attrs = {
+            self.fields['fecha'].widget.attrs = {
                 'readonly': True,
                 'class': 'form-control'
             }
             self.fields['proveedor'].widget.attrs = {
                 'class': 'form-control select2',
                 'data-live-search': "true",
-                'style': "width: 80%"
+                'style': "width: 100%"
             }
             self.fields['subtotal'].widget.attrs = {
                 'value': '0.00',
                 'class': 'form-control',
                 'readonly': True
             }
-            self.fields['iva'].widget.attrs = {
+            self.fields['iva_generado'].widget.attrs = {
                 'value': '0.00',
                 'class': 'form-control',
                 'readonly': True
+            }
+            self.fields['tasa_iva'].widget.attrs = {
+                'value': '12.00',
+                'class': 'form-control'
             }
             self.fields['total'].widget.attrs = {
                 'value': '0.00',
@@ -41,25 +45,28 @@ class CompraForm(forms.ModelForm):
     class Meta:
         model = Compra
         fields = [
-            'fecha_compra',
+            'fecha',
             'proveedor',
             'subtotal',
-            'iva',
+            'tasa_iva',
+            'iva_generado',
             'total'
         ]
         labels = {
-            'fecha_compra': 'Fecha de Compra',
+            'fecha': 'Fecha de Compra',
             'proveedor': 'Proveedor',
             'subtotal': 'Subtotal',
-            'iva': 'I.V.A.',
+            'tasa_iva': 'I.V.A.',
+            'iva_generado': 'I.V.A.',
             'total': 'TOTAL'
         }
         widgets = {
-            'fecha_compra': forms.DateInput(
+            'fecha': forms.DateInput(
                 format='%Y-%m-%d',
                 attrs={'value': datetime.now().strftime('%Y-%m-%d')},
             ),
-            'iva': forms.TextInput(),
+            'tasa_iva': forms.TextInput(),
+            'iva_generado': forms.TextInput(),
             'total': forms.TextInput(),
         }
 
@@ -72,7 +79,7 @@ class Detalle_CompraForm(forms.ModelForm):
             self.fields[field].widget.attrs.update({
                 'class': 'form-control'
             })
-            self.fields['material'].widget.attrs = {
+            self.fields['producto'].widget.attrs = {
                 'class': 'form-control select2',
                 'data-live-search': "true"
             }
@@ -81,5 +88,5 @@ class Detalle_CompraForm(forms.ModelForm):
     class Meta:
         model = Detalle_compra
         fields = [
-            'material'
+            'producto'
         ]

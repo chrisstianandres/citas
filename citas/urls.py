@@ -31,5 +31,6 @@ urlpatterns = [
     path('empleado/', include('apps.empleado.urls', namespace='empleado')),
     path('proveedor/', include('apps.proveedor.urls', namespace='proveedor')),
     path('producto/', include('apps.producto.urls', namespace='producto')),
+    path('compra/', include('apps.compra.urls', namespace='compra')),
 ] + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)\
                   + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

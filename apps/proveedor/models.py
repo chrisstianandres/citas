@@ -19,7 +19,7 @@ class Proveedor(models.Model):
     fecha = models.DateField(default=datetime.now)
 
     def __str__(self):
-        return '{} / {} / {}'.format(self.nombre, self.direccion, self.num_doc)
+        return '{}'.format(self.nombre)
 
     def get_full_name(self):
         return '{} / {} / {}'.format(self.nombre, self.direccion, self.num_doc)

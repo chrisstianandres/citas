@@ -15,8 +15,7 @@ from apps.backEnd import nombre_empresa
 from apps.compra.forms import CompraForm, Detalle_CompraForm
 from apps.compra.models import Compra, Detalle_compra
 from apps.empresa.models import Empresa
-from apps.inventario_material.models import Inventario_material
-from apps.material.models import Material
+from apps.producto.models import Producto
 from apps.mixins import ValidatePermissionRequiredMixin
 from apps.producto.models import Producto
 from datetime import date
@@ -26,7 +25,6 @@ from django.template.loader import get_template
 from xhtml2pdf import pisa
 from django.contrib.staticfiles import finders
 
-from apps.producto_base.models import Producto_base
 from apps.proveedor.forms import ProveedorForm
 
 opc_icono = 'fa fa-shopping-bag'
@@ -37,7 +35,7 @@ empresa = nombre_empresa()
 
 class lista(ValidatePermissionRequiredMixin, ListView):
     model = Compra
-    template_name = 'front-end/compra/compra_list.html'
+    template_name = 'front-end/compra/list.html'
     permission_required = 'compra.view_compra'
 
     @csrf_exempt
@@ -92,7 +90,7 @@ class lista(ValidatePermissionRequiredMixin, ListView):
 
 class CrudView(ValidatePermissionRequiredMixin, TemplateView):
     form_class = Compra
-    template_name = 'front-end/compra/compra_form.html'
+    template_name = 'front-end/compra/form.html'
     permission_required = 'compra.add_compra'
 
     @method_decorator(csrf_exempt)
@@ -120,18 +118,13 @@ class CrudView(ValidatePermissionRequiredMixin, TemplateView):
                         for i in datos['productos']:
                             dv = Detalle_compra()
                             dv.compra_id = c.id
-                            dv.material_id = i['id']
                             dv.cantidad = int(i['cantidad'])
                             dv.subtotal = float(i['subtotal'])
-                            x = Material.objects.get(pk=i['id'])
-                            dv.p_compra_actual = float(x.p_compra)
-                            for p in range(0, i['cantidad']):
-                                inv = Inventario_material()
-                                inv.compra_id = c.id
-                                inv.material_id = x.id
-                                inv.save()
-                            x.stock = Inventario_material.objects.filter(material_id=x.id, estado=1).count()
-                            x.save()
+                            dv.producto_id = int(i['id'])
+                            dv.precio_compra = float(i['p_compra'])
+                            dv.precio_venta = float(i['p_venta'])
+                            dv.stock_compra = int(i['cantidad'])
+                            dv.stock_actual = int(i['cantidad'])
                             dv.save()
                         data['id'] = c.id
                         data['resp'] = True

@@ -5,26 +5,18 @@ var dt_detalle;
 var dt_detalle_alimentos;
 var compras = {
     items: {
-        fecha_compra: '',
+        fecha: '',
         comprobante: '',
         proveedor: '',
         subtotal: 0.00,
         iva: 0.00,
         tasa_iva: 0.00,
         total: 0.00,
-        medicinas: [],
-        alimentos: [],
+        productos: [],
     },
     get_ids: function () {
         var ids = [];
-        $.each(this.items.medicinas, function (key, value) {
-            ids.push(value.id);
-        });
-        return ids;
-    },
-    get_ids_alimento: function () {
-        var ids = [];
-        $.each(this.items.alimentos, function (key, value) {
+        $.each(this.items.productos, function (key, value) {
             ids.push(value.id);
         });
         return ids;
@@ -32,11 +24,7 @@ var compras = {
     calculate: function () {
         var subtotal = 0.00;
         var iva_emp = tasa_iva;
-        $.each(this.items.medicinas, function (pos, dict) {
-            dict.subtotal = dict.cantidad * parseFloat(dict.precio);
-            subtotal += dict.subtotal;
-        });
-        $.each(this.items.alimentos, function (pos, dict) {
+        $.each(this.items.productos, function (pos, dict) {
             dict.subtotal = dict.cantidad * parseFloat(dict.precio);
             subtotal += dict.subtotal;
         });
@@ -48,98 +36,21 @@ var compras = {
         $('input[name="total"]').val(this.items.total.toFixed(2));
     },
     add: function (data) {
-        this.items.medicinas.push(data);
+        this.items.productos.push(data);
         this.list();
-
     },
-    add_alimento: function (data) {
-        this.items.alimentos.push(data);
-        this.list_alimentos();
 
-    },
     list: function () {
         this.calculate();
-        dt_detalle = $("#datatable_detalle").DataTable({
+        dt_detalle = $("#table_detalle").DataTable({
             destroy: true,
             responsive: true,
             autoWidth: false,
             dom: 'tipr',
-            data: this.items.medicinas,
+            data: this.items.productos,
             columns: [
-                {"data": "insumo.nombre"},
-                {"data": "insumo.categoria.nombre"},
-                {"data": "tipo_medicina.nombre"},
-                {"data": "precio"},
-                {"data": "cantidad"},
-                {"data": "subtotal"},
-                {"data": "id"}
-            ],
-            language: {
-                url: '//cdn.datatables.net/plug-ins/1.10.15/i18n/Spanish.json',
-            },
-            columnDefs: [
-                {
-                    targets: '_all',
-                    class: 'text-center',
-
-                },
-                {
-                    targets: [-1],
-                    class: 'text-center',
-                    width: "15%",
-                    render: function (data, type, row) {
-                        return '<a type="button" rel="remove" class="btn btn-danger btn-xs btn-round" ' +
-                            'style="color: white" data-toggle="tooltip" title="Quitar"><i class="fa fa-times"></i>' +
-                            '</a>';
-                    }
-                },
-                {
-                    targets: [-4],
-                    render: function (data, type, row) {
-                        return '<input type="text" class="form-control input-sm" value="' + data + '" name="precio">';
-                    }
-                },
-                {
-                    targets: [-3],
-                    render: function (data, type, row) {
-                        return '<input type="text" class="form-control input-sm" value="' + data + '" name="cantidad">';
-                    }
-                },
-                {
-                    targets: [-2],
-                    render: function (data, type, row) {
-                        return '$ ' + parseFloat(data).toFixed(2);
-                    }
-                },
-            ],
-            createdRow: function (row, data, dataIndex) {
-                $(row).find('input[name="cantidad"]').TouchSpin({
-                    min: 1,
-                    max: 1000000,
-                    step: 1
-                });
-                $(row).find('input[name="precio"]').TouchSpin({
-                    min: 1.00,
-                    decimals: 2,
-                    max: 100000000,
-                    step: 0.01,
-                    prefix: '<i class="fas fa-dollar-sign"></i>'
-                });
-
-            }
-        });
-    },
-    list_alimentos: function () {
-        this.calculate();
-        dt_detalle_alimentos = $("#datatable_alimento").DataTable({
-            destroy: true,
-            responsive: true,
-            autoWidth: false,
-            dom: 'tipr',
-            data: this.items.alimentos,
-            columns: [
-                {"data": "insumo.nombre"},
-                {"data": "insumo.categoria.nombre"},
+                {"data": "nombre"},
+                {"data": "categoria.nombre"},
                 {"data": "presentacion.nombre"},
                 {"data": "precio"},
                 {"data": "cantidad"},
@@ -200,10 +111,10 @@ var compras = {
 
             }
         });
-    },
-
+    }
 };
 $(function () {
+    buscar();
     //Iva porcentaje
     $('#id_tasa_iva')
         .TouchSpin({
@@ -211,14 +122,13 @@ $(function () {
             decimals: 2,
             max: 100000000,
             step: 0.01,
-            prefix: '<i class="fas fa-percent"></i>'
+            buttondown_class: 'btn btn-white btn-info btn-bold btn-sm',
+            buttonup_class: 'btn btn-white btn-info btn-bold btn-sm',
+            prefix: '%'
         })
-        .val(tasa_iva)
-        .on('change keyup', function () {
-            tasa_iva = ($(this).val());
-            compras.calculate();
-        });
-    //seccion Medcicinas
+    ;
+
+    //seccion Productos
     $('#datatable_detalle tbody')
         .on('click', 'a[rel="remove"]', function () {
             var tr = dt_detalle.cell($(this).closest('td, li')).index();
@@ -257,51 +167,52 @@ $(function () {
                 });
         });
 
-    $('#id_search_medicina')
-        .on('click', function () {
-            $('#modal_search_medicina').modal('show');
-            tbl_productos = $("#datatable_search_medicina").DataTable({
-                destroy: true,
-                autoWidth: false,
-                dataSrc: "",
-                responsive: true,
-                ajax: {
-                    url: '/medicina/lista',
-                    type: 'POST',
-                    data: {'action': 'list_list', 'ids': JSON.stringify(compras.get_ids())},
-                    dataSrc: ""
-                },
-                language: {
-                    "url": '//cdn.datatables.net/plug-ins/1.10.15/i18n/Spanish.json'
-                },
-                columns: [
-                    {data: "insumo.nombre"},
-                    {data: "insumo.categoria.nombre"},
-                    {data: "tipo_medicina.nombre"},
-                    {data: "id"}
-                ],
-                columnDefs: [
-                    {
-                        targets: [-1],
-                        class: 'text-center',
-                        width: '10%',
-                        orderable: false,
-                        render: function (data, type, row) {
-                            return '<a style="color: white" type="button" class="btn btn-success btn-xs" rel="take" ' +
-                                'data-toggle="tooltip" title="Seleccionar Insumo"><i class="fa fa-check"></i></a>' + ' '
+    function buscar(){
+        tbl_productos = $("#table_productos").DataTable({
+        destroy: true,
+        autoWidth: false,
+        dataSrc: "",
+        responsive: true,
+        ajax: {
+            url: '/producto/lista',
+            type: 'POST',
+            data: {'action': 'list_list', 'ids': JSON.stringify(compras.get_ids())},
+            dataSrc: ""
+        },
+        language: {
+            "url": '//cdn.datatables.net/plug-ins/1.10.15/i18n/Spanish.json'
+        },
+        info: false,
+        columns: [
+            {data: "nombre"},
+            {data: "categoria.nombre"},
+            {data: "presentacion.nombre"},
+            {data: "id"}
+        ],
+        columnDefs: [
+            {
+                targets: [-1],
+                class: 'text-center',
+                width: '10%',
+                orderable: false,
+                render: function (data, type, row) {
+                    return '<a style="color: white" type="button" class="btn btn-success btn-xs" rel="take" ' +
+                        'data-toggle="tooltip" title="Seleccionar Insumo"><i class="fa fa-check"></i></a>' + ' '
 
-                        }
-                    },
-                ]
-            });
-        });
+                }
+            },
+        ]
+    });
+    }
 
-    $('#datatable_search_medicina tbody')
+
+
+    $('#table_productos tbody')
         .on('click', 'a[rel="take"]', function () {
             var tr = tbl_productos.cell($(this).closest('td, li')).index();
             var data = tbl_productos.row(tr.row).data();
             compras.add(data);
-            $('#modal_search_medicina').modal('hide');
+            buscar();
         });
 
     //seccion alimentos
@@ -342,53 +253,6 @@ $(function () {
                 });
         });
 
-    $('#id_search_alimentos')
-        .on('click', function () {
-            $('#modal_search_alimento').modal('show');
-            tblalimentos_seacrh = $("#datatable_search_alimento").DataTable({
-                destroy: true,
-                autoWidth: false,
-                dataSrc: "",
-                responsive: true,
-                ajax: {
-                    url: '/alimento/lista',
-                    type: 'POST',
-                    data: {'action': 'list_list', 'ids': JSON.stringify(compras.get_ids_alimento())},
-                    dataSrc: ""
-                },
-                language: {
-                    "url": '//cdn.datatables.net/plug-ins/1.10.15/i18n/Spanish.json'
-                },
-                columns: [
-                    {data: "insumo.nombre"},
-                    {data: "insumo.categoria.nombre"},
-                    {data: "presentacion.nombre"},
-                    {data: "id"}
-                ],
-                columnDefs: [
-                    {
-                        targets: [-1],
-                        class: 'text-center',
-                        width: '10%',
-                        orderable: false,
-                        render: function (data, type, row) {
-                            return '<a style="color: white" type="button" class="btn btn-success btn-xs" rel="take" ' +
-                                'data-toggle="tooltip" title="Seleccionar Insumo"><i class="fa fa-check"></i></a>' + ' '
-
-                        }
-                    },
-                ]
-            });
-        });
-
-    $('#datatable_search_alimento tbody')
-        .on('click', 'a[rel="take"]', function () {
-            var tr = tblalimentos_seacrh.cell($(this).closest('td, li')).index();
-            var data = tblalimentos_seacrh.row(tr.row).data();
-            compras.add_alimento(data);
-            $('#modal_search_alimento').modal('hide');
-        });
-
     $('#id_new_proveedor')
         .on('click', function () {
             $('#Modal_person').modal('show');
@@ -415,157 +279,7 @@ $(function () {
 
         });
 
-    $('#id_proveedor')
-        .select2({
-            theme: "classic",
-            language: {
-                inputTooShort: function () {
-                    return "Ingresa al menos un caracter...";
-                },
-                "noResults": function () {
-                    return "Sin resultados";
-                },
-                "searching": function () {
-                    return "Buscando...";
-                }
-            },
-            allowClear: true,
-            ajax: {
-                delay: 250,
-                type: 'POST',
-                url: '/proveedor/lista',
-                data: function (params) {
-                    return {
-                        term: params.term,
-                        'action': 'search'
-                    };
-                },
-                processResults: function (data) {
-                    return {
-                        results: data
-                    };
-
-                },
-
-            },
-            placeholder: 'Busca un proveedor',
-            minimumInputLength: 1,
-        });
-
-    $('#id_insumo')
-        .select2({
-            theme: "classic",
-            language: {
-                inputTooShort: function () {
-                    return "Ingresa al menos un caracter...";
-                },
-                "noResults": function () {
-                    return "Sin resultados";
-                },
-                "searching": function () {
-                    return "Buscando...";
-                }
-            },
-            allowClear: true,
-            ajax: {
-                delay: 250,
-                type: 'POST',
-                url: '/medicina/lista',
-                data: function (params) {
-                    return {
-                        term: params.term,
-                        'action': 'search',
-                        'ids': JSON.stringify(compras.get_ids())
-                    };
-                },
-                processResults: function (data) {
-                    return {
-                        results: data
-                    };
-
-                },
-
-            },
-            placeholder: 'Busca una medicina',
-            minimumInputLength: 1,
-        })
-        .on('select2:select', function (e) {
-            $.ajax({
-                type: "POST",
-                url: '/medicina/lista',
-                data: {
-                    "id": $('#id_insumo option:selected').val(),
-                    "action": 'get'
-                },
-                dataType: 'json',
-                success: function (data) {
-                    compras.add(data[0]);
-                    $('#id_insumo').val(null).trigger('change');
-
-                },
-                error: function (xhr, status, data) {
-                    alert(data['0']);
-                },
-
-            })
-        });
-    $('#id_alimento')
-        .select2({
-            theme: "classic",
-            language: {
-                inputTooShort: function () {
-                    return "Ingresa al menos un caracter...";
-                },
-                "noResults": function () {
-                    return "Sin resultados";
-                },
-                "searching": function () {
-                    return "Buscando...";
-                }
-            },
-            allowClear: true,
-            ajax: {
-                delay: 250,
-                type: 'POST',
-                url: '/alimento/lista',
-                data: function (params) {
-                    return {
-                        term: params.term,
-                        'action': 'search',
-                        'ids': JSON.stringify(compras.get_ids_alimento())
-                    };
-                },
-                processResults: function (data) {
-                    return {
-                        results: data
-                    };
-
-                },
-
-            },
-            placeholder: 'Busca un alimento',
-            minimumInputLength: 1,
-        })
-        .on('select2:select', function (e) {
-            $.ajax({
-                type: "POST",
-                url: '/alimento/lista',
-                data: {
-                    "id": $('#id_alimento option:selected').val(),
-                    "action": 'get'
-                },
-                dataType: 'json',
-                success: function (data) {
-                    compras.add_alimento(data[0]);
-                    $('#id_alimento').val(null).trigger('change');
-
-                },
-                error: function (xhr, status, data) {
-                    alert(data['0']);
-                },
-
-            })
-        });
+    $('#id_proveedor').chosen({no_results_text: "No se encontraron resultados para: "});
 
     $('#Modal_person')
         .on('hidden.bs.modal', function (e) {
