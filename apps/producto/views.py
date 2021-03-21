@@ -37,7 +37,6 @@ class lista(ValidatePermissionRequiredMixin, ListView):
         data = {}
         try:
             action = request.POST['action']
-            print(action)
             if action == 'list':
                 data = []
                 for c in self.model.objects.all():
@@ -47,7 +46,11 @@ class lista(ValidatePermissionRequiredMixin, ListView):
                 ids = json.loads(request.POST['ids'])
                 query = self.model.objects.all()
                 for c in query.exclude(id__in=ids):
-                    data.append(c.toJSON())
+                    item = c.toJSON()
+                    item['precio'] = 0.50
+                    item['cantidad'] = 1
+                    item['subtotal'] = 0.00
+                    data.append(item)
             # elif action == 'list_venta':
             #     data = []
             #     vent = Producto.objects.filter(stock__gte=1)

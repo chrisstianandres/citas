@@ -1,16 +1,14 @@
-var tblcompra;
-var tblalimentos_seacrh;
-var tasa_iva = ($('#id_tasa_iva').val()) * 100.00;
 var dt_detalle;
-var dt_detalle_alimentos;
+var indice = $('#indice').val();
 var compras = {
     items: {
         fecha: '',
         comprobante: '',
         proveedor: '',
         subtotal: 0.00,
+        pvp: 0.00,
         iva: 0.00,
-        tasa_iva: 0.00,
+        tasa_iva: 12.00,
         total: 0.00,
         productos: [],
     },
@@ -23,17 +21,17 @@ var compras = {
     },
     calculate: function () {
         var subtotal = 0.00;
-        var iva_emp = tasa_iva;
         $.each(this.items.productos, function (pos, dict) {
             dict.subtotal = dict.cantidad * parseFloat(dict.precio);
+            dict.pvp = parseFloat(dict.precio) * parseFloat(1 + (indice / 100));
             subtotal += dict.subtotal;
         });
         this.items.subtotal = subtotal;
-        this.items.iva = this.items.subtotal * (iva_emp / 100);
+        this.items.iva = this.items.subtotal * (this.items.tasa_iva / 100);
         this.items.total = this.items.subtotal + this.items.iva;
-        $('input[name="subtotal"]').val(this.items.subtotal.toFixed(2));
-        $('input[name="iva"]').val(this.items.iva.toFixed(2));
-        $('input[name="total"]').val(this.items.total.toFixed(2));
+        $('#sub_gen').text('$' + this.items.subtotal.toFixed(2));
+        $('#iva_gen').text('$' + this.items.iva.toFixed(2));
+        $('#tot_gen').text('$' + this.items.total.toFixed(2));
     },
     add: function (data) {
         this.items.productos.push(data);
@@ -52,8 +50,8 @@ var compras = {
                 {"data": "nombre"},
                 {"data": "categoria.nombre"},
                 {"data": "presentacion.nombre"},
-                {"data": "precio"},
                 {"data": "cantidad"},
+                {"data": "precio"},
                 {"data": "subtotal"},
                 {"data": "id"}
             ],
@@ -64,12 +62,10 @@ var compras = {
                 {
                     targets: '_all',
                     class: 'text-center',
-
                 },
                 {
                     targets: [-1],
                     class: 'text-center',
-                    width: "15%",
                     render: function (data, type, row) {
                         return '<a type="button" rel="remove" class="btn btn-danger btn-xs btn-round" ' +
                             'style="color: white" data-toggle="tooltip" title="Quitar"><i class="fa fa-times"></i>' +
@@ -77,13 +73,13 @@ var compras = {
                     }
                 },
                 {
-                    targets: [-4],
+                    targets: [-3],
                     render: function (data, type, row) {
                         return '<input type="text" class="form-control input-sm" value="' + data + '" name="precio">';
                     }
                 },
                 {
-                    targets: [-3],
+                    targets: [-4],
                     render: function (data, type, row) {
                         return '<input type="text" class="form-control input-sm" value="' + data + '" name="cantidad">';
                     }
@@ -99,14 +95,17 @@ var compras = {
                 $(row).find('input[name="cantidad"]').TouchSpin({
                     min: 1,
                     max: 1000000,
-                    step: 1
+                    step: 1,
+                    buttondown_class: 'btn btn-white btn-info btn-bold btn-xs',
+                    buttonup_class: 'btn btn-white btn-info btn-bold btn-xs',
                 });
                 $(row).find('input[name="precio"]').TouchSpin({
-                    min: 1.00,
+                    min: 0.50,
                     decimals: 2,
                     max: 100000000,
                     step: 0.01,
-                    prefix: '<i class="fas fa-dollar-sign"></i>'
+                    buttondown_class: 'btn btn-white btn-info btn-bold btn-sm',
+                    buttonup_class: 'btn btn-white btn-info btn-bold btn-sm',
                 });
 
             }
@@ -118,93 +117,100 @@ $(function () {
     //Iva porcentaje
     $('#id_tasa_iva')
         .TouchSpin({
-            min: 0.01,
+            min: 0.00,
             decimals: 2,
-            max: 100000000,
+            max: 100,
             step: 0.01,
+            val: 12.00,
             buttondown_class: 'btn btn-white btn-info btn-bold btn-sm',
             buttonup_class: 'btn btn-white btn-info btn-bold btn-sm',
             prefix: '%'
+        }).val('12.00')
+        .on('change keyup', function () {
+            compras.items.tasa_iva = parseFloat($(this).val());
+            compras.calculate();
         })
     ;
 
     //seccion Productos
-    $('#datatable_detalle tbody')
+    $('#table_detalle tbody')
         .on('click', 'a[rel="remove"]', function () {
             var tr = dt_detalle.cell($(this).closest('td, li')).index();
             borrar_todo_alert('Alerta de Eliminación',
                 'Esta seguro que desea eliminar esta medicina de tu detalle?', function () {
-                    var p = compras.items.medicinas[tr.row];
-                    compras.items.medicinas.splice(tr.row, 1);
-                    menssaje_ok('Confirmacion!', 'Medicina eliminado', 'far fa-smile-wink', function () {
+                    var p = compras.items.productos[tr.row];
+                    compras.items.productos.splice(tr.row, 1);
+                    menssaje_ok('Confirmacion!', 'Productos eliminado', 'far fa-smile-wink', function () {
                         compras.list();
+                        buscar();
                     });
                 })
         })
         .on('change', 'input[name="cantidad"]', function () {
             var cantidad = parseInt($(this).val());
             var tr = dt_detalle.cell($(this).closest('td, li')).index();
-            compras.items.medicinas[tr.row].cantidad = cantidad;
+            compras.items.productos[tr.row].cantidad = cantidad;
             compras.calculate();
-            $('td:eq(5)', dt_detalle.row(tr.row).node()).html('$' + compras.items.medicinas[tr.row].subtotal.toFixed(2));
+            $('td:eq(5)', dt_detalle.row(tr.row).node()).html('$' + compras.items.productos[tr.row].subtotal.toFixed(2));
         })
         .on('change', 'input[name="precio"]', function () {
             var precio = parseFloat($(this).val()).toFixed(2);
             var tr = dt_detalle.cell($(this).closest('td, li')).index();
-            compras.items.medicinas[tr.row].precio = precio;
+            compras.items.productos[tr.row].precio = precio;
             compras.calculate();
-            $('td:eq(5)', dt_detalle.row(tr.row).node()).html('$' + compras.items.medicinas[tr.row].subtotal.toFixed(2));
+            $('td:eq(5)', dt_detalle.row(tr.row).node()).html('$' + compras.items.productos[tr.row].subtotal.toFixed(2));
         });
-    $('#vaciar_medicina')
+
+    $('#vaciar')
         .on('click', function () {
-            if (compras.items.medicinas.length === 0) return false;
+            if (compras.items.productos.length === 0) return false;
             borrar_todo_alert('Alerta de Eliminación',
-                'Esta seguro que desea eliminar todos las medicinas seleccionadas?', function () {
-                    compras.items.medicinas = [];
-                    menssaje_ok('Confirmacion!', 'Medicinas eliminados', 'far fa-smile-wink', function () {
+                'Esta seguro que desea eliminar todos los productos seleccionadas?', function () {
+                    compras.items.productos = [];
+                    menssaje_ok('Confirmacion!', 'Productos eliminados', 'far fa-smile-wink', function () {
                         compras.list();
+                        buscar();
                     });
                 });
         });
 
-    function buscar(){
+    function buscar() {
         tbl_productos = $("#table_productos").DataTable({
-        destroy: true,
-        autoWidth: false,
-        dataSrc: "",
-        responsive: true,
-        ajax: {
-            url: '/producto/lista',
-            type: 'POST',
-            data: {'action': 'list_list', 'ids': JSON.stringify(compras.get_ids())},
-            dataSrc: ""
-        },
-        language: {
-            "url": '//cdn.datatables.net/plug-ins/1.10.15/i18n/Spanish.json'
-        },
-        info: false,
-        columns: [
-            {data: "nombre"},
-            {data: "categoria.nombre"},
-            {data: "presentacion.nombre"},
-            {data: "id"}
-        ],
-        columnDefs: [
-            {
-                targets: [-1],
-                class: 'text-center',
-                width: '10%',
-                orderable: false,
-                render: function (data, type, row) {
-                    return '<a style="color: white" type="button" class="btn btn-success btn-xs" rel="take" ' +
-                        'data-toggle="tooltip" title="Seleccionar Insumo"><i class="fa fa-check"></i></a>' + ' '
-
-                }
+            destroy: true,
+            autoWidth: false,
+            dataSrc: "",
+            responsive: true,
+            ajax: {
+                url: '/producto/lista',
+                type: 'POST',
+                data: {'action': 'list_list', 'ids': JSON.stringify(compras.get_ids())},
+                dataSrc: ""
             },
-        ]
-    });
-    }
+            language: {
+                "url": '//cdn.datatables.net/plug-ins/1.10.15/i18n/Spanish.json'
+            },
+            info: false,
+            columns: [
+                {data: "nombre"},
+                {data: "categoria.nombre"},
+                {data: "presentacion.nombre"},
+                {data: "id"}
+            ],
+            columnDefs: [
+                {
+                    targets: [-1],
+                    class: 'text-center',
+                    width: '10%',
+                    orderable: false,
+                    render: function (data, type, row) {
+                        return '<a style="color: white" type="button" class="btn btn-success btn-xs" rel="take" ' +
+                            'data-toggle="tooltip" title="Seleccionar Insumo"><i class="fa fa-check"></i></a>' + ' '
 
+                    }
+                },
+            ]
+        });
+    }
 
 
     $('#table_productos tbody')
@@ -215,48 +221,14 @@ $(function () {
             buscar();
         });
 
-    //seccion alimentos
-    $('#datatable_alimento tbody')
-        .on('click', 'a[rel="remove"]', function () {
-            var tr = dt_detalle_alimentos.cell($(this).closest('td, li')).index();
-            borrar_todo_alert('Alerta de Eliminación',
-                'Esta seguro que desea eliminar este alimento de tu detalle?', function () {
-                    compras.items.alimentos.splice(tr.row, 1);
-                    menssaje_ok('Confirmacion!', 'Alimento eliminado', 'far fa-smile-wink', function () {
-                        compras.list_alimentos();
-                    });
-                })
-        })
-        .on('change', 'input[name="cantidad"]', function () {
-            var cantidad = parseInt($(this).val());
-            var tr = dt_detalle_alimentos.cell($(this).closest('td, li')).index();
-            compras.items.alimentos[tr.row].cantidad = cantidad;
-            compras.calculate();
-            $('td:eq(5)', dt_detalle_alimentos.row(tr.row).node()).html('$' + compras.items.alimentos[tr.row].subtotal.toFixed(2));
-        })
-        .on('change', 'input[name="precio"]', function () {
-            var precio = parseFloat($(this).val()).toFixed(2);
-            var tr = dt_detalle_alimentos.cell($(this).closest('td, li')).index();
-            compras.items.alimentos[tr.row].precio = precio;
-            compras.calculate();
-            $('td:eq(5)', dt_detalle_alimentos.row(tr.row).node()).html('$' + compras.items.alimentos[tr.row].subtotal.toFixed(2));
-        });
-    $('#vaciar_alimentos')
+    $('#id_new_prov')
         .on('click', function () {
-            if (compras.items.alimentos.length === 0) return false;
-            borrar_todo_alert('Alerta de Eliminación',
-                'Esta seguro que desea eliminar todos las alimentos seleccionadas?', function () {
-                    compras.items.alimentos = [];
-                    menssaje_ok('Confirmacion!', 'Alimentos eliminados', 'far fa-smile-wink', function () {
-                        compras.list_alimentos();
-                    });
-                });
+            $('#modal_person').modal('show');
         });
 
-    $('#id_new_proveedor')
-        .on('click', function () {
-            $('#Modal_person').modal('show');
-        });
+    $('#modal_person').on('hidden.bs.modal', function () {
+        reset('#form_person');
+    });
 
     $('#form_person')
         .on('submit', function (e) {
@@ -270,16 +242,47 @@ $(function () {
                     '/proveedor/nuevo', 'Esta seguro que desea guardar este proveedor?', parametros,
                     function (response) {
                         menssaje_ok('Exito!', 'Exito al guardar este proveedor!', 'far fa-smile-wink', function () {
-                            $('#Modal_person').modal('hide');
+                            $('#modal_person').modal('hide');
                             var newOption = new Option(response.proveedor['full_name'], response.proveedor['id'], false, true);
-                            $('#id_proveedor').append(newOption).trigger('change');
+                            $('#id_proveedor')
+                                .append("<option value='" + response.proveedor['id'] + "'>" + response.proveedor['nombre'] + "</option>")
+                                .trigger("chosen:updated");
+
+                        //    .append('<option value="1">User</option>').trigger("chosen:updated");
                         });
                     });
             }
 
         });
 
-    $('#id_proveedor').chosen({no_results_text: "No se encontraron resultados para: "});
+    $('#id_proveedor').chosen({no_results_text: "No se encontraron resultados para: "})
+        .on('change', function () {
+            var id = $(this).val();
+            if (id >= 1) {
+                $.ajax({
+                    dataType: 'JSON',
+                    type: 'POST',
+                    url: window.location.pathname,
+                    data: {'id': $(this).val(), 'action': 'get_prov'},
+                })
+                    .done(function (data) {
+                        if (!data.hasOwnProperty('error')) {
+                            $('#direccion_prov').html(data[0].direccion);
+                            $('#telefono_prov').html(data[0].telefono);
+                            return false;
+                        }
+                        menssaje_error('Error', data.error, 'fas fa-exclamation-circle');
+
+                    })
+                    .fail(function (jqXHR, textStatus, errorThrown) {
+                        alert(textStatus + ': ' + errorThrown);
+                    });
+            } else {
+                $('#direccion_prov').html('Sin Direccion');
+                $('#telefono_prov').html('09xxxxxxxx');
+            }
+
+        });
 
     $('#Modal_person')
         .on('hidden.bs.modal', function (e) {
@@ -292,25 +295,24 @@ $(function () {
             if ($('select[name="proveedor"]').val() === "") {
                 menssaje_error('Error!', "Debe seleccionar un proveedor", 'far fa-times-circle');
                 return false
-            } else if (compras.items.medicinas.length === 0 && compras.items.alimentos.length === 0) {
-                menssaje_error('Error!', "Debe seleccionar al menos una Medicina o un Alimento", 'far fa-times-circle');
+            } else if ($('input[name="comprobante"]').val() === "") {
+                menssaje_error('Error!', "Debe ingresar un numero de comprobante", 'far fa-times-circle');
+                return false
+            } else if (compras.items.productos.length === 0) {
+                menssaje_error('Error!', "Debe seleccionar al menos un Producto", 'fa fa-ban');
                 return false
             } else {
                 var parametros;
-                compras.items.fecha_compra = $('input[name="fecha_compra"]').val();
-                compras.items.proveedor = $('#id_proveedor option:selected').val();
-                compras.items.tasa_iva = $('#id_tasa_iva').val();
+                compras.items.fecha = $('input[name="fecha"]').val();
+                compras.items.proveedor = $('#id_proveedor').val();
                 compras.items.comprobante = $('#id_comprobante').val();
                 parametros = {'compras': JSON.stringify(compras.items)};
                 parametros['action'] = 'add';
+                console.log(compras.items);
                 save_with_ajax('Alerta',
-                    '/compra/nuevo', 'Esta seguro que desea guardar esta compra?', parametros, function (response) {
-                        listado.fadeIn();
-                        formulario.fadeOut();
+                    window.location.pathname, 'Esta seguro que desea guardar esta compra?', parametros, function (response) {
                         $('#id_proveedor').val(null).trigger('change');
-                        compras.items.medicinas = [];
-                        compras.items.alimentos = [];
-                        datatable.ajax.reload(null, false);
+                        window.location.href = '/compra/lista'
                     });
             }
         });
@@ -322,6 +324,20 @@ $(function () {
             $("#errmsg").html("Solo numeros").show().fadeOut("slow");
             return false;
         }
+    });
+
+    var ano = new Date();
+    $('#id_fecha').daterangepicker({
+        locale: {
+            format: 'YYYY-MM-DD',
+            applyLabel: '<i class="fa fa-check"></i> Selccionar',
+            cancelLabel: '<i class="fa fa-times"></i> Cancelar',
+        },
+        singleDatePicker: true,
+        showDropdowns: true,
+        maxDate: new Date(),
+        minYear: ano.getFullYear() - 1,
+        minDate: ano.getFullYear() - 1 + '-01-01'
     });
 
 });

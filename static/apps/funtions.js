@@ -31,8 +31,8 @@ function borrar_todo_alert(title, content, callback, callback2) {
         showCancelButton: true,
         confirmButtonColor: '#3085d6',
         cancelButtonColor: '#d33',
-        confirmButtonText: '<i class="far fa-thumbs-up"></i> Si',
-        cancelButtonText: '<i class="far fa-thumbs-down"></i> No'
+        confirmButtonText: '<i class="fa fa-thumbs-o-up"></i> Si',
+        cancelButtonText: '<i class="fa fa-thumbs-down"></i> No'
     }).then((result) => {
         if (result.isConfirmed) {
             callback();

@@ -13,8 +13,10 @@ class CompraForm(forms.ModelForm):
             })
             self.fields['fecha'].widget.attrs = {
                 'readonly': True,
-                'class': 'form-control'
+                'class': 'form-control datetimepicker',
+                'data-date-format': 'yyyy-mm-dd',
             }
+
             self.fields['proveedor'].widget.attrs = {
                 'class': 'form-control select2',
                 'data-live-search': "true",
@@ -31,8 +33,8 @@ class CompraForm(forms.ModelForm):
                 'readonly': True
             }
             self.fields['tasa_iva'].widget.attrs = {
-                'value': '12.00',
-                'class': 'form-control'
+                'value': 12.00,
+
             }
             self.fields['total'].widget.attrs = {
                 'value': '0.00',
@@ -65,7 +67,7 @@ class CompraForm(forms.ModelForm):
                 format='%Y-%m-%d',
                 attrs={'value': datetime.now().strftime('%Y-%m-%d')},
             ),
-            'tasa_iva': forms.TextInput(),
+            'tasa_iva': forms.TextInput(attrs={'value': '12'}),
             'iva_generado': forms.TextInput(),
             'total': forms.TextInput(),
         }

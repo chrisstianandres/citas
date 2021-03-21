@@ -26,6 +26,7 @@ from xhtml2pdf import pisa
 from django.contrib.staticfiles import finders
 
 from apps.proveedor.forms import ProveedorForm
+from apps.proveedor.models import Proveedor
 
 opc_icono = 'fa fa-shopping-bag'
 opc_entidad = 'Compras'
@@ -100,37 +101,41 @@ class CrudView(ValidatePermissionRequiredMixin, TemplateView):
     def post(self, request, *args, **kwargs):
         data = {}
         action = request.POST['action']
-        pk = request.POST['id']
         try:
             if action == 'add':
                 datos = json.loads(request.POST['compras'])
                 if datos:
                     with transaction.atomic():
                         c = Compra()
-                        c.fecha_compra = datos['fecha_compra']
+                        c.fecha_compra = datos['fecha']
                         c.comprobante = int(datos['comprobante'])
-                        c.proveedor_id = datos['proveedor']
-                        c.user_id = request.user.id
+                        c.proveedor_id = int(datos['proveedor'])
                         c.subtotal = float(datos['subtotal'])
+                        c.tasa_iva = float(datos['tasa_iva'])
                         c.iva = float(datos['iva'])
                         c.total = float(datos['total'])
                         c.save()
                         for i in datos['productos']:
                             dv = Detalle_compra()
                             dv.compra_id = c.id
-                            dv.cantidad = int(i['cantidad'])
-                            dv.subtotal = float(i['subtotal'])
                             dv.producto_id = int(i['id'])
-                            dv.precio_compra = float(i['p_compra'])
-                            dv.precio_venta = float(i['p_venta'])
+                            dv.precio_compra = float(i['precio'])
+                            dv.precio_venta = float(i['pvp'])
+                            dv.cantidad = int(i['cantidad'])
                             dv.stock_compra = int(i['cantidad'])
                             dv.stock_actual = int(i['cantidad'])
+                            dv.subtotal = float(i['subtotal'])
                             dv.save()
                         data['id'] = c.id
                         data['resp'] = True
                 else:
                     data['resp'] = False
                     data['error'] = "Datos Incompletos"
+            elif action == 'get_prov':
+                data = []
+                id = request.POST['id']
+                query = Proveedor.objects.get(id=id)
+                data.append(query.toJSON())
             else:
                 data['error'] = 'No ha seleccionado ninguna opción'
         except Exception as e:
