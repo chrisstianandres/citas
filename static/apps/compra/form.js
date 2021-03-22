@@ -243,12 +243,10 @@ $(function () {
                     function (response) {
                         menssaje_ok('Exito!', 'Exito al guardar este proveedor!', 'far fa-smile-wink', function () {
                             $('#modal_person').modal('hide');
-                            var newOption = new Option(response.proveedor['full_name'], response.proveedor['id'], false, true);
                             $('#id_proveedor')
-                                .append("<option value='" + response.proveedor['id'] + "'>" + response.proveedor['nombre'] + "</option>")
+                                .append("<option value='" + response.proveedor['id'] + "' selected='selected'>" + response.proveedor['nombre'] + "</option>")
                                 .trigger("chosen:updated");
-
-                        //    .append('<option value="1">User</option>').trigger("chosen:updated");
+                            search_info(response.proveedor['id']);
                         });
                     });
             }
@@ -259,24 +257,7 @@ $(function () {
         .on('change', function () {
             var id = $(this).val();
             if (id >= 1) {
-                $.ajax({
-                    dataType: 'JSON',
-                    type: 'POST',
-                    url: window.location.pathname,
-                    data: {'id': $(this).val(), 'action': 'get_prov'},
-                })
-                    .done(function (data) {
-                        if (!data.hasOwnProperty('error')) {
-                            $('#direccion_prov').html(data[0].direccion);
-                            $('#telefono_prov').html(data[0].telefono);
-                            return false;
-                        }
-                        menssaje_error('Error', data.error, 'fas fa-exclamation-circle');
-
-                    })
-                    .fail(function (jqXHR, textStatus, errorThrown) {
-                        alert(textStatus + ': ' + errorThrown);
-                    });
+                search_info(id);
             } else {
                 $('#direccion_prov').html('Sin Direccion');
                 $('#telefono_prov').html('09xxxxxxxx');
@@ -342,3 +323,25 @@ $(function () {
 
 });
 
+
+function search_info(id) {
+    $.ajax({
+        dataType: 'JSON',
+        type: 'POST',
+        url: window.location.pathname,
+        data: {'id': id, 'action': 'get_prov'},
+    })
+        .done(function (data) {
+            if (!data.hasOwnProperty('error')) {
+                $('#direccion_prov').html(data[0].direccion);
+                $('#telefono_prov').html(data[0].telefono);
+                return false;
+            }
+            menssaje_error('Error', data.error, 'fas fa-exclamation-circle');
+
+        })
+        .fail(function (jqXHR, textStatus, errorThrown) {
+            alert(textStatus + ': ' + errorThrown);
+        });
+
+}

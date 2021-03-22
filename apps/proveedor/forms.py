@@ -45,7 +45,7 @@ class ProveedorForm(forms.ModelForm):
             'tipo': 'Tipo de Documento',
             'num_doc': 'N° de Documento',
             'correo': 'Correo',
-            'telefono': 'Telefono',
+            'telefono': 'Celular',
             'direccion': 'Direccion'
 
         }

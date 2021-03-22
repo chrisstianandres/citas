@@ -283,19 +283,12 @@ function menssaje_error_form(title, content, icon, callback) {
         html += '<li>' + key + ': ' + value + '</li>'
     });
     html += '</ul>';
-    $.confirm({
-        theme: 'modern',
-        icon: icon,
+    Swal.fire({
         title: title,
-        type: 'red',
-        content: html,
-        draggable: true,
-        buttons: {
-            info: {
-                text: '<i class="fa fa-check"></i> Ok',
-                btnClass: 'btn-blue'
-            },
-        }
+        icon: 'error',
+        html: html,
+        confirmButtonText:
+            '<i class="fa fa-thumbs-up"></i> OK!',
     });
 }
 

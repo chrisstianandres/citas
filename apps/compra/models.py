@@ -15,7 +15,7 @@ estado = (
 
 class Compra(models.Model):
     fecha = models.DateField(default=datetime.now)
-    comprobante = models.IntegerField(unique=True)
+    comprobante = models.CharField(unique=True, max_length=100)
     proveedor = models.ForeignKey(Proveedor, on_delete=models.PROTECT)
     subtotal = models.DecimalField(default=0.00, max_digits=9, decimal_places=2)
     iva_generado = models.DecimalField(default=0.00, max_digits=9, decimal_places=2)
@@ -33,6 +33,7 @@ class Compra(models.Model):
         item['iva_generado'] = format(self.iva_generado, '.2f')
         item['tasa_iva'] = format(self.tasa_iva, '.2f')
         item['total'] = format(self.total, '.2f')
+        item['estado_text'] = self.get_estado_display()
         return item
 
     class Meta:

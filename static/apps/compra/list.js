@@ -41,9 +41,11 @@ function datatable_fun() {
             dataSrc: ""
         },
         columns: [
-            {"data": "fecha_compra"},
+            {"data": "fecha"},
             {"data": "proveedor.nombre"},
-            {"data": "user"},
+            {"data": "tasa_iva"},
+            {"data": "subtotal"},
+            {"data": "iva_generado"},
             {"data": "total"},
             {"data": "comprobante"},
             {"data": "estado"},
@@ -51,9 +53,16 @@ function datatable_fun() {
         ],
         language: {
             url: '//cdn.datatables.net/plug-ins/1.10.15/i18n/Spanish.json',
+             buttons: {
+                copyTitle: 'Copiado al Portapapeles',
+                copySuccess: {
+                    _: '%d Lineas copiadas',
+                    1: '1 Linea copiada'
+                }
+            }
         },
-        order: [[4, "desc"]],
-        dom: "<'row'<'col-sm-12 col-md-12'B>>" +
+        order: [[0, "desc"]],
+        dom: "<'row'<'clearfix'<'pull-right tableTools-container'<'dt-buttons btn-overlap btn-group' B>>>>" +
             "<'row'<'col-sm-12 col-md-3'l>>" +
             "<'row'<'col-sm-12 col-md-12'f>>" +
             "<'row'<'col-sm-12'tr>>" +
@@ -70,20 +79,25 @@ function datatable_fun() {
             },
             buttons: [
                 {
-                    text: '<i class="fa fa-file-pdf"></i> PDF',
-                    className: 'btn btn-danger my_class',
+                    text: '<span><i class="fa fa-print bigger-110 grey"></i> PDF</span>',
+                    className: 'dt-button buttons-print btn btn-white btn-primary btn-bold',
                     extend: 'pdfHtml5',
                     filename: 'Listado de Compras',
                     orientation: 'landscape', //portrait
                     pageSize: 'A4', //A3 , A5 , A6 , legal , letter
                     download: 'open',
                     exportOptions: {
-                        columns: [0, 1, 2, 3, 4, 5],
+                        columns: [0, 1, 2, 3, 4, 5, 6, 7],
                         search: 'applied',
                         order: 'applied'
                     },
                     customize: customize
                 },
+                {
+                    text: '<i class="fa fa-copy bigger-110 pink"></i> Copiar</span>',
+                    className: 'dt-button buttons-copy buttons-html5 btn btn-white btn-primary btn-bold',
+                    extend: 'copy',
+                }
             ],
         },
         columnDefs: [
@@ -109,18 +123,24 @@ function datatable_fun() {
                 }
             },
             {
-                targets: [-4],
+                targets: [-4, -5, -6],
                 render: function (data, type, row) {
                     return '$ ' + data;
+                }
+            },
+            {
+                targets: 2,
+                render: function (data, type, row) {
+                    return '% ' + data;
                 }
             },
         ],
         createdRow: function (row, data, dataIndex) {
             if (data.estado === 1) {
-                $('td', row).eq(5).html('<span class = "badge badge-success" style="color: white ">'+data.estado_text+' </span>');
+                $('td', row).eq(7).html('<span class = "badge badge-success" style="color: white ">'+data.estado_text+' </span>');
             } else  {
-                $('td', row).eq(5).html('<span class = "badge badge-danger" style="color: white "> '+data.estado_text+' </span>');
-                $('td', row).eq(6).find('a[rel="devolver"]').hide();
+                $('td', row).eq(7).html('<span class = "badge badge-danger" style="color: white "> '+data.estado_text+' </span>');
+                $('td', row).eq(8).find('a[rel="devolver"]').hide();
             }
 
         }
@@ -150,7 +170,6 @@ function daterange() {
 
 
 $(function () {
-    formulario.prop('style', 'display:none');
     daterange();
     datatable_fun();
     $('#datatable tbody')
@@ -160,10 +179,10 @@ $(function () {
         var data = datatable.row(tr.row).data();
         var parametros = {'id': data.id, 'action': 'devolucion'};
         save_estado('Alerta',
-            '/compra/lista', 'Esta seguro que desea devolver esta compra?', parametros,
+            window.location.pathname, 'Esta seguro que desea anular esta compra?', parametros,
             function () {
                 menssaje_ok('Exito!', 'Exito al devolver la compra', 'far fa-smile-wink', function () {
-                    location.reload();
+                    datatable.ajax.reload(null, false);
                 })
             });
 
@@ -184,58 +203,18 @@ $(function () {
                     url: window.location.pathname,
                     type: 'POST',
                     data: {
-                        'action': 'detalle_medicina',
+                        'action': 'detalle',
                         'id': data.id
                     },
                     dataSrc: ""
                 },
                 columns: [
-                    {data: 'insumo.insumo.nombre'},
-                    {data: 'insumo.insumo.categoria.nombre'},
-                    {data: 'insumo.tipo_medicina.nombre'},
-                    {data: 'insumo.insumo.descripcion'},
+                    {data: 'producto.nombre'},
+                    {data: 'producto.categoria.nombre'},
+                    {data: 'producto.presentacion.nombre'},
+                    {data: 'producto.descripcion'},
                     {data: 'cantidad'},
-                    {data: 'p_compra'},
-                    {data: 'subtotal'}
-                ],
-                columnDefs: [
-                    {
-                        targets: '_all',
-                        class: 'text-center'
-                    },
-                    {
-                        targets: [-1, -2],
-                        class: 'text-center',
-                        orderable: false,
-                        render: function (data, type, row) {
-                            return '$' + parseFloat(data).toFixed(2);
-                        }
-                    },
-                ],
-            });
-            $("#tbldetalle_alimentos").DataTable({
-                responsive: true,
-                autoWidth: false,
-                language: {
-                    "url": '//cdn.datatables.net/plug-ins/1.10.15/i18n/Spanish.json'
-                },
-                destroy: true,
-                ajax: {
-                    url: window.location.pathname,
-                    type: 'POST',
-                    data: {
-                        'action': 'detalle_alimentos',
-                        'id': data.id
-                    },
-                    dataSrc: ""
-                },
-                columns: [
-                    {data: 'insumo.insumo.nombre'},
-                    {data: 'insumo.insumo.categoria.nombre'},
-                    {data: 'insumo.presentacion.nombre'},
-                    {data: 'insumo.insumo.descripcion'},
-                    {data: 'cantidad'},
-                    {data: 'p_compra'},
+                    {data: 'precio_compra'},
                     {data: 'subtotal'}
                 ],
                 columnDefs: [
@@ -254,16 +233,5 @@ $(function () {
                 ],
             });
         });
-
-    $('#nuevo').on('click', function () {
-        listado.fadeOut();
-        formulario.fadeIn();
-        compras.list();
-        compras.list_alimentos();
-    });
-    $('#cancal_shop').on('click', function () {
-        listado.fadeIn();
-        formulario.fadeOut();
-    })
 });
 

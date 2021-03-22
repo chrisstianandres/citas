@@ -92,6 +92,7 @@ $(document).ready(function () {
             telefono: {
                 required: true,
                 minlength: 10,
+                maxlength: 10,
                 digits: true
             },
             direccion: {
@@ -118,12 +119,12 @@ $(document).ready(function () {
             correo: "Debe ingresar un correo valido",
             telefono: {
                 required: "Por favor ingresa tu numero celular",
-                minlength: "Tu numero de documento debe tener al menos 10 digitos",
+                minlength: "Tu numero de celular debe tener 10 digitos",
                 digits: "Debe ingresar unicamente numeros",
-                maxlength: "Tu numero de documento debe tener maximo 10 digitos",
+                maxlength: "Tu numero de celular debe tener maximo 10 digitos",
             },
             direccion: {
-                required: "Porfavor ingresa una direccion",
+                required: "Por favor ingresa una direccion",
                 minlength: "Ingresa al menos 5 letras",
                 maxlength: "Tu direccion debe tener maximo 50 caracteres",
             },

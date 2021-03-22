@@ -14,6 +14,7 @@ from django.views.generic import *
 from apps.backEnd import nombre_empresa
 from apps.compra.forms import CompraForm, Detalle_CompraForm
 from apps.compra.models import Compra, Detalle_compra
+from apps.devoluciones.models import Devolucion_compra
 from apps.empresa.models import Empresa
 from apps.producto.models import Producto
 from apps.mixins import ValidatePermissionRequiredMixin
@@ -66,13 +67,31 @@ class lista(ValidatePermissionRequiredMixin, ListView):
                     data = []
                     for p in Detalle_compra.objects.filter(compra_id=id):
                         item = p.toJSON()
-                        cal = format(float((p.p_compra_actual * 100) / 112), '.2f')
-                        item['p_compra'] = cal
-                        item['subtotal'] = float(p.subtotal)
                         data.append(item)
                 else:
 
                     data['error'] = 'Ha ocurrido un error'
+            elif action == 'devolucion':
+                id = request.POST['id']
+                key = 0
+                ahora = datetime.now()
+                dev = self.model.objects.get(id=id)
+                fechaCadena = str(dev.fecha) + " 00:00:00"
+                fecha = datetime.strptime(fechaCadena, '%Y-%m-%d %H:%M:%S')
+                if ahora > (fecha + timedelta(days=1)):
+                    data['error'] = 'Solo puede anular las compras maximo 1 dia despues de la transaccion'
+                else:
+                    for det in dev.detalle_compra_set.all():
+                        if det.stock_actual < det.stock_compra:
+                            key = 1
+                            data['error'] = 'No se puede anular la compra <br> Los productos ya fueron utilizados'
+                        break
+                    if key == 0:
+                        dev.estado = 0
+                        dev.save()
+                        add = Devolucion_compra()
+                        add.compra_id = id
+                        add.save()
             else:
                 data['error'] = 'No ha seleccionado una opcion'
         except Exception as e:
