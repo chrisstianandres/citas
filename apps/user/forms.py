@@ -5,7 +5,6 @@ from django.db import transaction
 from django.forms import TextInput, EmailInput, SelectMultiple
 
 from .models import User
-from ..cliente.models import Cliente
 from django.contrib.auth.models import Group
 
 
@@ -199,29 +198,18 @@ class UserForm_online(forms.ModelForm):
                     user = User.objects.get(pk=u.pk)
                     if user.password != pwd:
                         u.set_password(pwd)
-                nombres = self.cleaned_data['first_name']
-                apellidos = self.cleaned_data['last_name']
-                cedula = self.cleaned_data['cedula']
-                sexo = self.cleaned_data['sexo']
-                telefono = self.cleaned_data['telefono']
-                correo = self.cleaned_data['email']
-                cliente = Cliente(
-                    nombres=nombres,
-                    apellidos=apellidos,
-                    cedula=cedula,
-                    correo=correo,
-                    sexo=sexo,
-                    telefono=telefono,
-                    direccion='Sin direccion'
-                )
-                cliente.save()
+                # nombres = self.cleaned_data['first_name']
+                # apellidos = self.cleaned_data['last_name']
+                # cedula = self.cleaned_data['cedula']
+                # sexo = self.cleaned_data['sexo']
+                # telefono = self.cleaned_data['telefono']
+                # correo = self.cleaned_data['email']
                 u.save()
-                print(u.id)
-                grupo = Group.objects.get(name__icontains='cliente')
-                usersave = User.objects.get(id=u.id)
-                usersave.groups.add(grupo)
-                usersave.tipo = 0
-                usersave.save()
+                # grupo = Group.objects.get(name__icontains='cliente')
+                # usersave = User.objects.get(id=u.id)
+                # usersave.groups.add(grupo)
+                # usersave.tipo = 0
+                # usersave.save()
             else:
                 data['error'] = form.errors
         except Exception as e:

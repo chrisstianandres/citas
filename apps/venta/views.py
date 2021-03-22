@@ -1,10 +1,5 @@
 from django.utils.decorators import method_decorator
-
-from apps.cliente.forms import ClienteForm
-from apps.cliente.models import Cliente
-from apps.compra.models import Compra
-from apps.delvoluciones_venta.models import Devolucion
-from apps.inventario_productos.models import Inventario_producto
+from apps.compra.models import Compra, Detalle_compra
 from apps.mixins import ValidatePermissionRequiredMixin
 import json
 from datetime import datetime
@@ -19,18 +14,11 @@ from django.views.decorators.csrf import csrf_exempt
 from django.views.generic import *
 
 from apps.backEnd import nombre_empresa
-# from apps.compra.models import Compra
-# from apps.delvoluciones_venta.models import Devolucion
-# from apps.inventario.models import Inventario
-# from apps.servicio.models import Servicio
-# from apps.venta.forms import VentaForm, Detalle_VentaForm
-from apps.producto_base.models import Producto_base
-from apps.proveedor.forms import ProveedorForm
-from apps.transaccion.forms import TransaccionForm
-from apps.transaccion.models import Transaccion
+from apps.servicio.models import Servicio
+
 from apps.user.forms import UserForm
 from apps.user.models import User
-from apps.venta.forms import Detalle_VentaForm
+from apps.venta.forms import VentaForm
 from apps.venta.models import Venta, Detalle_venta
 from apps.empresa.models import Empresa
 from apps.producto.models import Producto
@@ -49,7 +37,7 @@ empresa = nombre_empresa()
 
 class lista(ValidatePermissionRequiredMixin, ListView):
     model = Venta
-    template_name = 'front-end/transaccion/transaccion_list.html'
+    template_name = 'front-end/venta/list.html'
     permission_required = 'venta.view_venta'
 
     @csrf_exempt
@@ -96,23 +84,23 @@ class lista(ValidatePermissionRequiredMixin, ListView):
                             'pvp': p['pvp_actual'],
                             'subtotal': p['subtotal']
                         })
-            elif action == 'estado':
-                id = request.POST['id']
-                if id:
-                    with transaction.atomic():
-                        es = Venta.objects.get(id=id)
-                        es.estado = 0
-                        dev = Devolucion()
-                        dev.venta_id = id
-                        dev.fecha = datetime.now()
-                        dev.save()
-                        for i in Detalle_venta.objects.filter(venta_id=id):
-                            for a in Inventario_producto.objects.filter(id=i.inventario.id):
-                                a.estado = 1
-                                a.save()
-                        es.save()
-                else:
-                    data['error'] = 'Ha ocurrido un error'
+            # elif action == 'estado':
+            #     id = request.POST['id']
+            #     if id:
+            #         with transaction.atomic():
+            #             es = Venta.objects.get(id=id)
+            #             es.estado = 0
+            #             dev = Devolucion()
+            #             dev.venta_id = id
+            #             dev.fecha = datetime.now()
+            #             dev.save()
+            #             for i in Detalle_venta.objects.filter(venta_id=id):
+            #                 for a in Inventario_producto.objects.filter(id=i.inventario.id):
+            #                     a.estado = 1
+            #                     a.save()
+            #             es.save()
+            #     else:
+            #         data['error'] = 'Ha ocurrido un error'
             elif action == 'pagar':
                 id = request.POST['id']
                 if id:
@@ -144,121 +132,9 @@ class lista(ValidatePermissionRequiredMixin, ListView):
 
 
 class CrudView(ValidatePermissionRequiredMixin, TemplateView):
-    form_class = Venta
-    template_name = 'front-end/venta/venta_form.html'
-    permission_required = ('venta.add_venta', 'venta.change_venta')
-
-    @method_decorator(csrf_exempt)
-    def dispatch(self, request, *args, **kwargs):
-        return super().dispatch(request, *args, **kwargs)
-
-    def post(self, request, *args, **kwargs):
-        data = {}
-        action = request.POST['action']
-        pk = request.POST['id']
-        try:
-            if action == 'add':
-                datos = json.loads(request.POST['ventas'])
-                if datos:
-                    with transaction.atomic():
-                        c = Transaccion()
-                        c.fecha_trans = datos['fecha_venta']
-                        c.cliente_id = datos['cliente']
-                        c.user_id = request.user.id
-                        c.subtotal = float(datos['subtotal'])
-                        c.iva = float(datos['iva'])
-                        c.total = float(datos['total'])
-                        c.tipo = 0
-                        c.save()
-                        v = Venta()
-                        v.transaccion_id = c.id
-                        v.save()
-                        if datos['productos']:
-                            for i in datos['productos']:
-                                for in_pr in Inventario_producto.objects.filter(produccion__producto_id=i['id'], estado=1)[
-                                             :i['cantidad']]:
-                                    dv = Detalle_venta()
-                                    dv.venta_id = v.id
-                                    dv.inventario_id = in_pr.id
-                                    dv.cantidad = int(i['cantidad'])
-                                    dv.pvp_actual = float(in_pr.produccion.producto.pvp)
-                                    dv.subtotal = float(i['subtotal'])
-                                    in_pr.estado = 0
-                                    in_pr.save()
-                                    dv.save()
-
-                                stock = Producto.objects.get(id=i['id'])
-                                stock.stock = int(
-                                    Inventario_producto.objects.filter(produccion__producto_id=i['id'], estado=1).count())
-                                stock.save()
-                        data['id'] = v.id
-                        data['resp'] = True
-                else:
-                    data['resp'] = False
-                    data['error'] = "Datos Incompletos"
-            elif action == 'reserva':
-                datos = json.loads(request.POST['ventas'])
-                if datos:
-                    with transaction.atomic():
-                        c = Transaccion()
-                        c.fecha_trans = datos['fecha_venta']
-                        c.cliente_id = datos['cliente']
-                        c.user_id = request.user.id
-                        c.subtotal = float(datos['subtotal'])
-                        c.iva = float(datos['iva'])
-                        c.total = float(datos['total'])
-                        c.tipo = 0
-                        c.save()
-                        v = Venta()
-                        v.transaccion_id = c.id
-                        v.estado = 2
-                        v.save()
-                        if datos['productos']:
-                            for i in datos['productos']:
-                                for in_pr in Inventario_producto.objects.filter(produccion__producto_id=i['id'], estado=1)[
-                                             :i['cantidad']]:
-                                    dv = Detalle_venta()
-                                    dv.venta_id = v.id
-                                    dv.inventario_id = in_pr.id
-                                    dv.cantidad = int(i['cantidad'])
-                                    dv.pvp_actual = float(in_pr.producto.pvp)
-                                    dv.subtotal = float(i['subtotal'])
-                                    in_pr.estado = 0
-                                    in_pr.save()
-                                    dv.save()
-                                stock = Producto.objects.get(id=i['id'])
-                                stock.stock = int(
-                                    Inventario_producto.objects.filter(produccion__producto_id=i['id'], estado=1).count())
-                                stock.save()
-                        data['id'] = v.id
-                        data['resp'] = True
-                else:
-                    data['resp'] = False
-                    data['error'] = "Datos Incompletos"
-            else:
-                data['error'] = 'No ha seleccionado una opcion'
-        except Exception as e:
-            data['error'] = str(e)
-        return HttpResponse(json.dumps(data), content_type='application/json')
-
-    def get_context_data(self, **kwargs):
-        data = super().get_context_data(**kwargs)
-        data['icono'] = opc_icono
-        data['entidad'] = opc_entidad
-        data['boton'] = 'Guardar Venta'
-        data['titulo'] = 'Nueva Venta'
-        data['nuevo'] = '/venta/nuevo'
-        data['empresa'] = empresa
-        data['form'] = TransaccionForm()
-        data['form2'] = Detalle_VentaForm()
-        data['detalle'] = []
-        data['formc'] = ClienteForm()
-        return data
-
-
-class CrudViewOnline(ValidatePermissionRequiredMixin, TemplateView):
-    form_class = Venta
-    template_name = 'front-end/venta/venta_form.html'
+    form_class = VentaForm
+    model = Venta
+    template_name = 'front-end/venta/form.html'
     permission_required = 'venta.add_venta'
 
     @method_decorator(csrf_exempt)
@@ -273,76 +149,101 @@ class CrudViewOnline(ValidatePermissionRequiredMixin, TemplateView):
                 datos = json.loads(request.POST['ventas'])
                 if datos:
                     with transaction.atomic():
-                        c = Transaccion()
-                        c.fecha_trans = datos['fecha_venta']
-                        c.cliente_id = datos['cliente']
-                        c.user_id = request.user.id
+                        c = self.model()
+                        c.fecha_factura = datos['fecha_venta']
+                        c.fecha_reserva = datos['fecha_venta']
+                        c.user_id = datos['cliente']
+                        c.duracion_servicio = datos['duracion']
                         c.subtotal = float(datos['subtotal'])
                         c.iva = float(datos['iva'])
                         c.total = float(datos['total'])
-                        c.tipo = 0
                         c.save()
-                        v = Venta()
-                        v.transaccion_id = c.id
-                        v.save()
                         if datos['productos']:
                             for i in datos['productos']:
-                                for in_pr in Inventario_producto.objects.filter(produccion__producto_id=i['id'],
-                                                                                estado=1)[:i['cantidad']]:
-                                    dv = Detalle_venta()
-                                    dv.venta_id = v.id
-                                    dv.inventario_id = in_pr.id
-                                    dv.cantidad = int(i['cantidad'])
-                                    dv.pvp_actual = float(in_pr.produccion.producto.pvp)
-                                    dv.subtotal = float(i['subtotal'])
-                                    in_pr.estado = 0
-                                    in_pr.save()
-                                    dv.save()
-                                stock = Producto.objects.get(id=i['id'])
-                                stock.stock = int(
-                                    Inventario_producto.objects.filter(produccion__producto_id=i['id'],
-                                                                       estado=1).count())
-                                stock.save()
-                    data['id'] = v.id
-                    data['resp'] = True
+                                dv = Detalle_venta()
+                                dv.venta_id = c.id
+                                dv.det_compra = int(i['id'])
+                                dv.cantidad = int(i['cantidad'])
+                                dv.pvp = float(i['pvp'])
+                                dv.subtotal = float(i['subtotal'])
+                                dv.save()
+                        data['id'] = c.id
+                        data['resp'] = True
                 else:
                     data['resp'] = False
                     data['error'] = "Datos Incompletos"
-            elif action == 'reserva':
+            elif action == 'search_prod':
+                data = []
+                ids = request.POST['ids']
+                query = Detalle_compra.objects.filter(stock_actual__gte=1)
+                for p in query.exclude(producto_id__in=[3]):
+                    item = p.toJSON()
+                    item['tipo'] = 'Producto'
+                    data.append(item)
+            elif action == 'search_serv':
+                data = []
+
+                query = Servicio.objects.all()
+                for p in query:
+                    item = p.toJSON()
+                    item['tipo'] = 'Servicio'
+                    data.append(item)
+            else:
+                data['error'] = 'No ha seleccionado una opcion'
+        except Exception as e:
+            data['error'] = str(e)
+        return HttpResponse(json.dumps(data), content_type='application/json')
+
+    def get_context_data(self, **kwargs):
+        data = super().get_context_data(**kwargs)
+        data['icono'] = opc_icono
+        data['entidad'] = opc_entidad
+        data['boton'] = 'Guardar Venta'
+        data['titulo'] = 'Nueva Venta'
+        data['nuevo'] = '/venta/nuevo'
+        data['empresa'] = empresa
+        data['form'] = self.form_class()
+        data['detalle'] = []
+        data['formc'] = UserForm()
+        return data
+
+
+class CrudViewOnline(TemplateView):
+    model = Venta
+    form_class = VentaForm
+    template_name = 'front-end/venta/form.html'
+
+    @method_decorator(csrf_exempt)
+    def dispatch(self, request, *args, **kwargs):
+        return super().dispatch(request, *args, **kwargs)
+
+    def post(self, request, *args, **kwargs):
+        data = {}
+        action = request.POST['action']
+        try:
+            if action == 'reserva':
                 datos = json.loads(request.POST['ventas'])
                 if datos:
                     with transaction.atomic():
-                        c = Transaccion()
-                        c.fecha_trans = datos['fecha_venta']
-                        c.cliente_id = datos['cliente']
-                        c.user_id = request.user.id
+                        c = self.model()
+                        c.fecha_factura = datos['fecha_venta']
+                        c.fecha_reserva = datos['fecha_reserva']
+                        c.user_id = datos['cliente']
+                        c.duracion_servicio = datos['duracion']
                         c.subtotal = float(datos['subtotal'])
                         c.iva = float(datos['iva'])
                         c.total = float(datos['total'])
-                        c.tipo = 0
                         c.save()
-                        v = Venta()
-                        v.transaccion_id = c.id
-                        v.estado = 2
-                        v.save()
                         if datos['productos']:
                             for i in datos['productos']:
-                                for in_pr in Inventario_producto.objects.filter(produccion__producto_id=i['id'], estado=1)[
-                                             :i['cantidad']]:
-                                    dv = Detalle_venta()
-                                    dv.venta_id = v.id
-                                    dv.inventario_id = in_pr.id
-                                    dv.cantidad = int(i['cantidad'])
-                                    dv.pvp_actual = float(in_pr.produccion.producto.pvp)
-                                    dv.subtotal = float(i['subtotal'])
-                                    in_pr.estado = 0
-                                    in_pr.save()
-                                    dv.save()
-                                stock = Producto.objects.get(id=i['id'])
-                                stock.stock = int(
-                                    Inventario_producto.objects.filter(produccion__producto_id=i['id'], estado=1).count())
-                                stock.save()
-                        data['id'] = v.id
+                                dv = Detalle_venta()
+                                dv.venta_id = c.id
+                                dv.det_compra = int(i['id'])
+                                dv.cantidad = int(i['cantidad'])
+                                dv.pvp = float(i['pvp'])
+                                dv.subtotal = float(i['subtotal'])
+                                dv.save()
+                        data['id'] = c.id
                         data['resp'] = True
                 else:
                     data['resp'] = False
@@ -361,8 +262,7 @@ class CrudViewOnline(ValidatePermissionRequiredMixin, TemplateView):
         data['titulo'] = 'Nueva Venta'
         data['nuevo'] = '/venta/nuevo'
         data['empresa'] = empresa
-        data['form'] = TransaccionForm()
-        data['form2'] = Detalle_VentaForm()
+        data['form'] = self.form_class()
         data['detalle'] = []
         data['formc'] = UserForm()
         return data

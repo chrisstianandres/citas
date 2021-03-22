@@ -1,4 +1,6 @@
 var dt_detalle;
+var tbl_productos;
+var tbl_servicios;
 var tipo_venta = $('#id_tipo_venta');
 var iva_emp = $('#iva_emp').val();
 var ventas = {
@@ -8,12 +10,23 @@ var ventas = {
         subtotal: 0.00,
         iva: 0.00,
         total: 0.00,
-        lotes: []
+        detalle: []
     },
     get_ids: function () {
         var ids = [];
-        $.each(this.items.lotes, function (key, value) {
-            ids.push(value.lote.id);
+        $.each(this.items.detalle, function (key, value) {
+             if (value.tipo === 'Producto') {
+                 ids.push(value.id)
+             }
+        });
+        return ids;
+    },
+    get_ids_serv: function () {
+        var ids = [];
+        $.each(this.items.detalle, function (key, value) {
+             if (value.tipo === 'Servicio') {
+                 ids.push(value.id)
+             }
         });
         return ids;
     },
@@ -33,7 +46,7 @@ var ventas = {
     calculate_por_menor: function () {
         var subtotal = 0.00;
         $.each(this.items.lotes, function (pos, dict) {
-            dict.subtotal = dict.peso_promedio * dict.cantidad* parseFloat(dict.valor_libra).toFixed(2);
+            dict.subtotal = dict.peso_promedio * dict.cantidad * parseFloat(dict.valor_libra).toFixed(2);
             dict.valor_ave = dict.peso_promedio * parseFloat(dict.valor_libra).toFixed(2);
             subtotal += dict.subtotal;
         });
@@ -45,191 +58,131 @@ var ventas = {
         $('input[name="total"]').val(this.items.total.toFixed(2));
     },
     add: function (data) {
-        this.items.lotes.push(data);
+        var array;
+        if (data.tipo === 'Producto') {
+            array = {
+                'nombre': data.producto.nombre,
+                'tipo': data.tipo,
+                'duracion': 'N/A',
+                'categoria': data.producto.categoria.nombre,
+                'presentacion': data.producto.presentacion.nombre,
+                'stock': data.stock_actual,
+                'cantidad': 1,
+                'precio': data.precio_venta,
+                'subtotal': 1,
+                'id': data.producto.id,
+            };
+            this.items.detalle.push(array);
+        } else {
+            array = {
+                'nombre': data.nombre,
+                'tipo': data.tipo,
+                'duracion': data.duracion,
+                'categoria': data.categoria.nombre,
+                'presentacion': 'N/A',
+                'stock': 'N/A',
+                'cantidad': 1,
+                'precio': 1.00,
+                'subtotal': 1,
+                'id': data.id,
+            };
+            this.items.detalle.push(array);
+        }
+        // this.items..push(data);
         this.list();
     },
     list: function () {
-        if (tipo_venta.val() === '1') {
-            this.calculate();
-            dt_detalle = $("#datatable_detalle").DataTable({
-                destroy: true,
-                responsive: true,
-                autoWidth: false,
-                dom: 'tipr',
-                data: this.items.lotes,
-                columns: [
-                    {data: "lote.raza.nombre"},
-                    {data: "peso_promedio"},
-                    {data: "valor_libra"},
-                    {data: "stock_actual"},
-                    {data: "lote.id"},
-                    {data: "galpon.id"},
-                    {data: "valor_ave"},
-                    {data: "cantidad"},
-                    {data: "subtotal"},
-                    {data: "id"}
-                ],
-                language: {
-                    url: '//cdn.datatables.net/plug-ins/1.10.15/i18n/Spanish.json',
-                },
-                columnDefs: [
-                    {
-                        targets: '_all',
-                        class: 'text-center',
-
-                    },
-                    {
-                        targets: [1],
-                        class: 'text-center',
-                        render: function (data, type, row) {
-                            return parseFloat(data).toFixed(2) + ' Lbs';
-                        }
-                    },
-                    {
-                        targets: [2],
-                        class: 'text-center',
-                        render: function (data, type, row) {
-                            return '<input type="text" class="form-control input-sm" value="' + parseFloat(data).toFixed(2) + '" name="v_libra">';
-                        }
-                    },
-                    {
-                        targets: [-1],
-                        class: 'text-center',
-                        render: function (data, type, row) {
-                            return '<a type="button" rel="remove" class="btn btn-danger btn-xs btn-round" ' +
-                                'style="color: white" data-toggle="tooltip" title="Quitar"><i class="fa fa-times"></i>' +
-                                '</a>';
-                        }
-                    },
-                    {
-                        targets: [-4],
-                        render: function (data, type, row) {
-                            return '$ '+parseFloat(data).toFixed(2);
-                        }
-                    },
-                    {
-                        targets: [-3],
-                        render: function (data, type, row) {
-                            return '<input type="text" class="form-control input-sm" value="' + data + '" name="cantidad">';
-                        }
-                    },
-                    {
-                        targets: [-2],
-                        render: function (data, type, row) {
-                            return '$ ' + parseFloat(data).toFixed(2);
-                        }
-                    },
-                ],
-                createdRow: function (row, data, dataIndex) {
-                    $(row).find('input[name="cantidad"]').TouchSpin({
-                        min: 1,
-                        max: data.stock_actual,
-                        step: 1
-                    });
-                    $(row).find('input[name="v_libra"]').TouchSpin({
-                        min: 0.01,
-                        decimals: 2,
-                        max: 100000000,
-                        step: 0.01,
-                        prefix: '$'
-                    });
-
-                }
-            });
-        } else {
-            this.calculate_por_menor();
-            dt_detalle = $("#datatable_detalle").DataTable({
-                destroy: true,
-                responsive: true,
-                autoWidth: false,
-                dom: 'tipr',
-                data: this.items.lotes,
-                columns: [
-                    {data: "lote.raza.nombre"},
-                    {data: "peso_promedio"},
-                    {data: "valor_libra"},
-                    {data: "stock_actual"},
-                    {data: "lote.id"},
-                    {data: "galpon.id"},
-                    {data: "valor_ave"},
-                    {data: "cantidad"},
-                    {data: "subtotal"},
-                    {data: "id"}
-                ],
-                language: {
-                    url: '//cdn.datatables.net/plug-ins/1.10.15/i18n/Spanish.json',
-                },
-                columnDefs: [
-                    {
-                        targets: '_all',
-                        class: 'text-center',
-
-                    },
-                    {
-                        targets: [1],
-                        class: 'text-center',
-                        render: function (data, type, row) {
-                            return '<input type="text" class="form-control input-sm" value="' + data + '" name="peso">';
-                        }
-                    },
-                    {
-                        targets: [2],
-                        class: 'text-center',
-                        render: function (data, type, row) {
-                            return '<input type="text" class="form-control input-sm" value="' + parseFloat(data).toFixed(2) + '" name="v_libra">';
-                        }
-                    },
-                    {
-                        targets: [-1],
-                        class: 'text-center',
-                        render: function (data, type, row) {
-                            return '<a type="button" rel="remove" class="btn btn-danger btn-xs btn-round" ' +
-                                'style="color: white" data-toggle="tooltip" title="Quitar"><i class="fa fa-times"></i>' +
-                                '</a>';
-                        }
-                    },
-                    {
-                        targets: [-4],
-                        render: function (data, type, row) {
-                            return parseFloat(data).toFixed(2);
-                        }
-                    },
-                    {
-                        targets: [-3],
-                        render: function (data, type, row) {
-                            return parseInt(data);
-                        }
-                    },
-                    {
-                        targets: [-2],
-                        render: function (data, type, row) {
-                            return '$ ' + parseFloat(data).toFixed(2);
-                        }
-                    },
-                ],
-                createdRow: function (row, data, dataIndex) {
-                    $(row).find('input[name="peso"]').TouchSpin({
-                        min: 0.01,
-                        decimals: 2,
-                        max: 100000000,
-                        step: 0.01,
-                        postfix: 'Lbs'
-                    });
-                    $(row).find('input[name="v_libra"]').TouchSpin({
-                        min: 0.01,
-                        decimals: 2,
-                        max: 100000000,
-                        step: 0.01,
-                        prefix: '$'
-                    });
-
-                }
-            });
-        }
+        // this.calculate();
+        dt_detalle = $("#table_detalle").DataTable({
+            destroy: true,
+            responsive: true,
+            autoWidth: false,
+            dom: 'tipr',
+            data: this.items.detalle,
+            columns: [
+                {data: "nombre"},
+                {data: "tipo"},
+                {data: "duracion"},
+                {data: "categoria"},
+                {data: "presentacion"},
+                {data: "stock"},
+                {data: "cantidad"},
+                {data: "precio"},
+                {data: "subtotal"},
+                {data: "id"}
+            ],
+            language: {
+                url: '//cdn.datatables.net/plug-ins/1.10.15/i18n/Spanish.json',
+            },
+            // columnDefs: [
+            //     {
+            //         targets: '_all',
+            //         class: 'text-center',
+            //
+            //     },
+            //     {
+            //         targets: [1],
+            //         class: 'text-center',
+            //         render: function (data, type, row) {
+            //             return parseFloat(data).toFixed(2) + ' Lbs';
+            //         }
+            //     },
+            //     {
+            //         targets: [2],
+            //         class: 'text-center',
+            //         render: function (data, type, row) {
+            //             return '<input type="text" class="form-control input-sm" value="' + parseFloat(data).toFixed(2) + '" name="v_libra">';
+            //         }
+            //     },
+            //     {
+            //         targets: [-1],
+            //         class: 'text-center',
+            //         render: function (data, type, row) {
+            //             return '<a type="button" rel="remove" class="btn btn-danger btn-xs btn-round" ' +
+            //                 'style="color: white" data-toggle="tooltip" title="Quitar"><i class="fa fa-times"></i>' +
+            //                 '</a>';
+            //         }
+            //     },
+            //     {
+            //         targets: [-4],
+            //         render: function (data, type, row) {
+            //             return '$ ' + parseFloat(data).toFixed(2);
+            //         }
+            //     },
+            //     {
+            //         targets: [-3],
+            //         render: function (data, type, row) {
+            //             return '<input type="text" class="form-control input-sm" value="' + data + '" name="cantidad">';
+            //         }
+            //     },
+            //     {
+            //         targets: [-2],
+            //         render: function (data, type, row) {
+            //             return '$ ' + parseFloat(data).toFixed(2);
+            //         }
+            //     },
+            // ],
+            // createdRow: function (row, data, dataIndex) {
+            //     $(row).find('input[name="cantidad"]').TouchSpin({
+            //         min: 1,
+            //         max: data.stock_actual,
+            //         step: 1
+            //     });
+            //     $(row).find('input[name="v_libra"]').TouchSpin({
+            //         min: 0.01,
+            //         decimals: 2,
+            //         max: 100000000,
+            //         step: 0.01,
+            //         prefix: '$'
+            //     });
+            //
+            // }
+        });
     },
 
 };
 $(function () {
+    buscar_productos();
     //seccion Medcicinas
     $('#datatable_detalle tbody')
         .on('click', 'a[rel="remove"]', function () {
@@ -285,73 +238,20 @@ $(function () {
                 });
         });
 
-    $('#id_search_tipo_ave')
-        .on('click', function () {
-            var ids = ventas.get_ids();
-            $('#modal_search_tipo_ave').modal('show');
-            if (tipo_venta.val() === '0') {
-                ids = [];
-            }
-            tbl_productos = $("#datatable_search_tipo_ave").DataTable({
-                destroy: true,
-                autoWidth: false,
-                dataSrc: "",
-                responsive: true,
-                ajax: {
-                    url: '/lote/lista',
-                    type: 'POST',
-                    data: {'action': 'search_ave_list', 'ids': JSON.stringify(ids)},
-                    dataSrc: ""
-                },
-                language: {
-                    "url": '//cdn.datatables.net/plug-ins/1.10.15/i18n/Spanish.json'
-                },
-                columns: [
-                    {data: "lote.raza.nombre"},
-                    {data: "peso_promedio"},
-                    {data: "valor_libra"},
-                    {data: "stock_actual"},
-                    {data: "lote.id"},
-                    {data: "galpon.id"},
-                    {data: "id"},
-                ],
-                columnDefs: [
-                    {
-                        targets: [1],
-                        class: 'text-center',
-                        render: function (data, type, row) {
-                            return data + ' Lbs'
-                        }
-                    },
-                    {
-                        targets: [2],
-                        class: 'text-center',
-                        render: function (data, type, row) {
-                            return '$ ' + parseFloat(data).toFixed(2)
-
-                        }
-                    },
-                    {
-                        targets: [-1],
-                        class: 'text-center',
-                        width: '10%',
-                        orderable: false,
-                        render: function (data, type, row) {
-                            return '<a style="color: white" type="button" class="btn btn-success btn-xs" rel="take" ' +
-                                'data-toggle="tooltip" title="Seleccionar Insumo"><i class="fa fa-check"></i></a>' + ' '
-
-                        }
-                    },
-                ]
-            });
-        });
-
-    $('#datatable_search_tipo_ave tbody')
+    $('#productos_buscador tbody')
         .on('click', 'a[rel="take"]', function () {
             var tr = tbl_productos.cell($(this).closest('td, li')).index();
             var data = tbl_productos.row(tr.row).data();
             ventas.add(data);
-            $('#modal_search_tipo_ave').modal('hide');
+            buscar_productos();
+        });
+
+    $('#servicios_buscador tbody')
+        .on('click', 'a[rel="take"]', function () {
+            var tr = tbl_servicios.cell($(this).closest('td, li')).index();
+            var data = tbl_servicios.row(tr.row).data();
+            ventas.add(data);
+            buscar_servicios();
         });
 
     $('#id_new_cliente')
@@ -515,6 +415,114 @@ $(function () {
                     });
             }
         });
+
+    $('#id_buscador_select').on('change', function () {
+        var productos_container = $('#productos_buscador');
+        var servicios_container = $('#servicios_buscador');
+        if ($(this).val() === '0') {
+            productos_container.attr('style', 'display:true');
+            servicios_container.attr('style', 'display:none');
+            buscar_productos();
+        } else {
+            productos_container.attr('style', 'display:none');
+            servicios_container.attr('style', 'display:true');
+            buscar_servicios();
+        }
+    });
+
+    function buscar_productos() {
+        tbl_productos = $("#table_productos").DataTable({
+            destroy: true,
+            autoWidth: false,
+            dataSrc: "",
+            responsive: true,
+            ajax: {
+                url: window.location.pathname,
+                type: 'POST',
+                data: {'action': 'search_prod', 'ids': JSON.stringify(ventas.get_ids())},
+                dataSrc: ""
+            },
+            language: {
+                "url": '//cdn.datatables.net/plug-ins/1.10.15/i18n/Spanish.json'
+            },
+            columns: [
+                {data: "producto.nombre"},
+                {data: "producto.categoria.nombre"},
+                {data: "producto.presentacion.nombre"},
+                {data: "stock_actual"},
+                {data: "id"},
+            ],
+            columnDefs: [
+                {
+                    targets: [-1],
+                    class: 'text-center',
+                    width: '10%',
+                    orderable: false,
+                    render: function (data, type, row) {
+                        return '<a style="color: white" type="button" class="btn btn-success btn-xs" rel="take" ' +
+                            'data-toggle="tooltip" title="Seleccionar Insumo"><i class="fa fa-check"></i></a>' + ' '
+
+                    }
+                },
+                {
+                    targets: [-2],
+                    orderable: false,
+                    render: function (data, type, row) {
+                        return '<span class="badge badge-primary">' + data + '</span>'
+
+                    }
+                },
+
+            ]
+        });
+    }
+
+
+    function buscar_servicios() {
+        tbl_servicios = $("#table_servicios").DataTable({
+            destroy: true,
+            autoWidth: false,
+            dataSrc: "",
+            responsive: true,
+            ajax: {
+                url: window.location.pathname,
+                type: 'POST',
+                data: {'action': 'search_serv', 'ids': JSON.stringify(ventas.get_ids_serv())},
+                dataSrc: ""
+            },
+            language: {
+                "url": '//cdn.datatables.net/plug-ins/1.10.15/i18n/Spanish.json'
+            },
+            columns: [
+                {data: "nombre"},
+                {data: "categoria.nombre"},
+                {data: "duracion"},
+                {data: "id"},
+            ],
+            columnDefs: [
+                {
+                    targets: [-1],
+                    class: 'text-center',
+                    width: '10%',
+                    orderable: false,
+                    render: function (data, type, row) {
+                        return '<a style="color: white" type="button" class="btn btn-success btn-xs" rel="take" ' +
+                            'data-toggle="tooltip" title="Seleccionar Insumo"><i class="fa fa-check"></i></a>' + ' '
+
+                    }
+                },
+                {
+                    targets: [-2],
+                    class: 'text-center',
+                    orderable: false,
+                    render: function (data, type, row) {
+                        return data + ' Mts'
+
+                    }
+                },
+            ]
+        });
+    }
 
 });
 

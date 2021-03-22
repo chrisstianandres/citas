@@ -32,5 +32,7 @@ urlpatterns = [
     path('proveedor/', include('apps.proveedor.urls', namespace='proveedor')),
     path('producto/', include('apps.producto.urls', namespace='producto')),
     path('compra/', include('apps.compra.urls', namespace='compra')),
+    path('transaccion/', include('apps.venta.urls', namespace='venta')),
+    path('servicio/', include('apps.servicio.urls', namespace='servicio')),
 ] + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)\
                   + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

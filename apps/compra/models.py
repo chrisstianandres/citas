@@ -34,6 +34,7 @@ class Compra(models.Model):
         item['tasa_iva'] = format(self.tasa_iva, '.2f')
         item['total'] = format(self.total, '.2f')
         item['estado_text'] = self.get_estado_display()
+        item['fecha'] = self.fecha.strftime('%Y-%m-%d')
         return item
 
     class Meta:
@@ -60,6 +61,9 @@ class Detalle_compra(models.Model):
         item = model_to_dict(self)
         item['compra'] = self.compra.toJSON()
         item['producto'] = self.producto.toJSON()
+        item['precio_compra'] = format(self.precio_compra, '.2f')
+        item['precio_venta'] = format(self.precio_venta, '.2f')
+        item['subtotal'] = format(self.subtotal, '.2f')
         return item
 
     class Meta:

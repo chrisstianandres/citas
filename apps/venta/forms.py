@@ -1,10 +1,11 @@
+from datetime import datetime
+
 from django import forms
 
-from .models import Detalle_venta
-from apps.inventario_productos.models import Inventario_producto
+from .models import Detalle_venta, Venta
 
 
-class Detalle_VentaForm(forms.ModelForm):
+class VentaForm(forms.ModelForm):
     # constructor
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -12,15 +13,58 @@ class Detalle_VentaForm(forms.ModelForm):
             self.fields[field].widget.attrs.update({
                 'class': 'form-control'
             })
-            self.fields['inventario'].widget.attrs = {
-                'class': 'form-control select2',
-                'data-live-search': "true"
+            self.fields['fecha_factura'].widget.attrs = {
+                'readonly': True,
+                'class': 'form-control',
+                'id': 'id_fecha_venta',
             }
-            self.fields["inventario"].queryset = Inventario_producto.objects.none()
+            self.fields['fecha_factura'].initial = datetime.now().strftime('%Y-%m-%d')
+            self.fields['user'].widget.attrs = {
+                'class': 'form-control'
+            }
+            self.fields['duracion_servicio'].widget.attrs = {
+                'class': 'form-control'
+            }
+            self.fields['subtotal'].widget.attrs = {
+                'value': '0.00',
+                'class': 'form-control',
+                'readonly': True
+            }
+            self.fields['iva'].widget.attrs = {
+                'value': '0.00',
+                'class': 'form-control',
+                'readonly': True
+            }
+            self.fields['total'].widget.attrs = {
+                'value': '0.00',
+                'class': 'form-control',
+                'readonly': True
+            }
+
         # habilitar, desabilitar, y mas
 
     class Meta:
-        model = Detalle_venta
+        model = Venta
         fields = [
-            'inventario',
+            'fecha_factura',
+            'user',
+            'duracion_servicio',
+            'subtotal',
+            'iva',
+            'total'
         ]
+        labels = {
+            'fecha_factura': 'Fecha de Venta',
+            'user': 'Cliente',
+            'duracion_servicio': 'Duracion de antencion',
+            'subtotal': 'Subtotal',
+            'iva': 'I.V.A.',
+            'total': 'TOTAL'
+        }
+        widgets = {
+            'fecha_factura': forms.DateInput(
+                format='%Y-%m-%d',
+                attrs={'value': datetime.now().strftime('%Y-%m-%d')},
+            ),
+            'duracion_servicio ': forms.TextInput(),
+        }

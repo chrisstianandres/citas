@@ -6,6 +6,7 @@ from django.forms import model_to_dict
 
 from apps.compra.models import Detalle_compra
 from apps.empleado.models import Empleado
+from apps.maquina.models import Maquina
 from apps.servicio.models import Servicio
 
 from apps.producto.models import Producto
@@ -79,13 +80,30 @@ class Detalle_servicios(models.Model):
         return '%s' % (self.venta)
 
     def toJSON(self):
-        empresa = Empresa.objects.get(pk=1)
         item = model_to_dict(self)
         item['venta'] = self.venta.toJSON()
-        item['serivicio'] = self.servicio.toJSON()
+        item['servicio'] = self.servicio.toJSON()
         return item
 
     class Meta:
         db_table = 'detalle_venta_servicio'
         verbose_name = 'detalle_venta_servicio'
         verbose_name_plural = 'detalles_venta_servicios'
+
+
+class Detalle_maquinas(models.Model):
+    servicio = models.ForeignKey(Detalle_servicios, on_delete=models.PROTECT)
+    maquina = models.ForeignKey(Maquina, on_delete=models.PROTECT)
+
+    def __str__(self):
+        return '{}'.format(self.maquina.tipo.nombre)
+
+    def toJSON(self):
+        item = model_to_dict(self)
+        item['maquina'] = self.maquina.toJSON()
+        return item
+
+    class Meta:
+        db_table = 'detalle_venta_maquina'
+        verbose_name = 'detalle_venta_maquina'
+        verbose_name_plural = 'detalles_venta_maquina'

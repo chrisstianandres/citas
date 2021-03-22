@@ -69,7 +69,6 @@ class lista(ValidatePermissionRequiredMixin, ListView):
                         item = p.toJSON()
                         data.append(item)
                 else:
-
                     data['error'] = 'Ha ocurrido un error'
             elif action == 'devolucion':
                 id = request.POST['id']
@@ -84,7 +83,7 @@ class lista(ValidatePermissionRequiredMixin, ListView):
                     for det in dev.detalle_compra_set.all():
                         if det.stock_actual < det.stock_compra:
                             key = 1
-                            data['error'] = 'No se puede anular la compra <br> Los productos ya fueron utilizados'
+                            data['error'] = 'Imposible anular la compra <br> Los productos ya fueron utilizados'
                         break
                     if key == 0:
                         dev.estado = 0
