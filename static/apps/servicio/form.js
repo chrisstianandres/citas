@@ -66,6 +66,16 @@ $(document).ready(function () {
             buttonup_class: 'btn btn-white btn-info btn-bold btn-xs',
         });
 
+        $('#id_precio').TouchSpin({
+            min: 0.50,
+            max: 1000.00,
+            step: 0.01,
+            decimals: 2,
+            prefix: '$',
+            buttondown_class: 'btn btn-white btn-info btn-bold btn-xs',
+            buttonup_class: 'btn btn-white btn-info btn-bold btn-xs',
+        });
+
     $('#id_nombre').keyup(function () {
         var pal = $(this).val();
         var changue = pal.substr(0, 1).toUpperCase() + pal.substr(1);

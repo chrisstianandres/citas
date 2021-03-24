@@ -20,21 +20,24 @@ class ServicioForm(forms.ModelForm):
                 attrs={'placeholder': 'Ingrese una descripcion del Servicio', 'class': 'form-control form-rounded'})
             self.fields['duracion'].widget = TextInput(
                 attrs={'class': 'form-control input-sm'})
+            self.fields['precio'].widget = TextInput(
+                attrs={'class': 'form-control input-sm', 'value': '1.00'})
 
 
         # habilitar, desabilitar, y mas
 
     class Meta:
         model = Servicio
-        fields = ['nombre',
-                  'descripcion', 'duracion'
+        fields = ['nombre', 'categoria',
+                  'descripcion', 'duracion', 'precio'
                   ]
         labels = {
-            'nombre': 'Nombre',
+            'nombre': 'Nombre', 'precio': 'Precio', 'categoria': 'Categoria',
             'descripcion': 'Decripcion', 'duracion': 'Duracion (Maximo 60)'
         }
         widgets = {
             'nombre': forms.TextInput(),
             'duracion': forms.TextInput(),
+            'precio': forms.TextInput(),
             'decripcion': forms.TextInput(attrs={'col': '3', 'row': '2'})
         }

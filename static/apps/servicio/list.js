@@ -14,6 +14,8 @@ function datatable_fun() {
             {"data": "id"},
             {"data": "nombre"},
             {"data": "descripcion"},
+            {"data": "categoria.nombre"},
+            {"data": "precio"},
             {"data": "duracion"},
             {"data": "id"}
         ],
@@ -23,9 +25,13 @@ function datatable_fun() {
             },
         columnDefs: [
             {
-                targets: [-1],
+                targets: [-3],
                 class: 'text-center',
-                width: '10%'
+                render: function (data, type, row) {
+                    return '$ '+ data
+
+                }
+
             },
             {
                 targets: [-2],

@@ -3,6 +3,7 @@ from datetime import datetime
 from django import forms
 
 from .models import Detalle_venta, Venta
+from ..user.models import User
 
 
 class VentaForm(forms.ModelForm):
@@ -18,13 +19,14 @@ class VentaForm(forms.ModelForm):
                 'class': 'form-control',
                 'id': 'id_fecha_venta',
             }
+            self.fields['duracion_servicio'].widget.attrs = {
+                'class': 'form-control input-sm'
+            }
             self.fields['fecha_factura'].initial = datetime.now().strftime('%Y-%m-%d')
             self.fields['user'].widget.attrs = {
                 'class': 'form-control'
             }
-            self.fields['duracion_servicio'].widget.attrs = {
-                'class': 'form-control'
-            }
+            self.fields['user'].queryset = User.objects.filter(tipo=0)
             self.fields['subtotal'].widget.attrs = {
                 'value': '0.00',
                 'class': 'form-control',

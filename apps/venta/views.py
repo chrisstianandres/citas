@@ -1,5 +1,6 @@
 from django.utils.decorators import method_decorator
 from apps.compra.models import Compra, Detalle_compra
+from apps.empleado.models import Empleado
 from apps.mixins import ValidatePermissionRequiredMixin
 import json
 from datetime import datetime
@@ -19,7 +20,7 @@ from apps.servicio.models import Servicio
 from apps.user.forms import UserForm
 from apps.user.models import User
 from apps.venta.forms import VentaForm
-from apps.venta.models import Venta, Detalle_venta
+from apps.venta.models import Venta, Detalle_venta, Detalle_servicios
 from apps.empresa.models import Empresa
 from apps.producto.models import Producto
 
@@ -150,23 +151,29 @@ class CrudView(ValidatePermissionRequiredMixin, TemplateView):
                 if datos:
                     with transaction.atomic():
                         c = self.model()
-                        c.fecha_factura = datos['fecha_venta']
-                        c.fecha_reserva = datos['fecha_venta']
+                        c.fecha_factura = datos['fecha']
+                        c.fecha_reserva = datos['fecha']
                         c.user_id = datos['cliente']
                         c.duracion_servicio = datos['duracion']
                         c.subtotal = float(datos['subtotal'])
                         c.iva = float(datos['iva'])
                         c.total = float(datos['total'])
-                        c.save()
-                        if datos['productos']:
-                            for i in datos['productos']:
-                                dv = Detalle_venta()
-                                dv.venta_id = c.id
-                                dv.det_compra = int(i['id'])
-                                dv.cantidad = int(i['cantidad'])
-                                dv.pvp = float(i['pvp'])
-                                dv.subtotal = float(i['subtotal'])
-                                dv.save()
+                        # c.save()
+                        if datos['detalle']:
+                            for i in datos['detalle']:
+                                if i['tipo'] == 'Producto':
+                                    print(i)
+                                    dv = Detalle_venta()
+                                    dv.venta_id = c.id
+                                    dv.det_compra = int(i['id'])
+                                    dv.cantidad = int(i['cantidad'])
+                                    dv.pvp = float(i['precio'])
+                                    dv.subtotal = float(i['subtotal'])
+                                    dv.save()
+                                else:
+                                    ds = Detalle_servicios()
+                                    ds.venta_id = c.id
+
                         data['id'] = c.id
                         data['resp'] = True
                 else:
@@ -174,19 +181,32 @@ class CrudView(ValidatePermissionRequiredMixin, TemplateView):
                     data['error'] = "Datos Incompletos"
             elif action == 'search_prod':
                 data = []
-                ids = request.POST['ids']
-                query = Detalle_compra.objects.filter(stock_actual__gte=1)
-                for p in query.exclude(producto_id__in=[3]):
-                    item = p.toJSON()
-                    item['tipo'] = 'Producto'
+                ids = json.loads(request.POST['ids'])
+                query = Detalle_compra.objects.values('id', 'producto_id', 'precio_venta').\
+                    annotate(stock=Sum('stock_actual')) \
+                    .order_by('stock').filter(stock_actual__gte=1)
+                for c in query.exclude(id__in=ids):
+                    pro = Producto.objects.get(id=c['producto_id'])
+                    item = pro.toJSON()
+                    item['stock'] = c['stock']
+                    item['id_det'] = c['id']
+                    item['precio_venta'] = format(c['precio_venta'], '.2f')
                     data.append(item)
             elif action == 'search_serv':
                 data = []
-
+                ids = json.loads(request.POST['ids'])
                 query = Servicio.objects.all()
-                for p in query:
+                for p in query.exclude(id__in=ids):
                     item = p.toJSON()
                     item['tipo'] = 'Servicio'
+                    data.append(item)
+            elif action == 'search_empleados':
+                data = []
+                ids = json.loads(request.POST['ids'])
+                query = Empleado.objects.all()
+                for p in query.exclude(id__in=ids):
+                    item = p.toJSON()
+                    item['sexo'] = p.get_sexo_display()
                     data.append(item)
             else:
                 data['error'] = 'No ha seleccionado una opcion'

@@ -1,76 +1,79 @@
 var dt_detalle;
 var tbl_productos;
 var tbl_servicios;
-var tipo_venta = $('#id_tipo_venta');
 var iva_emp = $('#iva_emp').val();
 var ventas = {
     items: {
         fecha: '',
         cliente: '',
+        duracion: '',
         subtotal: 0.00,
         iva: 0.00,
         total: 0.00,
-        detalle: []
+        detalle: [],
+        empleado: []
     },
     get_ids: function () {
         var ids = [];
         $.each(this.items.detalle, function (key, value) {
-             if (value.tipo === 'Producto') {
-                 ids.push(value.id)
-             }
+            if (value.tipo === 'Producto') {
+                ids.push(value.id)
+            }
+        });
+        return ids;
+    },
+    get_ids_empleado: function () {
+        var ids = [];
+        $.each(this.items.empleado, function (key, value) {
+            ids.push(value.id)
         });
         return ids;
     },
     get_ids_serv: function () {
-        var ids = [];
+        var ids_s = [];
         $.each(this.items.detalle, function (key, value) {
-             if (value.tipo === 'Servicio') {
-                 ids.push(value.id)
-             }
+            if (value.tipo === 'Servicio') {
+                ids_s.push(value.id)
+            }
         });
-        return ids;
+        return ids_s;
     },
     calculate: function () {
         var subtotal = 0.00;
-        $.each(this.items.lotes, function (pos, dict) {
-            dict.subtotal = dict.cantidad * parseFloat(dict.valor_ave).toFixed(2);
+        $.each(this.items.detalle, function (pos, dict) {
+            dict.subtotal = dict.cantidad * parseFloat(dict.precio).toFixed(2);
             subtotal += dict.subtotal;
         });
         this.items.subtotal = subtotal;
         this.items.iva = this.items.subtotal * (iva_emp / 100);
         this.items.total = this.items.subtotal + this.items.iva;
-        $('input[name="subtotal"]').val(this.items.subtotal.toFixed(2));
-        $('input[name="iva"]').val(this.items.iva.toFixed(2));
-        $('input[name="total"]').val(this.items.total.toFixed(2));
+        $('#sub_gen').text('$' + this.items.subtotal.toFixed(2));
+        $('#iva_gen').text('$' + this.items.iva.toFixed(2));
+        $('#tot_gen').text('$' + this.items.total.toFixed(2));
     },
-    calculate_por_menor: function () {
-        var subtotal = 0.00;
-        $.each(this.items.lotes, function (pos, dict) {
-            dict.subtotal = dict.peso_promedio * dict.cantidad * parseFloat(dict.valor_libra).toFixed(2);
-            dict.valor_ave = dict.peso_promedio * parseFloat(dict.valor_libra).toFixed(2);
-            subtotal += dict.subtotal;
+    calculate_duracion: function () {
+        var duracion = 0.00;
+        $.each(this.items.detalle, function (pos, dict) {
+            if (value.tipo === 'Servicio') {
+                duracion += dict.duracion
+            }
         });
-        this.items.subtotal = subtotal;
-        this.items.iva = this.items.subtotal * (iva_emp / 100);
-        this.items.total = this.items.subtotal + this.items.iva;
-        $('input[name="subtotal"]').val(this.items.subtotal.toFixed(2));
-        $('input[name="iva"]').val(this.items.iva.toFixed(2));
-        $('input[name="total"]').val(this.items.total.toFixed(2));
+        this.items.duracion = duracion;
     },
     add: function (data) {
         var array;
         if (data.tipo === 'Producto') {
             array = {
-                'nombre': data.producto.nombre,
+                'nombre': data.nombre,
                 'tipo': data.tipo,
                 'duracion': 'N/A',
-                'categoria': data.producto.categoria.nombre,
-                'presentacion': data.producto.presentacion.nombre,
-                'stock': data.stock_actual,
+                'categoria': data.categoria.nombre,
+                'presentacion': data.presentacion.nombre,
+                'stock': data.stock,
                 'cantidad': 1,
                 'precio': data.precio_venta,
                 'subtotal': 1,
-                'id': data.producto.id,
+                'id': data.id_det,
             };
             this.items.detalle.push(array);
         } else {
@@ -82,17 +85,16 @@ var ventas = {
                 'presentacion': 'N/A',
                 'stock': 'N/A',
                 'cantidad': 1,
-                'precio': 1.00,
+                'precio': data.precio,
                 'subtotal': 1,
                 'id': data.id,
             };
             this.items.detalle.push(array);
         }
-        // this.items..push(data);
         this.list();
     },
     list: function () {
-        // this.calculate();
+        this.calculate();
         dt_detalle = $("#table_detalle").DataTable({
             destroy: true,
             responsive: true,
@@ -114,69 +116,93 @@ var ventas = {
             language: {
                 url: '//cdn.datatables.net/plug-ins/1.10.15/i18n/Spanish.json',
             },
-            // columnDefs: [
-            //     {
-            //         targets: '_all',
-            //         class: 'text-center',
-            //
-            //     },
-            //     {
-            //         targets: [1],
-            //         class: 'text-center',
-            //         render: function (data, type, row) {
-            //             return parseFloat(data).toFixed(2) + ' Lbs';
-            //         }
-            //     },
-            //     {
-            //         targets: [2],
-            //         class: 'text-center',
-            //         render: function (data, type, row) {
-            //             return '<input type="text" class="form-control input-sm" value="' + parseFloat(data).toFixed(2) + '" name="v_libra">';
-            //         }
-            //     },
-            //     {
-            //         targets: [-1],
-            //         class: 'text-center',
-            //         render: function (data, type, row) {
-            //             return '<a type="button" rel="remove" class="btn btn-danger btn-xs btn-round" ' +
-            //                 'style="color: white" data-toggle="tooltip" title="Quitar"><i class="fa fa-times"></i>' +
-            //                 '</a>';
-            //         }
-            //     },
-            //     {
-            //         targets: [-4],
-            //         render: function (data, type, row) {
-            //             return '$ ' + parseFloat(data).toFixed(2);
-            //         }
-            //     },
-            //     {
-            //         targets: [-3],
-            //         render: function (data, type, row) {
-            //             return '<input type="text" class="form-control input-sm" value="' + data + '" name="cantidad">';
-            //         }
-            //     },
-            //     {
-            //         targets: [-2],
-            //         render: function (data, type, row) {
-            //             return '$ ' + parseFloat(data).toFixed(2);
-            //         }
-            //     },
-            // ],
-            // createdRow: function (row, data, dataIndex) {
-            //     $(row).find('input[name="cantidad"]').TouchSpin({
-            //         min: 1,
-            //         max: data.stock_actual,
-            //         step: 1
-            //     });
-            //     $(row).find('input[name="v_libra"]').TouchSpin({
-            //         min: 0.01,
-            //         decimals: 2,
-            //         max: 100000000,
-            //         step: 0.01,
-            //         prefix: '$'
-            //     });
-            //
-            // }
+            columnDefs: [
+                {
+                    targets: '_all',
+                    class: 'text-center',
+
+                },
+                {
+                    targets: [2],
+                    class: 'text-center',
+                    render: function (data, type, row) {
+                        if (row.tipo === 'Servicio') {
+                            return '<input type="text" class="form-control input-sm" value="' + data + '" name="duracion">';
+                        } else {
+                            return data
+                        }
+                    }
+                },
+                {
+                    targets: [-1],
+                    class: 'text-center',
+                    render: function (data, type, row) {
+                        var quitar = '<a type="button" rel="remove" class="btn btn-danger btn-xs btn-round" ' +
+                            'style="color: white" data-toggle="tooltip" title="Quitar"><i class="fa fa-times"></i>' +
+                            '</a>';
+                        var empleado = '<a type="button" rel="det" class="btn btn-info btn-xs btn-round" ' +
+                            'style="color: white" data-toggle="tooltip" title="Detalle de Empleado"><i class="fa fa-search"></i>' +
+                            '</a>' + ' ';
+                        return empleado + quitar
+                    }
+                },
+                {
+                    targets: [-4],
+                    render: function (data, type, row) {
+                        if (row.tipo === 'Producto') {
+                            return '<input type="text" class="form-control input-sm" value="' + data + '" name="cantidad">';
+                        } else {
+                            return '<input type="text" class="form-control input-sm" value="' + data + '" name="cantidad_serv">';
+                        }
+                    }
+                },
+                {
+                    targets: [-3],
+                    render: function (data, type, row) {
+                        return '<input type="text" class="form-control input-sm" value="' + data + '" name="precio">';
+                    }
+                },
+                {
+                    targets: [-2],
+                    render: function (data, type, row) {
+                        return '$ ' + parseFloat(data).toFixed(2);
+                    }
+                },
+            ],
+            createdRow: function (row, data, dataIndex) {
+                $(row).find('input[name="cantidad"]').TouchSpin({
+                    min: 1,
+                    max: data.stock,
+                    step: 1,
+                    buttondown_class: 'btn btn-white btn-danger btn-bold btn-xs',
+                    buttonup_class: 'btn btn-white btn-danger btn-bold btn-xs',
+                });
+                $(row).find('input[name="cantidad_serv"]').TouchSpin({
+                    min: 1,
+                    max: 100,
+                    step: 1,
+                    buttondown_class: 'btn btn-white btn-danger btn-bold btn-xs',
+                    buttonup_class: 'btn btn-white btn-danger btn-bold btn-xs',
+                });
+                $(row).find('input[name="precio"]').TouchSpin({
+                    min: 0.50,
+                    max: 500.00,
+                    step: 0.01,
+                    decimals: 2,
+                    buttondown_class: 'btn btn-white btn-info btn-bold btn-xs',
+                    buttonup_class: 'btn btn-white btn-info btn-bold btn-xs',
+                });
+                $(row).find('input[name="duracion"]').TouchSpin({
+                    min: 15,
+                    max: 60,
+                    step: 1,
+                    buttondown_class: 'btn btn-white btn-success btn-bold btn-xs',
+                    buttonup_class: 'btn btn-white btn-success btn-bold btn-xs',
+                });
+                if (data.tipo === 'Producto') {
+                    $(row).find('a[rel="det"]').hide();
+                }
+            }
         });
     },
 
@@ -184,56 +210,66 @@ var ventas = {
 $(function () {
     buscar_productos();
     //seccion Medcicinas
-    $('#datatable_detalle tbody')
+    $('#table_detalle tbody')
         .on('click', 'a[rel="remove"]', function () {
             var tr = dt_detalle.cell($(this).closest('td, li')).index();
             borrar_todo_alert('Alerta de Eliminación',
-                'Esta seguro que desea eliminar esta ave de tu detalle de venta?', function () {
-                    var p = ventas.items.lotes[tr.row];
-                    ventas.items.lotes.splice(tr.row, 1);
-                    menssaje_ok('Confirmacion!', 'Ave Eliminada eliminada', 'far fa-smile-wink', function () {
+                'Esta seguro que desea eliminar esta elemento de tu detalle de venta?', function () {
+                    var p = ventas.items.detalle[tr.row];
+                    ventas.items.detalle.splice(tr.row, 1);
+                    menssaje_ok('Confirmacion!', 'Elemento eliminado', 'far fa-smile-wink', function () {
                         ventas.list();
+                        buscar_servicios();
+                        buscar_productos();
                     });
                 })
         })
         .on('change', 'input[name="cantidad"]', function () {
             var cantidad = parseInt($(this).val());
             var tr = dt_detalle.cell($(this).closest('td, li')).index();
-            ventas.items.lotes[tr.row].cantidad = cantidad;
+            ventas.items.detalle[tr.row].cantidad = cantidad;
             ventas.calculate();
-            $('td:eq(8)', dt_detalle.row(tr.row).node()).html('$' + ventas.items.lotes[tr.row].subtotal.toFixed(2));
+            $('td:eq(8)', dt_detalle.row(tr.row).node()).html('$' + ventas.items.detalle[tr.row].subtotal.toFixed(2));
         })
-        .on('change', 'input[name="peso"]', function () {
-            var peso = parseFloat($(this).val()).toFixed(2);
+        .on('change', 'input[name="cantidad_serv"]', function () {
+            var cantidad = parseInt($(this).val());
             var tr = dt_detalle.cell($(this).closest('td, li')).index();
-            ventas.items.lotes[tr.row].peso_promedio = peso;
-            ventas.calculate_por_menor();
-            $('td:eq(8)', dt_detalle.row(tr.row).node()).html('$' + ventas.items.lotes[tr.row].subtotal.toFixed(2));
-            $('td:eq(6)', dt_detalle.row(tr.row).node()).html('$' + ventas.items.lotes[tr.row].valor_ave.toFixed(2));
+            ventas.items.detalle[tr.row].cantidad = cantidad;
+            ventas.calculate();
+            $('td:eq(8)', dt_detalle.row(tr.row).node()).html('$' + ventas.items.detalle[tr.row].subtotal.toFixed(2));
         })
-        .on('change', 'input[name="v_libra"]', function () {
-            var valor_libra = parseFloat($(this).val()).toFixed(2);
+        .on('change', 'input[name="duracion"]', function () {
+            var duracion = parseInt($(this).val());
             var tr = dt_detalle.cell($(this).closest('td, li')).index();
-            ventas.items.lotes[tr.row].valor_libra = valor_libra;
-            ventas.calculate_por_menor();
-            $('td:eq(8)', dt_detalle.row(tr.row).node()).html('$' + ventas.items.lotes[tr.row].subtotal.toFixed(2));
-            $('td:eq(6)', dt_detalle.row(tr.row).node()).html('$' + ventas.items.lotes[tr.row].valor_ave.toFixed(2));
+            ventas.items.detalle[tr.row].duracion = duracion;
+            ventas.calculate_duracion();
         })
         .on('change', 'input[name="precio"]', function () {
             var precio = parseFloat($(this).val()).toFixed(2);
             var tr = dt_detalle.cell($(this).closest('td, li')).index();
-            ventas.items.lotes[tr.row].valor_ave = precio;
+            ventas.items.detalle[tr.row].precio = precio;
             ventas.calculate();
-            $('td:eq(8)', dt_detalle.row(tr.row).node()).html('$' + ventas.items.lotes[tr.row].subtotal.toFixed(2));
+            $('td:eq(8)', dt_detalle.row(tr.row).node()).html('$' + ventas.items.detalle[tr.row].subtotal.toFixed(2));
         });
-    $('#vaciar_detalle')
+
+    $('input[name="duracion_servicio"]').TouchSpin({
+        min: 1,
+        max: 480,
+        step: 1,
+        prefix: 'Minutos',
+        buttondown_class: 'btn btn-white btn-info btn-bold btn-sm',
+        buttonup_class: 'btn btn-white btn-info btn-bold btn-sm',
+    });
+    $('#vaciar')
         .on('click', function () {
-            if (ventas.items.lotes.length === 0) return false;
+            if (ventas.items.detalle.length === 0) return false;
             borrar_todo_alert('Alerta de Eliminación',
-                'Esta seguro que desea eliminar todos las aves seleccionadas?', function () {
-                    ventas.items.lotes = [];
-                    menssaje_ok('Confirmacion!', 'Aves eliminados', 'far fa-smile-wink', function () {
+                'Esta seguro que desea eliminar todos los elementos seleccionadas?', function () {
+                    ventas.items.detalle = [];
+                    menssaje_ok('Confirmacion!', 'Elementos eliminados', 'far fa-smile-wink', function () {
                         ventas.list();
+                        buscar_servicios();
+                        buscar_productos();
                     });
                 });
         });
@@ -251,7 +287,20 @@ $(function () {
             var tr = tbl_servicios.cell($(this).closest('td, li')).index();
             var data = tbl_servicios.row(tr.row).data();
             ventas.add(data);
+            menssaje_ok('Elegir un empleado', 'A seleccionado un servicio, por favor elija un empleado que ' +
+                'brindara este servicio', 'fa fa', function () {
+                $('#modal_empleado').modal({backdrop: 'static', keyboard: false});
+                buscar_empleados();
+            });
             buscar_servicios();
+        });
+
+    $('#tbl_empleados tbody')
+        .on('click', 'a[rel="take"]', function () {
+            var tr = tbl_productos.cell($(this).closest('td, li')).index();
+            var data = tbl_productos.row(tr.row).data();
+            // ventas.add(data);
+            // buscar_productos();
         });
 
     $('#id_new_cliente')
@@ -280,100 +329,7 @@ $(function () {
 
         });
 
-    $('#id_cliente')
-        .select2({
-            theme: "classic",
-            language: {
-                inputTooShort: function () {
-                    return "Ingresa al menos un caracter...";
-                },
-                "noResults": function () {
-                    return "Sin resultados";
-                },
-                "searching": function () {
-                    return "Buscando...";
-                }
-            },
-            allowClear: true,
-            ajax: {
-                delay: 250,
-                type: 'POST',
-                url: '/cliente/lista',
-                data: function (params) {
-                    return {
-                        term: params.term,
-                        'action': 'search'
-                    };
-                },
-                processResults: function (data) {
-                    return {
-                        results: data
-                    };
-
-                },
-
-            },
-            placeholder: 'Busca un Cliente',
-            minimumInputLength: 1,
-        });
-
-    $('#id_lote')
-        .select2({
-            theme: "classic",
-            language: {
-                inputTooShort: function () {
-                    return "Ingresa al menos un caracter...";
-                },
-                "noResults": function () {
-                    return "Sin resultados";
-                },
-                "searching": function () {
-                    return "Buscando...";
-                }
-            },
-            allowClear: true,
-            ajax: {
-                delay: 250,
-                type: 'POST',
-                url: '/lote/lista',
-                data: function (params) {
-                    return {
-                        term: params.term,
-                        'action': 'search_ave',
-                        'ids': JSON.stringify(ventas.get_ids())
-                    };
-                },
-                processResults: function (data) {
-                    return {
-                        results: data
-                    };
-
-                },
-
-            },
-            placeholder: 'Busca un tipo de Ave',
-            minimumInputLength: 1,
-        })
-        .on('select2:select', function (e) {
-            $.ajax({
-                type: "POST",
-                url: '/lote/lista',
-                data: {
-                    "id": $('#id_lote option:selected').val(),
-                    "action": 'get'
-                },
-                dataType: 'json',
-                success: function (data) {
-                    ventas.add(data[0]);
-                    $('#id_lote').val(null).trigger('change');
-
-                },
-                error: function (xhr, status, data) {
-                    alert(data['0']);
-                },
-
-            })
-        });
+    $('#id_user').chosen({no_results_text: "No se encontraron resultados para: "});
 
 
     $('#Modal_person')
@@ -384,33 +340,26 @@ $(function () {
 
     $('#save')
         .on('click', function () {
-            if ($('select[name="cliente"]').val() === "") {
+            if ($('select[name="user"]').val() === "") {
                 menssaje_error('Error!', "Debe seleccionar un Cliente", 'far fa-times-circle');
                 return false
-            } else if (ventas.items.lotes.length === 0) {
-                menssaje_error('Error!', "Debe seleccionar al menos una tipo de Ave", 'far fa-times-circle');
+            } else if (ventas.items.detalle.length === 0) {
+                menssaje_error('Error!', "Debe seleccionar al menos un producto o servicio", 'far fa-times-circle');
                 return false
             } else {
                 var parametros;
                 ventas.items.fecha = $('#id_fecha_venta').val();
-                ventas.items.cliente = $('#id_cliente option:selected').val();
+                ventas.items.cliente = $('#id_user').val();
+                ventas.items.duracion = $('#id_duracion_servicio').val();
                 parametros = {'ventas': JSON.stringify(ventas.items)};
                 parametros['action'] = 'add';
                 save_with_ajax('Alerta',
-                    '/venta/nuevo', 'Esta seguro que desea guardar esta Venta?', parametros, function (response) {
+                    window.location.pathname, 'Esta seguro que desea guardar esta Venta?', parametros, function (response) {
                         printpdf('Alerta!', '¿Desea generar el comprobante en PDF?', function () {
                             window.open('/venta/printpdf/' + response['id'], '_blank');
-                            listado.fadeIn();
-                            formulario.fadeOut();
-                            $('#id_cliente').val(null).trigger('change');
-                            ventas.items.lotes = [];
-                            datatable.ajax.reload(null, false);
+                            window.location.href = '/transaccion/venta/lista'
                         }, function () {
-                            listado.fadeIn();
-                            formulario.fadeOut();
-                            $('#id_cliente').val(null).trigger('change');
-                            ventas.items.lotes = [];
-                            datatable.ajax.reload(null, false);
+                            window.location.href = '/transaccion/venta/lista'
                         })
                     });
             }
@@ -446,10 +395,10 @@ $(function () {
                 "url": '//cdn.datatables.net/plug-ins/1.10.15/i18n/Spanish.json'
             },
             columns: [
-                {data: "producto.nombre"},
-                {data: "producto.categoria.nombre"},
-                {data: "producto.presentacion.nombre"},
-                {data: "stock_actual"},
+                {data: "nombre"},
+                {data: "categoria.nombre"},
+                {data: "presentacion.nombre"},
+                {data: "stock"},
                 {data: "id"},
             ],
             columnDefs: [
@@ -459,8 +408,8 @@ $(function () {
                     width: '10%',
                     orderable: false,
                     render: function (data, type, row) {
-                        return '<a style="color: white" type="button" class="btn btn-success btn-xs" rel="take" ' +
-                            'data-toggle="tooltip" title="Seleccionar Insumo"><i class="fa fa-check"></i></a>' + ' '
+                        return '<a style="color: white" type="button" class="btn btn-success btn-round btn-xs" rel="take" ' +
+                            'data-toggle="tooltip" title="Seleccionar"><i class="fa fa-check"></i></a>' + ' '
 
                     }
                 },
@@ -506,8 +455,8 @@ $(function () {
                     width: '10%',
                     orderable: false,
                     render: function (data, type, row) {
-                        return '<a style="color: white" type="button" class="btn btn-success btn-xs" rel="take" ' +
-                            'data-toggle="tooltip" title="Seleccionar Insumo"><i class="fa fa-check"></i></a>' + ' '
+                        return '<a style="color: white" type="button" class="btn btn-success btn-round btn-xs" rel="take" ' +
+                            'data-toggle="tooltip" title="Seleccionar"><i class="fa fa-check"></i></a>' + ' '
 
                     }
                 },
@@ -517,6 +466,42 @@ $(function () {
                     orderable: false,
                     render: function (data, type, row) {
                         return data + ' Mts'
+
+                    }
+                },
+            ]
+        });
+    }
+
+    function buscar_empleados() {
+        tbl_empleados = $("#table_empleado").DataTable({
+            destroy: true,
+            autoWidth: false,
+            dataSrc: "",
+            responsive: true,
+            ajax: {
+                url: window.location.pathname,
+                type: 'POST',
+                data: {'action': 'search_empleados', 'ids': JSON.stringify(ventas.get_ids_empleado())},
+                dataSrc: ""
+            },
+            language: {
+                "url": '//cdn.datatables.net/plug-ins/1.10.15/i18n/Spanish.json'
+            },
+            columns: [
+                {data: "full_name_list"},
+                {data: "sexo"},
+                {data: "id"},
+            ],
+            columnDefs: [
+                {
+                    targets: [-1],
+                    class: 'text-center',
+                    width: '10%',
+                    orderable: false,
+                    render: function (data, type, row) {
+                        return '<a style="color: white" type="button" class="btn btn-success btn-round btn-xs" rel="take" ' +
+                            'data-toggle="tooltip" title="Seleccionar"><i class="fa fa-check"></i></a>' + ' '
 
                     }
                 },

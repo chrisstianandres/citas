@@ -10,6 +10,7 @@ class Servicio(models.Model):
     nombre = models.CharField(max_length=50)
     descripcion = models.CharField(max_length=50)
     duracion = models.IntegerField(default=30)
+    precio = models.DecimalField(default=0.00, max_digits=9, decimal_places=2, blank=True, null=True)
 
     def __str__(self):
         return '%s' % self.nombre
@@ -17,6 +18,7 @@ class Servicio(models.Model):
     def toJSON(self):
         item = model_to_dict(self)
         item['categoria'] = self.categoria.toJSON()
+        item['precio'] = format(self.precio, '.2f')
         return item
 
     class Meta:

@@ -27,6 +27,7 @@ class Producto(models.Model):
         item['presentacion'] = self.presentacion.toJSON()
         item['categoria'] = self.categoria.toJSON()
         item['imagen'] = self.get_image()
+        item['tipo'] = 'Producto'
         return item
 
     class Meta:
