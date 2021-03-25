@@ -6,9 +6,17 @@ class VentaAdmin(admin.TabularInline):
     model = Detalle_venta
 
 
+class ServicioAdmin(admin.TabularInline):
+    model = Detalle_servicios
+
+
 class Detalle_ventaAdmin(admin.ModelAdmin):
     inlines = (VentaAdmin,)
 
 
-admin.site.register( Venta,Detalle_ventaAdmin)
+class Detalle_servicioAdmin(admin.ModelAdmin):
+    inlines = (ServicioAdmin,)
+
+
+admin.site.register(Venta,  Detalle_servicioAdmin)
 

@@ -1,7 +1,4 @@
 var datatable;
-var logotipo;
-var formulario = $('#formulario_transaccion');
-var listado = $('#listado');
 var datos = {
     fechas: {
         'start_date': '',
@@ -41,20 +38,27 @@ function datatable_fun() {
             dataSrc: ""
         },
         columns: [
-            {"data": "fecha"},
-            {"data": "cliente.full_name_list"},
+            {"data": "fecha_factura"},
+            {"data": "user.full_name"},
             {"data": "subtotal"},
             {"data": "iva"},
             {"data": "total"},
             {"data": "id"},
-            {"data": "estado"},
+            {"data": "estado_text"},
             {"data": "id"}
         ],
         language: {
             url: '//cdn.datatables.net/plug-ins/1.10.15/i18n/Spanish.json',
+            buttons: {
+                copyTitle: 'Copiado al Portapapeles',
+                copySuccess: {
+                    _: '%d Lineas copiadas',
+                    1: '1 Linea copiada'
+                }
+            }
         },
         order: [[4, "desc"]],
-        dom: "<'row'<'col-sm-12 col-md-12'B>>" +
+        dom: "<'row'<'clearfix'<'pull-right tableTools-container'<'dt-buttons btn-overlap btn-group' B>>>>" +
             "<'row'<'col-sm-12 col-md-3'l>>" +
             "<'row'<'col-sm-12 col-md-12'f>>" +
             "<'row'<'col-sm-12'tr>>" +
@@ -71,8 +75,8 @@ function datatable_fun() {
             },
             buttons: [
                 {
-                    text: '<i class="fa fa-file-pdf"></i> PDF',
-                    className: 'btn btn-danger my_class',
+                    text: '<span><i class="fa fa-print bigger-110 grey"></i> PDF</span>',
+                    className: 'dt-button buttons-print btn btn-white btn-primary btn-bold',
                     extend: 'pdfHtml5',
                     filename: 'Listado de Compras',
                     orientation: 'landscape', //portrait
@@ -85,6 +89,11 @@ function datatable_fun() {
                     },
                     customize: customize
                 },
+                {
+                    text: '<i class="fa fa-copy bigger-110 pink"></i> Copiar</span>',
+                    className: 'dt-button buttons-copy buttons-html5 btn btn-white btn-primary btn-bold',
+                    extend: 'copy',
+                }
             ],
         },
         columnDefs: [
@@ -97,11 +106,12 @@ function datatable_fun() {
                 targets: [-1],
                 class: 'text-center',
                 render: function (data, type, row) {
+                    console.log(row);
                     var detalle = '<a type="button" rel="detalle" class="btn btn-success btn-xs btn-round" style="color: white" data-toggle="tooltip" title="Detalle de Venta" ><i class="fa fa-search"></i></a>' + ' ';
                     var devolver = '<a type="button" rel="devolver" class="btn btn-danger btn-xs btn-round" style="color: white" data-toggle="tooltip" title="Anular"><i class="fa fa-times"></i></a>' + ' ';
                     var pdf = '<a type="button" href= "/venta/printpdf/' + data + '" rel="pdf" ' +
                         'class="btn btn-primary btn-xs btn-round" style="color: white" data-toggle="tooltip" ' +
-                        'title="Reporte PDF"><i class="fa fa-file-pdf"></i></a>';
+                        'title="Reporte PDF"><i class="fa fa-file-pdf-o"></i></a>';
                     return detalle + devolver + pdf;
                 }
             },
@@ -164,7 +174,6 @@ function pad(str, max) {
 }
 
 $(function () {
-    formulario.prop('style', 'display:none');
     daterange();
     datatable_fun();
     $('#datatable tbody')
@@ -237,19 +246,7 @@ $(function () {
         });
 
     $('#nuevo').on('click', function () {
-        $('#modal_tipo_venta').modal('show');
-        $('#select_tipo').on('click', function () {
-            $('#modal_tipo_venta').modal('hide');
-            listado.fadeOut();
-            formulario.fadeIn();
-            $('#id_cliente').val(null).trigger('change');
-            ventas.items.lotes = [];
-            ventas.list();
-        })
+       window.location.href = '/transaccion/venta/nuevo'
     });
-    $('#cancal_shop').on('click', function () {
-        listado.fadeIn();
-        formulario.fadeOut();
-    })
 });
 

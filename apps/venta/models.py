@@ -36,7 +36,13 @@ class Venta(models.Model):
     def toJSON(self):
         item = model_to_dict(self)
         item['user'] = self.user.toJSON()
-        item['estado'] = self.get_estado_display()
+        item['estado_text'] = self.get_estado_display()
+        item['fecha_factura'] = self.fecha_factura.strftime('%Y-%m-%d')
+        item['fecha_reserva'] = self.fecha_reserva.strftime('%Y-%m-%d')
+        item['duracion_servicio'] = format(self.duracion_servicio, '.2f')
+        item['subtotal'] = format(self.subtotal, '.2f')
+        item['iva'] = format(self.iva, '.2f')
+        item['total'] = format(self.total, '.2f')
         return item
 
     class Meta:
@@ -83,6 +89,9 @@ class Detalle_servicios(models.Model):
         item = model_to_dict(self)
         item['venta'] = self.venta.toJSON()
         item['servicio'] = self.servicio.toJSON()
+        item['empleado'] = self.empleado.toJSON()
+        item['valor'] = format(self.valor, '.2f')
+        item['subtotals'] = format(self.subtotals, '.2f')
         return item
 
     class Meta:

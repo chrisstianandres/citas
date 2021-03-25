@@ -33,20 +33,20 @@ class User(AbstractUser):
     def __str__(self):
         return '%s %s' % (self.username, self.first_name)
 
-    # def get_image(self):
-    #     if self.avatar:
-    #         return '{}{}'.format(MEDIA_URL, self.avatar)
-    #     if self.sexo == 1:
-    #         return '{}{}'.format(MEDIA_URL, 'user/admin.png')
-    #     else:
-    #         return '{}{}'.format(MEDIA_URL, 'user/user_woman.png')
+    def get_image(self):
+        if self.avatar:
+            return '{}{}'.format(MEDIA_URL, self.avatar)
+        if self.sexo == 1:
+            return '{}{}'.format(MEDIA_URL, 'user/admin.png')
+        else:
+            return '{}{}'.format(MEDIA_URL, 'user/user_woman.png')
 
     def toJSON(self):
         item = model_to_dict(self, exclude=['is_active', 'groups', 'is_staff', 'is_superuser', 'user_permissions'] )
         if self.last_login:
             item['last_login'] = self.last_login.strftime('%d-%m-%Y')
         item['date_joined'] = self.date_joined.strftime('%d-%m-%Y')
-        # item['avatar'] = self.get_image()
+        item['avatar'] = self.get_image()
         item['full_name'] = self.get_full_name()
         item['sexo'] = self.get_sexo_display()
         item['estado'] = self.get_estado_display()

@@ -143,32 +143,22 @@ function save_estado(title, url, content, parametros, callback) {
 }
 
 function printpdf(title, content, callback, cancel) {
-    $.confirm({
-            theme: 'modern',
-            type: 'blue',
-            icon: 'fas fa-exclamation-circle',
-            title: title,
-            content: content,
-            columnClass: 'small',
-            draggable: true,
-            buttons: {
-                si: {
-                    text: '<i class="fas fa-check"></i> Si',
-                    btnClass: 'btn-blue',
-                    action: function () {
-                        callback();
-                    }
-                },
-                no: {
-                    text: '<i class="fas fa-times"></i> No',
-                    btnClass: 'btn-red',
-                    action: function () {
-                        cancel();
-                    }
-                }
-            }
+    Swal.fire({
+        title: title,
+        text: content,
+        icon: 'info',
+        showCancelButton: true,
+        confirmButtonColor: '#3085d6',
+        cancelButtonColor: '#d33',
+        confirmButtonText: 'Si',
+        cancelButtonText: 'No'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            callback();
+        } else {
+            cancel();
         }
-    );
+    });
 }
 
 function menssaje_error(title, content, icon, callback) {

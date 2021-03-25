@@ -1,5 +1,7 @@
 var dt_detalle;
 var tbl_productos;
+var tbl_empleados_list;
+var tbl_empleados;
 var tbl_servicios;
 var iva_emp = $('#iva_emp').val();
 var ventas = {
@@ -74,9 +76,11 @@ var ventas = {
                 'precio': data.precio_venta,
                 'subtotal': 1,
                 'id': data.id_det,
+                'empleado': {}
             };
             this.items.detalle.push(array);
-        } else {
+        }
+        else {
             array = {
                 'nombre': data.nombre,
                 'tipo': data.tipo,
@@ -88,6 +92,7 @@ var ventas = {
                 'precio': data.precio,
                 'subtotal': 1,
                 'id': data.id,
+                'empleado': data.empleado
             };
             this.items.detalle.push(array);
         }
@@ -224,6 +229,13 @@ $(function () {
                     });
                 })
         })
+        .on('click', 'a[rel="det"]', function () {
+            var tr = dt_detalle.cell($(this).closest('td, li')).index();
+            var data = ventas.items.detalle[tr.row];
+            var array = [];
+            array.push(data.empleado);
+            empleado_detalle(array);
+        })
         .on('change', 'input[name="cantidad"]', function () {
             var cantidad = parseInt($(this).val());
             var tr = dt_detalle.cell($(this).closest('td, li')).index();
@@ -286,22 +298,21 @@ $(function () {
         .on('click', 'a[rel="take"]', function () {
             var tr = tbl_servicios.cell($(this).closest('td, li')).index();
             var data = tbl_servicios.row(tr.row).data();
-            ventas.add(data);
             menssaje_ok('Elegir un empleado', 'A seleccionado un servicio, por favor elija un empleado que ' +
                 'brindara este servicio', 'fa fa', function () {
                 $('#modal_empleado').modal({backdrop: 'static', keyboard: false});
                 buscar_empleados();
+                $('#table_empleado tbody')
+                    .on('click', 'a[rel="take"]', function () {
+                        var tr = tbl_empleados.cell($(this).closest('td, li')).index();
+                        data['empleado'] = tbl_empleados.row(tr.row).data();
+                        ventas.add(data);
+                        $('#modal_empleado').modal('hide');
+                        buscar_servicios();
+                    })
             });
-            buscar_servicios();
         });
 
-    $('#tbl_empleados tbody')
-        .on('click', 'a[rel="take"]', function () {
-            var tr = tbl_productos.cell($(this).closest('td, li')).index();
-            var data = tbl_productos.row(tr.row).data();
-            // ventas.add(data);
-            // buscar_productos();
-        });
 
     $('#id_new_cliente')
         .on('click', function () {
@@ -506,6 +517,27 @@ $(function () {
                     }
                 },
             ]
+        });
+    }
+
+    function empleado_detalle(data) {
+        $('#modal_empleado_list').modal('show');
+        tbl_empleados_list = $("#table_empleado_list").DataTable({
+            destroy: true,
+            responsive: true,
+            autoWidth: false,
+            dom: 'tipr',
+            data: data,
+            columns: [
+                {data: "full_name_list"},
+                {data: "cedula"},
+                {data: "sexo"},
+                {data: "celular"},
+                {data: "id"}
+            ],
+            language: {
+                url: '//cdn.datatables.net/plug-ins/1.10.15/i18n/Spanish.json',
+            },
         });
     }
 

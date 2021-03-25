@@ -49,21 +49,21 @@ class lista(ValidatePermissionRequiredMixin, ListView):
         data = {}
         try:
             action = request.POST['action']
-            if action == 'venta':
+            if action == 'list':
                 start = request.POST['start_date']
                 end = request.POST['end_date']
                 data = []
                 if start == '' and end == '':
                     if request.user.tipo == 1:
-                        query = Venta.objects.filter(transaccion__tipo=0)
+                        query = Venta.objects.filter(estado=1)
                     else:
-                        query = Venta.objects.filter(transaccion__tipo=0, transaccion__user_id=request.user.id)
+                        query = Venta.objects.filter(estado=1, transaccion__user_id=request.user.id)
                 else:
                     if request.user.tipo == 1:
-                        query = Venta.objects.filter(transaccion__tipo=0, transaccion__fecha_trans__range=[start, end])
+                        query = Venta.objects.filter(estado=0, fecha_factura__range=[start, end])
                     else:
-                        query = Venta.objects.filter(transaccion__tipo=0, transaccion__user_id=request.user.id,
-                                                     transaccion__fecha_trans__range=[start, end])
+                        query = Venta.objects.filter(estado=0, transaccion__user_id=request.user.id,
+                                                     fecha_factura__range=[start, end])
                 for c in query:
                     data.append(c.toJSON())
             elif action == 'detalle':
@@ -128,6 +128,7 @@ class lista(ValidatePermissionRequiredMixin, ListView):
             data['entidad'] = opc_entidad
             data['boton'] = 'Nueva Venta'
             data['titulo'] = 'Listado de Ventas'
+            data['nuevo'] = '/transaccion/venta/nuevo'
         data['empresa'] = empresa
         return data
 
@@ -158,14 +159,13 @@ class CrudView(ValidatePermissionRequiredMixin, TemplateView):
                         c.subtotal = float(datos['subtotal'])
                         c.iva = float(datos['iva'])
                         c.total = float(datos['total'])
-                        # c.save()
+                        c.save()
                         if datos['detalle']:
                             for i in datos['detalle']:
                                 if i['tipo'] == 'Producto':
-                                    print(i)
                                     dv = Detalle_venta()
                                     dv.venta_id = c.id
-                                    dv.det_compra = int(i['id'])
+                                    dv.det_compra_id = int(i['id'])
                                     dv.cantidad = int(i['cantidad'])
                                     dv.pvp = float(i['precio'])
                                     dv.subtotal = float(i['subtotal'])
@@ -173,7 +173,12 @@ class CrudView(ValidatePermissionRequiredMixin, TemplateView):
                                 else:
                                     ds = Detalle_servicios()
                                     ds.venta_id = c.id
-
+                                    ds.empleado_id = int(i['empleado']['id'])
+                                    ds.servicio_id = int(i['id'])
+                                    ds.valor = float(i['precio'])
+                                    ds.cantidad = int(i['cantidad'])
+                                    ds.subtotals = float(i['subtotal'])
+                                    ds.save()
                         data['id'] = c.id
                         data['resp'] = True
                 else:
@@ -225,6 +230,97 @@ class CrudView(ValidatePermissionRequiredMixin, TemplateView):
         data['form'] = self.form_class()
         data['detalle'] = []
         data['formc'] = UserForm()
+        return data
+
+
+class CitacrudView(ValidatePermissionRequiredMixin, TemplateView):
+    form_class = VentaForm
+    model = Venta
+    template_name = 'front-end/cita/form.html'
+    permission_required = 'venta.add_venta'
+
+    @method_decorator(csrf_exempt)
+    def dispatch(self, request, *args, **kwargs):
+        return super().dispatch(request, *args, **kwargs)
+
+    def post(self, request, *args, **kwargs):
+        data = {}
+        action = request.POST['action']
+        try:
+            if action == 'add':
+                datos = json.loads(request.POST['ventas'])
+                if datos:
+                    with transaction.atomic():
+                        c = self.model()
+                        c.fecha_factura = datos['fecha']
+                        c.fecha_reserva = datos['fecha']
+                        c.user_id = datos['cliente']
+                        c.duracion_servicio = datos['duracion']
+                        c.subtotal = float(datos['subtotal'])
+                        c.iva = float(datos['iva'])
+                        c.total = float(datos['total'])
+                        c.save()
+                        if datos['detalle']:
+                            for i in datos['detalle']:
+                                if i['tipo'] == 'Producto':
+                                    dv = Detalle_venta()
+                                    dv.venta_id = c.id
+                                    dv.det_compra_id = int(i['id'])
+                                    dv.cantidad = int(i['cantidad'])
+                                    dv.pvp = float(i['precio'])
+                                    dv.subtotal = float(i['subtotal'])
+                                    dv.save()
+                                else:
+                                    ds = Detalle_servicios()
+                                    ds.venta_id = c.id
+                                    ds.empleado_id = int(i['empleado']['id'])
+                                    ds.servicio_id = int(i['id'])
+                                    ds.valor = float(i['precio'])
+                                    ds.cantidad = int(i['cantidad'])
+                                    ds.subtotals = float(i['subtotal'])
+                                    ds.save()
+                        data['id'] = c.id
+                        data['resp'] = True
+                else:
+                    data['resp'] = False
+                    data['error'] = "Datos Incompletos"
+            elif action == 'search_citas':
+                data = []
+                query = Detalle_servicios.objects.filter(venta__estado=2)
+                for c in query:
+                    item = c.toJSON()
+                    data.append(item)
+            elif action == 'search_serv':
+                data = []
+                ids = json.loads(request.POST['ids'])
+                query = Servicio.objects.all()
+                for p in query.exclude(id__in=ids):
+                    item = p.toJSON()
+                    item['tipo'] = 'Servicio'
+                    data.append(item)
+            elif action == 'search_empleados':
+                data = []
+                ids = json.loads(request.POST['ids'])
+                query = Empleado.objects.all()
+                for p in query.exclude(id__in=ids):
+                    item = p.toJSON()
+                    item['sexo'] = p.get_sexo_display()
+                    data.append(item)
+            else:
+                data['error'] = 'No ha seleccionado una opcion'
+        except Exception as e:
+            data['error'] = str(e)
+        return HttpResponse(json.dumps(data), content_type='application/json')
+
+    def get_context_data(self, **kwargs):
+        data = super().get_context_data(**kwargs)
+        data['icono'] = 'fa fa-calendar'
+        data['entidad'] = 'Agenda'
+        data['boton'] = 'Guardar Cita'
+        data['titulo'] = 'Nueva Cita'
+        data['empresa'] = empresa
+        data['form'] = self.form_class()
+        data['detalle'] = []
         return data
 
 

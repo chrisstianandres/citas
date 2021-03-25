@@ -19,10 +19,15 @@ class VentaForm(forms.ModelForm):
                 'class': 'form-control',
                 'id': 'id_fecha_venta',
             }
+            self.fields['fecha_reserva'].widget.attrs = {
+                'class': 'form-control',
+                'id': 'id_fecha_reserva',
+            }
             self.fields['duracion_servicio'].widget.attrs = {
                 'class': 'form-control input-sm'
             }
             self.fields['fecha_factura'].initial = datetime.now().strftime('%Y-%m-%d')
+            self.fields['fecha_reserva'].initial = datetime.now().strftime('%Y-%m-%d')
             self.fields['user'].widget.attrs = {
                 'class': 'form-control'
             }
@@ -49,6 +54,7 @@ class VentaForm(forms.ModelForm):
         model = Venta
         fields = [
             'fecha_factura',
+            'fecha_reserva',
             'user',
             'duracion_servicio',
             'subtotal',
@@ -57,6 +63,7 @@ class VentaForm(forms.ModelForm):
         ]
         labels = {
             'fecha_factura': 'Fecha de Venta',
+            'fecha_reserva': 'Fecha',
             'user': 'Cliente',
             'duracion_servicio': 'Duracion de antencion',
             'subtotal': 'Subtotal',

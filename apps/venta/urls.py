@@ -9,6 +9,7 @@ app_name = 'Venta'
 urlpatterns = [
     path('lista', login_required(lista.as_view()), name='lista'),
     path('venta/nuevo', login_required(CrudView.as_view()), name='nuevo'),
+    path('cita/nuevo', login_required(CitacrudView.as_view()), name='cita_nuevo'),
     path('nuevo_online', login_required(CrudViewOnline.as_view()), name='nuevo_online'),
     path('online', views.CrudView_online, name='online'),
     path('chart', login_required(views.grap), name='chart'),
