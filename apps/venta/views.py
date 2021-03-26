@@ -19,7 +19,7 @@ from apps.servicio.models import Servicio
 
 from apps.user.forms import UserForm
 from apps.user.models import User
-from apps.venta.forms import VentaForm
+from apps.venta.forms import VentaForm, Detalle_servicioForm
 from apps.venta.models import Venta, Detalle_venta, Detalle_servicios
 from apps.empresa.models import Empresa
 from apps.producto.models import Producto
@@ -235,6 +235,7 @@ class CrudView(ValidatePermissionRequiredMixin, TemplateView):
 
 class CitacrudView(ValidatePermissionRequiredMixin, TemplateView):
     form_class = VentaForm
+    second_form_class = Detalle_servicioForm
     model = Venta
     template_name = 'front-end/cita/form.html'
     permission_required = 'venta.add_venta'
@@ -248,37 +249,24 @@ class CitacrudView(ValidatePermissionRequiredMixin, TemplateView):
         action = request.POST['action']
         try:
             if action == 'add':
-                datos = json.loads(request.POST['ventas'])
+                datos = json.loads(request.POST['cita'])
                 if datos:
                     with transaction.atomic():
+                        print(datos)
                         c = self.model()
-                        c.fecha_factura = datos['fecha']
-                        c.fecha_reserva = datos['fecha']
                         c.user_id = datos['cliente']
+                        c.fecha_factura = datos['fecha_reserva']
+                        c.fecha_reserva = datos['fecha_reserva']
                         c.duracion_servicio = datos['duracion']
-                        c.subtotal = float(datos['subtotal'])
-                        c.iva = float(datos['iva'])
-                        c.total = float(datos['total'])
+                        c.hora_inicio = datos['hora_inicio']
+                        c.hora_fin = datos['hora_fin']
+                        c.estado = 2
                         c.save()
-                        if datos['detalle']:
-                            for i in datos['detalle']:
-                                if i['tipo'] == 'Producto':
-                                    dv = Detalle_venta()
-                                    dv.venta_id = c.id
-                                    dv.det_compra_id = int(i['id'])
-                                    dv.cantidad = int(i['cantidad'])
-                                    dv.pvp = float(i['precio'])
-                                    dv.subtotal = float(i['subtotal'])
-                                    dv.save()
-                                else:
-                                    ds = Detalle_servicios()
-                                    ds.venta_id = c.id
-                                    ds.empleado_id = int(i['empleado']['id'])
-                                    ds.servicio_id = int(i['id'])
-                                    ds.valor = float(i['precio'])
-                                    ds.cantidad = int(i['cantidad'])
-                                    ds.subtotals = float(i['subtotal'])
-                                    ds.save()
+                        dts = Detalle_servicios()
+                        dts.venta_id = c.id
+                        dts.servicio_id = datos['servicio']
+                        dts.empleado_id = datos['empleado']
+                        dts.save()
                         data['id'] = c.id
                         data['resp'] = True
                 else:
@@ -290,21 +278,21 @@ class CitacrudView(ValidatePermissionRequiredMixin, TemplateView):
                 for c in query:
                     item = c.toJSON()
                     data.append(item)
-            elif action == 'search_serv':
+            elif action == 'search_horario_empleado':
                 data = []
-                ids = json.loads(request.POST['ids'])
-                query = Servicio.objects.all()
-                for p in query.exclude(id__in=ids):
+                id = request.POST['id']
+                query = Detalle_servicios.objects.filter(empleado_id=id, venta__estado=2, venta__fecha_reserva__gte=datetime.now())
+                for p in query:
                     item = p.toJSON()
-                    item['tipo'] = 'Servicio'
+                    item['fecha_factura'] = p.venta.fecha_factura.strftime('%m/%d/%Y')
+                    item['fecha_reserva'] = p.venta.fecha_reserva.strftime('%m/%d/%Y')
                     data.append(item)
-            elif action == 'search_empleados':
+            elif action == 'search_servicio_cita':
                 data = []
-                ids = json.loads(request.POST['ids'])
-                query = Empleado.objects.all()
-                for p in query.exclude(id__in=ids):
+                id = request.POST['id']
+                query = Servicio.objects.filter(id=id)
+                for p in query:
                     item = p.toJSON()
-                    item['sexo'] = p.get_sexo_display()
                     data.append(item)
             else:
                 data['error'] = 'No ha seleccionado una opcion'
@@ -320,6 +308,7 @@ class CitacrudView(ValidatePermissionRequiredMixin, TemplateView):
         data['titulo'] = 'Nueva Cita'
         data['empresa'] = empresa
         data['form'] = self.form_class()
+        data['form2'] = self.second_form_class()
         data['detalle'] = []
         return data
 

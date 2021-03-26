@@ -4,41 +4,79 @@
     {#    <link rel="stylesheet" href="{% static 'assets/css/jquery-ui.custom.min.css' %}"/>#}
     {#    <link rel="stylesheet" href="{% static 'assets/css/fullcalendar.min.css' %}"/>#}
     <link href='https://cdn.jsdelivr.net/npm/fullcalendar@5.5.1/main.min.css' rel='stylesheet'/>
+    {#    <link rel="stylesheet" href="{% static 'assets/css/bootstrap-datetimepicker.min.css' %}"/>#}
 
-{#    <script src='https://cdn.jsdelivr.net/npm/fullcalendar@5.5.1/locales-all.min.js'></script>#}
-
+    {#    <script src='https://cdn.jsdelivr.net/npm/fullcalendar@5.5.1/locales-all.min.js'></script>#}
     <script src='https://cdn.jsdelivr.net/npm/fullcalendar@5.5.1/main.min.js'></script>
+
+
 
 {% endblock %}
 {% block content %}
+
     <div class="row">
         <div class="col-xs-12">
             <!-- PAGE CONTENT BEGINS -->
             <div class="row">
-                <div class="col-sm-3">
-                    <div class="widget-box transparent">
-                        <div class="widget-header">
-                            <h4>Agendar Nueva Cita</h4>
-                        </div>
 
-                        <div class="widget-body">
-                            <div class="widget-main no-padding">
-                                <div class="form-group">
-                                    <label for="id_fecha_reserva">{{ form.fecha_reserva.label_tag }}</label>
-                                    <div class="input-group">
-                                        <div class="input-group-addon">
-                                            <i class="fa fa-calendar"></i></div>
-                                        {{ form.fecha_reserva }}
+                <form id="form" method="post">
+                    <div class="col-sm-3">
+                        <div class="widget-box transparent">
+                            <div class="widget-header">
+                                <h4>Agendar Nueva Cita</h4>
+                            </div>
+
+                            <div class="widget-body">
+                                <div class="widget-main no-padding">
+
+                                    <div class="form-group">
+                                        <label for="id_user">{{ form.user.label_tag }}</label>
+                                        {{ form.user }}
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="id_servicio">{{ form2.servicio.label_tag }}</label>
+                                        {{ form2.servicio }}
+                                    </div>
+                                    <div class="form-group" style="display: none" id="duracion_res">
+                                        <label for="id_duracion_serv">Duracion de Servicio</label>
+                                        <div class="input-group">
+                                            <div class="input-group-addon">
+                                                <i class="fa fa-clock-o bigger-110"></i>
+                                            </div>
+                                            <input type="text" name="duracion" class="form-control" readonly="readonly"
+                                                   id="id_duracion_serv">
+                                            <div class="input-group-addon">
+                                                Mts
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="id_empleado">{{ form2.empleado.label_tag }}</label>
+                                        {{ form2.empleado }}
+                                    </div>
+                                    <div class="form-group" style="display: none" id="fecha_res">
+                                        <label for="id_fecha_reserva">{{ form.fecha_reserva.label_tag }}</label>
+                                        <div class="input-group">
+                                            <div class="input-group-addon">
+                                                <i class="fa fa-calendar"></i></div>
+                                            {{ form.fecha_reserva }}
+                                        </div>
                                     </div>
                                 </div>
-                                <div class="form-group">
-                                    <label for="id_user">{{ form.user.label_tag }}</label>
-                                    {{ form.user }}
+                                <div class="form-actions center">
+                                    <button class="btn btn-white btn-info btn-bold" type="submit">
+                                        <i class="ace-icon fa fa-floppy-o bigger-120 blue"></i>
+                                        Guardar
+                                    </button>
+                                    <button class="btn btn-white btn-danger btn-round" onclick="window.history.back();">
+                                        <i class="ace-icon fa fa-times red2"></i>
+                                        Cancelar
+                                    </button>
                                 </div>
                             </div>
                         </div>
                     </div>
-                </div>
+                </form>
                 <div class="col-sm-9">
                     <div class="space"></div>
 
@@ -54,12 +92,12 @@
 {% block extra %}
     <script src="{% static 'apps/cliente/form.js' %}"></script>
     <script src="{% static 'apps/cita/form.js' %}"></script>
-    <!-- page specific plugin scripts -->
-    {#    <script src="{% static 'assets/js/jquery-ui.custom.min.js' %}"></script>#}
-    {#    <script src="{% static 'assets/js/jquery.ui.touch-punch.min.js' %}"></script>#}
-    {#    <script src="{% static 'assets/js/moment.min.js' %}"></script>#}
-    {#    <script src="{% static 'assets/js/fullcalendar.min.js' %}"></script>#}
-    {#    <script src="{% static 'assets/js/bootbox.js' %}"></script>#}
+    <script src="{% static 'lib/jquery-ui/jquery-ui.min.js' %}"></script>
+    <script src="{% static 'lib/jquery-ui/jquery-ui.js' %}"></script>
+    <script src="{% static 'assets/js/locale.js' %}"></script>
+    <script src="{% static 'assets/js/datetime.js' %}"></script>
+    <link href="https://rawgit.com/AuspeXeu/bootstrap-datetimepicker/master/css/bootstrap-datetimepicker.css"
+          rel="stylesheet"/>
 {% endblock %}
 
 

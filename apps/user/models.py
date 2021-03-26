@@ -31,7 +31,7 @@ class User(AbstractUser):
     tipo = models.IntegerField(choices=tipo, default=1)
 
     def __str__(self):
-        return '%s %s' % (self.username, self.first_name)
+        return '{}'.format(self.get_full_name())
 
     def get_image(self):
         if self.avatar:

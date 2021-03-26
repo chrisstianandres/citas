@@ -2,7 +2,7 @@ from datetime import datetime
 
 from django import forms
 
-from .models import Detalle_venta, Venta
+from .models import Venta, Detalle_servicios
 from ..user.models import User
 
 
@@ -21,13 +21,13 @@ class VentaForm(forms.ModelForm):
             }
             self.fields['fecha_reserva'].widget.attrs = {
                 'class': 'form-control',
-                'id': 'id_fecha_reserva',
+                'id': 'id_fecha_reserva'
             }
             self.fields['duracion_servicio'].widget.attrs = {
                 'class': 'form-control input-sm'
             }
             self.fields['fecha_factura'].initial = datetime.now().strftime('%Y-%m-%d')
-            self.fields['fecha_reserva'].initial = datetime.now().strftime('%Y-%m-%d')
+            self.fields['fecha_reserva'].initial = ''
             self.fields['user'].widget.attrs = {
                 'class': 'form-control'
             }
@@ -76,4 +76,31 @@ class VentaForm(forms.ModelForm):
                 attrs={'value': datetime.now().strftime('%Y-%m-%d')},
             ),
             'duracion_servicio ': forms.TextInput(),
+        }
+
+
+class Detalle_servicioForm(forms.ModelForm):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        for field in self.Meta.fields:
+            self.fields[field].widget.attrs.update({
+                'class': 'form-control'
+            })
+
+            self.fields['empleado'].widget.attrs = {
+                'class': 'form-control'
+            }
+            self.fields['servicio'].widget.attrs = {
+                'class': 'form-control'
+            }
+        # habilitar, desabilitar, y mas
+    class Meta:
+        model = Detalle_servicios
+        fields = [
+            'empleado',
+            'servicio'
+        ]
+        labels = {
+            'empleado': 'Empleado',
+            'servicio': 'Servicio'
         }
