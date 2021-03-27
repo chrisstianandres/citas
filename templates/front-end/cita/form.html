@@ -46,7 +46,7 @@
                                             <input type="text" name="duracion" class="form-control" readonly="readonly"
                                                    id="id_duracion_serv">
                                             <div class="input-group-addon">
-                                                Mts
+                                                Minutos
                                             </div>
                                         </div>
                                     </div>
@@ -63,15 +63,27 @@
                                         </div>
                                     </div>
                                 </div>
-                                <div class="form-actions center">
-                                    <button class="btn btn-white btn-info btn-bold" type="submit">
+                                <div class="form-actions">
+                                    <div class="form-group">
+                                         <button class="btn btn-white btn-info btn-bold" type="submit">
                                         <i class="ace-icon fa fa-floppy-o bigger-120 blue"></i>
                                         Guardar
                                     </button>
-                                    <button class="btn btn-white btn-danger btn-round" onclick="window.history.back();">
+                                        <button class="btn btn-white btn-danger btn-round" style="display: none" type="button" id="cancel_cita">
                                         <i class="ace-icon fa fa-times red2"></i>
-                                        Cancelar
+                                       Anular Citar
                                     </button>
+                                    </div>
+
+                                   <div class="form-group">
+                                         <button class="btn btn-white btn-success btn-round" style="display: none" type="button"
+                                                 id="new_cita" onclick="window.location.reload();">
+                                        <i class="ace-icon fa fa-plus-circle green"></i>
+                                        Nueva Cita
+                                    </button>
+                                   </div>
+
+
                                 </div>
                             </div>
                         </div>
@@ -90,7 +102,7 @@
     </div>
 {% endblock %}
 {% block extra %}
-    <script src="{% static 'apps/cliente/form.js' %}"></script>
+{#    <script src="{% static 'apps/cliente/form.js' %}"></script>#}
     <script src="{% static 'apps/cita/form.js' %}"></script>
     <script src="{% static 'lib/jquery-ui/jquery-ui.min.js' %}"></script>
     <script src="{% static 'lib/jquery-ui/jquery-ui.js' %}"></script>
@@ -98,6 +110,7 @@
     <script src="{% static 'assets/js/datetime.js' %}"></script>
     <link href="https://rawgit.com/AuspeXeu/bootstrap-datetimepicker/master/css/bootstrap-datetimepicker.css"
           rel="stylesheet"/>
+     <script src="{% static 'assets/js/chosen.jquery.min.js' %}"></script>
 {% endblock %}
 
 

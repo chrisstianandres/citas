@@ -277,11 +277,24 @@ class CitacrudView(ValidatePermissionRequiredMixin, TemplateView):
                 query = Detalle_servicios.objects.filter(venta__estado=2)
                 for c in query:
                     item = c.toJSON()
+                    item['classname'] = 'label-danger'
                     data.append(item)
             elif action == 'search_horario_empleado':
                 data = []
                 id = request.POST['id']
                 query = Detalle_servicios.objects.filter(empleado_id=id, venta__estado=2, venta__fecha_reserva__gte=datetime.now())
+                for p in query:
+                    item = p.toJSON()
+                    item['fecha_factura'] = p.venta.fecha_factura.strftime('%m/%d/%Y')
+                    item['fecha_reserva'] = p.venta.fecha_reserva.strftime('%m/%d/%Y')
+                    data.append(item)
+            elif action == 'search_horario_empleado_edit':
+                data = []
+                id = request.POST['id']
+                exclude = request.POST['exclude']
+                query = Detalle_servicios.objects.filter(empleado_id=id, venta__estado=2,
+                                                         venta__fecha_reserva__gte=datetime.now()).\
+                    exclude(venta_id=exclude)
                 for p in query:
                     item = p.toJSON()
                     item['fecha_factura'] = p.venta.fecha_factura.strftime('%m/%d/%Y')
@@ -294,6 +307,38 @@ class CitacrudView(ValidatePermissionRequiredMixin, TemplateView):
                 for p in query:
                     item = p.toJSON()
                     data.append(item)
+            elif action == 'edit_event':
+                data = []
+                id = request.POST['id']
+                query = Detalle_servicios.objects.get(venta_id=id)
+                data.append(query.toJSON())
+            elif action == 'edit':
+                id = request.POST['id']
+                datos = json.loads(request.POST['cita'])
+                if datos:
+                    with transaction.atomic():
+                        dts = Detalle_servicios.objects.get(id=id)
+                        dts.venta_id = dts.venta.id
+                        dts.servicio_id = datos['servicio']
+                        dts.empleado_id = datos['empleado']
+                        dts.save()
+                        c = self.model.objects.get(id=dts.venta.id)
+                        c.user_id = datos['cliente']
+                        c.fecha_factura = datos['fecha_reserva']
+                        c.fecha_reserva = datos['fecha_reserva']
+                        c.duracion_servicio = datos['duracion']
+                        c.hora_inicio = datos['hora_inicio']
+                        c.hora_fin = datos['hora_fin']
+                        c.estado = 2
+                        c.save()
+                        data['resp'] = True
+            elif action == 'anular':
+                id = request.POST['id']
+                serv = Detalle_servicios.objects.get(id=id)
+                vent = self.model.objects.get(id=serv.venta.id)
+                vent.estado = 0
+                vent.save()
+
             else:
                 data['error'] = 'No ha seleccionado una opcion'
         except Exception as e:

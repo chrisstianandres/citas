@@ -14,7 +14,7 @@ from apps.user.models import User
 from apps.empresa.models import Empresa
 
 estado = (
-    (0, 'DEVUELTA'),
+    (0, 'ANULADA'),
     (1, 'FINALIZADA'),
     (2, 'RESERVADA')
 )

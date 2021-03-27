@@ -21,7 +21,8 @@ class VentaForm(forms.ModelForm):
             }
             self.fields['fecha_reserva'].widget.attrs = {
                 'class': 'form-control',
-                'id': 'id_fecha_reserva'
+                'id': 'id_fecha_reserva',
+                'autocomplete': 'off'
             }
             self.fields['duracion_servicio'].widget.attrs = {
                 'class': 'form-control input-sm'
@@ -88,7 +89,8 @@ class Detalle_servicioForm(forms.ModelForm):
             })
 
             self.fields['empleado'].widget.attrs = {
-                'class': 'form-control'
+                'class': 'form-control',
+                'disabled': True
             }
             self.fields['servicio'].widget.attrs = {
                 'class': 'form-control'
