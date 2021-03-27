@@ -1,5 +1,5 @@
 var calendar;
-var action_submit = 'add', id = '';
+var action_submit = 'add', id = '', duration_edit;
 var disabledtimes_mapping = [];
 var citas = {
     items: {
@@ -13,14 +13,6 @@ var citas = {
     }
 };
 
-function formatDate(datestr) {
-    var date = new Date(datestr);
-    var day = date.getDate();
-    day = day > 9 ? day : "0" + day;
-    var month = date.getMonth() + 1;
-    month = month > 9 ? month : "0" + month;
-    return month + "/" + day + "/" + date.getFullYear();
-}
 
 $(function () {
     cargar_eventos();
@@ -47,6 +39,16 @@ $(function () {
                         $.each(data, function (index, value) {
                             $('#duracion_res').fadeIn();
                             $('#id_duracion_serv').val(value.duracion);
+                            if ($('#id_empleado').val() !== '' || null) {
+                                if ($('#id_duracion_serv').val() > duration_edit) {
+                                    set_horas('search_horario_empleado', $('#id_empleado').val(), '');
+                                    $('#id_fecha_reserva').val(null);
+                                } else {
+                                    set_horas('search_horario_empleado', $('#id_empleado').val(), id);
+                                }
+
+                            }
+
                         });
                         return false;
                     }
@@ -57,17 +59,28 @@ $(function () {
             } else {
                 $('#duracion_res').fadeOut();
                 $('#id_duracion_serv').val();
-                $('#id_empleado').prop('disabled', 'disabled').trigger("chosen:updated");
+                $('#id_empleado').prop('disabled', true).trigger("chosen:updated");
                 $("#id_fecha_reserva").datetimepicker('remove');
                 $('#fecha_res').fadeOut()
             }
         })
         .chosen({no_results_text: "No se encontraron resultados para: "});
 
-    $('#form').on('submit', function (e) {
+    $('#form_cita').on('submit', function (e) {
         e.preventDefault();
-        var isvalid = $(this).valid();
-        if (isvalid) {
+        if ($('#id_user').val() === '') {
+            menssaje_error('Error!', 'Por favor elija un cliente', '', function () {
+            })
+        } else if ($('#id_servicio').val() === '') {
+            menssaje_error('Error!', 'Por favor elija un servicio', '', function () {
+            })
+        } else if ($('#id_empleado').val() === '') {
+            menssaje_error('Error!', 'Por favor elija un empleado', '', function () {
+            })
+        } else if ($('#fecha_res').show() && $('#id_fecha_reserva').val() === '') {
+            menssaje_error('Error!', 'Por favor elija una fecha', '', function () {
+            })
+        } else {
             var dur = $('#id_duracion_serv').val();
             var date = $("#id_fecha_reserva").data("datetimepicker").getDate(),
                 formatted = date.getFullYear() + "-" + (date.getMonth() + 1) + "-" + date.getDate(),
@@ -88,38 +101,6 @@ $(function () {
                 parametros, function () {
                     window.location.reload();
                 })
-        }
-    });
-
-    validador();
-    $("#form").validate({
-        rules: {
-            user: {
-                required: true,
-            },
-            empleado: {
-                required: true,
-            },
-            fecha_reserva: {
-                required: true,
-            },
-            servicio: {
-                required: true,
-            }
-        },
-        messages: {
-            user: {
-                required: "Elije un cliente"
-            },
-            servicio: {
-                required: "Elije un servicio"
-            },
-            empleado: {
-                required: "Elije un empleado"
-            },
-            fecha_reserva: {
-                required: "Elije una fecha y hora para la cita"
-            },
         }
     });
 
@@ -171,21 +152,10 @@ function cargar_eventos() {
                 eventDidMount: function (info) {
                     $(info.el).popover({
                         title: 'Cliente: ' + info.event.title,
-                        placement: "bottom",
-                        trigger: "hover",
+                        placement: "top",
+                        trigger: 'focus',
                         content: info.event.extendedProps.description
                     });
-                    var dataHoje = new Date();
-                    // if (event.start < dataHoje && event.end > dataHoje) {
-                    //     //event.color = "#FFB347"; //Em andamento
-                    //     element.css('background-color', '#FFB347');
-                    // } else if (event.start < dataHoje && event.end < dataHoje) {
-                    //     //event.color = "#77DD77"; //Concluído OK
-                    //     element.css('background-color', '#77DD77');
-                    // } else if (event.start > dataHoje && event.end > dataHoje) {
-                    //     //event.color = "#AEC6CF"; //Não iniciado
-                    //     element.css('background-color', '#AEC6CF');
-                    // }
                 },
                 eventClick: function (info) {
                     $.ajax({
@@ -331,6 +301,7 @@ function set_data(data, hora_inicio) {
         $('#id_servicio').val(data.servicio.id).trigger("chosen:updated");
         $('#duracion_res').fadeIn();
         $('#id_duracion_serv').val(data.servicio.duracion);
+        duration_edit = data.servicio.duracion;
         $('#id_empleado').val(data.empleado.id).prop('disabled', false).trigger("chosen:updated");
         set_horas('search_horario_empleado_edit', data.empleado.id, data.venta.id);
         if (parseInt(data.venta.hora_inicio) < 10) {
@@ -345,4 +316,13 @@ function set_data(data, hora_inicio) {
     }, 2000);
 
 
+}
+
+function formatDate(datestr) {
+    var date = new Date(datestr);
+    var day = date.getDate();
+    day = day > 9 ? day : "0" + day;
+    var month = date.getMonth() + 1;
+    month = month > 9 ? month : "0" + month;
+    return month + "/" + day + "/" + date.getFullYear();
 }
