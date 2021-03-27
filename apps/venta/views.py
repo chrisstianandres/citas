@@ -259,7 +259,9 @@ class CitacrudView(ValidatePermissionRequiredMixin, TemplateView):
                         c.fecha_reserva = datos['fecha_reserva']
                         c.duracion_servicio = datos['duracion']
                         c.hora_inicio = datos['hora_inicio']
+                        c.minuto_inicio = datos['minuto_inicio']
                         c.hora_fin = datos['hora_fin']
+                        c.minuto_fin = datos['minuto_fin']
                         c.estado = 2
                         c.save()
                         dts = Detalle_servicios()
@@ -277,7 +279,7 @@ class CitacrudView(ValidatePermissionRequiredMixin, TemplateView):
                 query = Detalle_servicios.objects.filter(venta__estado=2)
                 for c in query:
                     item = c.toJSON()
-                    item['classname'] = 'label-danger'
+                    item['classname'] = 'label-success'
                     data.append(item)
             elif action == 'search_horario_empleado':
                 data = []

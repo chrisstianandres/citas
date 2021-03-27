@@ -7,7 +7,9 @@ var citas = {
         cliente: '',
         duracion: '',
         hora_inicio: '',
+        minuto_inicio: '',
         hora_fin: '',
+        minuto_fin: '',
         empleado: '',
 
     }
@@ -84,13 +86,15 @@ $(function () {
             var dur = $('#id_duracion_serv').val();
             var date = $("#id_fecha_reserva").data("datetimepicker").getDate(),
                 formatted = date.getFullYear() + "-" + (date.getMonth() + 1) + "-" + date.getDate(),
-                hours = date.getHours();
+                hours = date.getHours(), minutes = date.getMinutes();
             var fin = dur / 60;
 
             var parametros;
             citas.items.fecha_reserva = formatted;
             citas.items.hora_inicio = hours;
+            citas.items.minuto_inicio = minutes;
             citas.items.hora_fin = hours + fin;
+            citas.items.minuto_fin = minutes;
             citas.items.servicio = $('#id_servicio').val();
             citas.items.cliente = $('#id_user').val();
             citas.items.empleado = $('#id_empleado').val();
@@ -152,9 +156,11 @@ function cargar_eventos() {
                 eventDidMount: function (info) {
                     $(info.el).popover({
                         title: 'Cliente: ' + info.event.title,
-                        placement: "top",
-                        trigger: 'focus',
-                        content: info.event.extendedProps.description
+                        placement: "auto left",
+                        trigger: 'hover',
+                        container: 'body',
+                        content: info.event.extendedProps.description,
+                        template: '<div class="popover" role="tooltip"><div class="arrow"></div><h3 class="popover-title"></h3><div class="popover-content"></div></div>'
                     });
                 },
                 eventClick: function (info) {
@@ -206,29 +212,23 @@ function cargar_eventos() {
             });
             calendar.render();
             $.each(data, function (key, value) {
-                var hora_inicio;
-                var hora_fin;
-                if (parseInt(value.venta.hora_inicio) < 10) {
-                    hora_inicio = '0' + parseInt(value.venta.hora_inicio)
-                } else {
-                    hora_inicio = parseInt(value.venta.hora_inicio)
-                }
-                if (parseInt(value.venta.hora_fin) < 10) {
-                    hora_fin = '0' + parseInt(value.venta.hora_fin)
-                } else {
-                    hora_fin = parseInt(value.venta.hora_fin)
-                }
-                var date = new Date(value.venta.fecha_reserva + 'T' + hora_inicio + ':00:00');
-                var date_end = new Date(value.venta.fecha_reserva + 'T' + hora_fin + ':00:00');
+                value.venta.minuto_inicio = value.venta.minuto_inicio > 9 ? value.venta.minuto_inicio : "0" + value.venta.minuto_inicio;
+                value.venta.minuto_fin = value.venta.minuto_fin > 9 ? value.venta.minuto_fin : "0" + value.venta.minuto_fin;
+                value.venta.hora_inicio = value.venta.hora_inicio > 9 ? value.venta.hora_inicio : "0" + value.venta.hora_inicio;
+                value.venta.hora_fin = value.venta.hora_fin > 9 ? value.venta.hora_fin : "0" + value.venta.hora_fin;
+                var date = new Date(value.venta.fecha_reserva + 'T' + value.venta.hora_inicio + ':' + value.venta.minuto_inicio + ':00');
+                var date_end = new Date(value.venta.fecha_reserva + 'T' + value.venta.hora_fin + ':' + value.venta.minuto_fin + ':00');
                 calendar.addEvent({
                     id: value.venta.id,
                     title: value.venta.user.full_name,
                     start: date,
                     className: value.classname,
-                    // end: date_end,
+                    end: date_end,
+                    color: 'green',
                     allDay: false,
                     description: value.servicio.nombre + ' con ' + value.empleado.full_name_list + ' desde las: ' +
-                        parseInt(value.venta.hora_inicio) + ':00' + ' hasta las ' + parseInt(value.venta.hora_fin) + ':00',
+                        parseInt(value.venta.hora_inicio) + ':' + value.venta.minuto_inicio + ' hasta las ' +
+                        parseInt(value.venta.hora_fin) + ':' + value.venta.minuto_fin,
                 });
             });
             return false;
@@ -241,6 +241,7 @@ function cargar_eventos() {
 }
 
 function set_horas(action, id, exclude) {
+    disabledtimes_mapping = [];
     $.ajax({
         dataType: 'JSON',
         type: 'POST',
@@ -250,30 +251,46 @@ function set_horas(action, id, exclude) {
         if (!data.hasOwnProperty('error')) {
             var dur = $('#id_duracion_serv').val();
             $.each(data, function (index, value) {
+                var alter = value.venta.minuto_fin !== 0 ? value.venta.minuto_fin : 60;
+                alter = (alter-1)> 9 ? (alter-1) : "0" + (alter-1);
+                var alter_in = value.venta.minuto_inicio !== 0 ? value.venta.minuto_inicio : '00' | value.venta.minuto_inicio > 9 ? value.venta.minuto_inicio : "0" + value.venta.minuto_inicio;
+                var alter_hora;
+                if (value.venta.hora_inicio+1 <= value.venta.hora_fin && value.venta.minuto_fin===0){
+                    alter_hora = value.venta.hora_fin-1;
+
+                } else if (value.venta.hora_inicio+1 <= value.venta.hora_fin && value.venta.minuto_fin>1){
+                    alter_hora = value.venta.hora_fin;
+                }
+                alter_hora =alter_hora > 9 ? alter_hora : "0" + alter_hora;
+                value.venta.hora_inicio = value.venta.hora_inicio > 9 ? value.venta.hora_inicio : "0" + value.venta.hora_inicio;
                 if (dur > 60) {
-                    disabledtimes_mapping.push(value.fecha_reserva + ':' + parseInt(value.venta.hora_inicio));
-                    disabledtimes_mapping.push(value.fecha_reserva + ':' + parseInt(value.venta.hora_fin - 1));
+                    disabledtimes_mapping.push(value.fecha_reserva + ':' + parseInt(value.venta.hora_inicio) + ':00');
+                    disabledtimes_mapping.push(value.fecha_reserva + ':' + parseInt(value.venta.hora_fin - 1) + ':00');
                     for (var i = 1; i < (dur / 60); i++) {
                         disabledtimes_mapping.push(value.fecha_reserva + ':' + parseInt(value.venta.hora_inicio - i));
                     }
                 } else {
-                    disabledtimes_mapping.push(value.fecha_reserva + ':' + parseInt(value.venta.hora_inicio));
-                    disabledtimes_mapping.push(value.fecha_reserva + ':' + parseInt(value.venta.hora_fin - 1));
+                    disabledtimes_mapping.push(value.fecha_reserva + ':' + value.venta.hora_inicio + ':' + alter_in);
+                    disabledtimes_mapping.push(value.fecha_reserva + ':' + alter_hora + ':' + alter);
                 }
             });
+            console.log(disabledtimes_mapping);
             $('#fecha_res').fadeIn();
             $("#id_fecha_reserva").datetimepicker({
                 format: 'yyyy-mm-dd hh:ii',
                 autoclose: true,
                 language: 'es',
+                today: true,
                 daysOfWeekDisabled: [0],
                 hoursDisabled: ['18:00', '19:00', '20:00', '21:00', '22:00', '23:00',
                     '00:00', '01:00', '02:00', '03:00', '04:00', '05:00', '06:00', '07:00'],
                 startDate: new Date(),
                 showMinute: false,
-                minutesDisabled: ["05", "10", "15", "20", "20", "25", "30", "35", "40", "45", "50", "55",],
+                // minutesDisabled: ["05", "10", "15", "20", "20", "25", "30", "35", "40", "45", "50", "55",],
                 onRenderHour: function (date) {
-                    if (disabledtimes_mapping.indexOf(formatDate(date) + ":" + date.getUTCHours()) > -1) {
+                    var minuto = date.getUTCMinutes() > 9 ? date.getUTCMinutes() : "0" + date.getUTCMinutes();
+                    var hora = date.getUTCHours() > 9 ? date.getUTCHours() : "0" + date.getUTCHours();
+                    if (disabledtimes_mapping.indexOf(formatDate(date) + ":" + hora+':15') > -1) {
                         return ['disabled'];
                     }
                 }
@@ -325,4 +342,30 @@ function formatDate(datestr) {
     var month = date.getMonth() + 1;
     month = month > 9 ? month : "0" + month;
     return month + "/" + day + "/" + date.getFullYear();
+}
+
+function resetDate(datestr, hora, minuto) {
+    var fecha = new Date(datestr);
+    var ano = fecha.getFullYear();
+    var mes = fecha.getMonth();
+    var dia = fecha.getDate();
+    return new Date(ano, mes, dia, hora, minuto)
+
+}
+
+function exclude_duplicados(array1, array2) {
+    for (var i = 0; i < array2.length; i++) {
+        if (array2[i] === array1) {
+            console.log(true);
+        } else {
+            // console.log(array2[i]);
+            console.log('espacio');
+            // console.log(array1);
+            // console.log('fin');
+        }
+        //     for (var j = 0; j < array1.length; j++) {
+        //         if (array1[i] === array2[j])
+        //             console.log(true);
+        //     }
+    }
 }
