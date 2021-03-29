@@ -1760,7 +1760,8 @@
                 val.ss = (val.s < 10 ? '0' : '') + val.s;
                 val.dd = (val.d < 10 ? '0' : '') + val.d;
                 val.mm = (val.m < 10 ? '0' : '') + val.m;
-            } else if (type === 'php') {
+            }
+            else if (type === 'php') {
                 // php format
                 val = {
                     // year
@@ -1794,7 +1795,8 @@
                 val.H = (val.G < 10 ? '0' : '') + val.G;
                 val.i = (val.i < 10 ? '0' : '') + val.i;
                 val.s = (val.s < 10 ? '0' : '') + val.s;
-            } else {
+            }
+            else {
                 throw new Error('Invalid format type.');
             }
             var date = [],

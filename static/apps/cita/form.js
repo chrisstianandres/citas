@@ -1,5 +1,5 @@
 var calendar;
-var action_submit = 'add', id = '', duration_edit;
+var action_submit = 'add', id = '', duration_edit, user_tipo = $('#user_tipo').val(), search_citas;
 var disabledtimes_mapping = [];
 var citas = {
     items: {
@@ -17,15 +17,30 @@ var citas = {
 
 
 $(function () {
+    if (user_tipo === '0') {
+        search_citas = 'search_citas_cliente';
+        $('#id_user').val($('#user').val()).prop('disabled', true).trigger("chosen:updated");
+    } else {
+        search_citas = 'search_citas'
+    }
+    $('#new').on('click', function () {
+        mostrar();
+    });
+    $('#cancel_new').on('click', function () {
+        ocultar();
+    });
+
+    $('#id_new_cli').on('click', function () {
+        $('#modal_person').modal('show');
+    });
+
     cargar_eventos();
-    $('#id_user').chosen({no_results_text: "No se encontraron resultados para: "});
     $('#id_empleado')
         .on('change', function () {
             if ($(this).val() !== '' || null) {
                 set_horas('search_horario_empleado', $(this).val(), '');
             }
-        })
-        .chosen({no_results_text: "No se encontraron resultados para: "});
+        });
 
     $('#id_servicio')
         .on('change', function () {
@@ -65,8 +80,7 @@ $(function () {
                 $("#id_fecha_reserva").datetimepicker('remove');
                 $('#fecha_res').fadeOut()
             }
-        })
-        .chosen({no_results_text: "No se encontraron resultados para: "});
+        });
 
     $('#form_cita').on('submit', function (e) {
         e.preventDefault();
@@ -114,7 +128,114 @@ $(function () {
         save_estado('Anular cita', window.location.pathname, 'Esta seguro que desea anular esta cita?', parametros, function () {
             window.location.reload();
         })
-    })
+    });
+
+
+    $('#form_person').on('submit', function (e) {
+        e.preventDefault();
+        var parametros = new FormData(this);
+        parametros.append('action', 'save_user');
+        var isvalid = $(this).valid();
+        if (isvalid) {
+            save_with_ajax2('Alerta',
+                window.location.pathname, 'Esta seguro que desea guardar este cliente?', parametros,
+                function (response) {
+                    menssaje_ok('Exito!', 'Exito al guardar este cliente!', 'far fa-smile-wink', function () {
+                        $('#modal_person').modal('hide');
+                        $('#id_user')
+                            .append("<option value='" + response['id'] + "' selected='selected'>" + response['full_name'] + "</option>")
+                            .trigger("chosen:updated");
+                    });
+                });
+        }
+    });
+    $('#modal_person')
+        .on('hidden.bs.modal', function (e) {
+            e.preventDefault();
+            reset('#form_person');
+            $('#form_person').trigger("reset");
+        });
+    validador();
+    $("#form_person").validate({
+        rules: {
+            first_name: {
+                required: true,
+                minlength: 3,
+                maxlength: 50,
+                lettersonly: true,
+            },
+            last_name: {
+                required: true,
+                minlength: 3,
+                maxlength: 50,
+                lettersonly: true,
+            },
+            cedula: {
+                required: true,
+                minlength: 10,
+                maxlength: 10,
+                digits: true,
+                val_ced: true
+            },
+            email: {
+                required: true,
+                email: true
+            },
+            telefono: {
+                required: true,
+                minlength: 9,
+                maxlength: 9,
+                digits: true
+            },
+            celular: {
+                required: true,
+                minlength: 10,
+                digits: true
+            },
+            direccion: {
+                required: true,
+                minlength: 5,
+                maxlength: 50
+            }
+        },
+        messages: {
+            first_name: {
+                required: "Por favor ingresa tus nombres",
+                minlength: "Debe ingresar al menos tres letras",
+                lettersonly: "Debe ingresar unicamente letras y espacios"
+            },
+            last_name: {
+                required: "Por favor ingresa tus apellidos",
+                minlength: "Debe ingresar al menos tres letras",
+                lettersonly: "Debe ingresar unicamente letras y espacios"
+            },
+            cedula: {
+                required: "Por favor ingresa tu numero de cedula",
+                minlength: "Tu numero de documento debe tener al menos 10 digitos",
+                digits: "Debe ingresar unicamente numeros",
+                maxlength: "Tu numero de documento debe tener maximo 10 digitos",
+                val_ced: "Numero de cedula no valido para Ecuador"
+            },
+            email: "Debe ingresar un correo valido",
+            telefono: {
+                required: "Por favor ingresa tu numero convencional",
+                minlength: "Tu numero de documento debe tener al menos 9 digitos",
+                maxlength: "Tu numero de documento debe tener al menos 9 digitos",
+                digits: "Debe ingresar unicamente numeros",
+            },
+            celular: {
+                required: "Por favor ingresa tu numero celular",
+                minlength: "Tu numero de documento debe tener al menos 10 digitos",
+                digits: "Debe ingresar unicamente numeros",
+                maxlength: "Tu numero de documento debe tener maximo 10 digitos",
+            },
+            direccion: {
+                required: "Por favor ingresa una direccion",
+                minlength: "Ingresa al menos 5 letras",
+                maxlength: "Tu direccion debe tener maximo 50 caracteres",
+            },
+        },
+    });
 
 });
 
@@ -123,11 +244,11 @@ function cargar_eventos() {
         dataType: 'JSON',
         type: 'POST',
         url: window.location.pathname,
-        data: {'action': 'search_citas'},
+        data: {'action': search_citas},
     }).done(function (data) {
         if (!data.hasOwnProperty('error')) {
             var calendarEl = document.getElementById('calendar');
-            var calendar = new FullCalendar.Calendar(calendarEl, {
+            calendar = new FullCalendar.Calendar(calendarEl, {
                 initialView: 'dayGridMonth',
                 locale: 'es',
                 headerToolbar: {
@@ -169,43 +290,44 @@ function cargar_eventos() {
                         type: 'POST',
                         url: window.location.pathname,
                         data: {'action': 'edit_event', 'id': info.event.id},
-                    }).done(function (data) {
-                            var today = new Date(), string, hora_inicio,
-                                hora_hoy = today.getHours() + ':' + today.getMinutes();
-                            if (!data.hasOwnProperty('error')) {
-                                if (today.getMonth() + 1 < 10) {
-                                    string = today.getFullYear() + '-' + '0' + (today.getMonth() + 1) + '-' + today.getDate();
-                                } else {
-                                    string = today.getFullYear() + '-' + (today.getMonth() + 1) + '-' + today.getDate();
-                                }
-                                var val_fecha = data[0].venta.fecha_reserva >= string;
-                                if (val_fecha) {
-                                    if (data[0].venta.fecha_reserva === string) {
-                                        if (parseInt(data[0].venta.hora_inicio) + ':00' >= hora_hoy) {
+                    })
+                        .done(function (data) {
+                                var today = new Date(), string, hora_inicio,
+                                    hora_hoy = today.getHours() + ':' + today.getMinutes();
+                                if (!data.hasOwnProperty('error')) {
+                                    if (today.getMonth() + 1 < 10) {
+                                        string = today.getFullYear() + '-' + '0' + (today.getMonth() + 1) + '-' + today.getDate();
+                                    } else {
+                                        string = today.getFullYear() + '-' + (today.getMonth() + 1) + '-' + today.getDate();
+                                    }
+                                    var val_fecha = data[0].venta.fecha_reserva >= string;
+                                    if (val_fecha) {
+                                        if (data[0].venta.fecha_reserva === string) {
+                                            if (parseInt(data[0].venta.hora_inicio) + ':00' >= hora_hoy) {
+                                                printpdf('Atencion!', 'Esta seguro que desea editar esta cita?', function () {
+                                                    set_data(data[0], hora_inicio);
+                                                }, function () {
+                                                });
+                                            } else {
+                                                menssaje_error('Alerta!', 'Solo puede editar citas que aun esten vigentes', '', function () {
+                                                })
+                                            }
+                                        } else {
                                             printpdf('Atencion!', 'Esta seguro que desea editar esta cita?', function () {
                                                 set_data(data[0], hora_inicio);
                                             }, function () {
                                             });
-                                        } else {
-                                            menssaje_error('Alerta!', 'Solo puede editar citas que aun esten vigentes', '', function () {
-                                            })
                                         }
-                                    } else {
-                                        printpdf('Atencion!', 'Esta seguro que desea editar esta cita?', function () {
-                                            set_data(data[0], hora_inicio);
-                                        }, function () {
-                                        });
-                                    }
 
-                                } else {
-                                    menssaje_error('Alerta!', 'Solo puede editar citas que aun esten vigentes', '', function () {
-                                    })
+                                    } else {
+                                        menssaje_error('Alerta!', 'Solo puede editar citas que aun esten vigentes', '', function () {
+                                        })
+                                    }
+                                    return false;
                                 }
-                                return false;
+                                menssaje_error('Error!', data.error, 'far fa-times-circle');
                             }
-                            menssaje_error('Error!', data.error, 'far fa-times-circle');
-                        }
-                    ).fail(function (jqXHR, textStatus, errorThrown) {
+                        ).fail(function (jqXHR, textStatus, errorThrown) {
                         alert(textStatus + ': ' + errorThrown);
                     });
                 }
@@ -251,17 +373,11 @@ function set_horas(action, id, exclude) {
         if (!data.hasOwnProperty('error')) {
             var dur = $('#id_duracion_serv').val();
             $.each(data, function (index, value) {
-                var alter = value.venta.minuto_fin !== 0 ? value.venta.minuto_fin : 60;
-                alter = (alter-1)> 9 ? (alter-1) : "0" + (alter-1);
-                var alter_in = value.venta.minuto_inicio !== 0 ? value.venta.minuto_inicio : '00' | value.venta.minuto_inicio > 9 ? value.venta.minuto_inicio : "0" + value.venta.minuto_inicio;
                 var alter_hora;
-                if (value.venta.hora_inicio+1 <= value.venta.hora_fin && value.venta.minuto_fin===0){
-                    alter_hora = value.venta.hora_fin-1;
-
-                } else if (value.venta.hora_inicio+1 <= value.venta.hora_fin && value.venta.minuto_fin>1){
-                    alter_hora = value.venta.hora_fin;
+                if (value.venta.hora_inicio + 1 <= value.venta.hora_fin) {
+                    alter_hora = value.venta.hora_fin - 1;
                 }
-                alter_hora =alter_hora > 9 ? alter_hora : "0" + alter_hora;
+                alter_hora = alter_hora > 9 ? alter_hora : "0" + alter_hora;
                 value.venta.hora_inicio = value.venta.hora_inicio > 9 ? value.venta.hora_inicio : "0" + value.venta.hora_inicio;
                 if (dur > 60) {
                     disabledtimes_mapping.push(value.fecha_reserva + ':' + parseInt(value.venta.hora_inicio) + ':00');
@@ -270,27 +386,25 @@ function set_horas(action, id, exclude) {
                         disabledtimes_mapping.push(value.fecha_reserva + ':' + parseInt(value.venta.hora_inicio - i));
                     }
                 } else {
-                    disabledtimes_mapping.push(value.fecha_reserva + ':' + value.venta.hora_inicio + ':' + alter_in);
-                    disabledtimes_mapping.push(value.fecha_reserva + ':' + alter_hora + ':' + alter);
+                    disabledtimes_mapping.push(value.fecha_reserva + ':' + value.venta.hora_inicio);
+                    disabledtimes_mapping.push(value.fecha_reserva + ':' + alter_hora);
                 }
             });
-            console.log(disabledtimes_mapping);
             $('#fecha_res').fadeIn();
             $("#id_fecha_reserva").datetimepicker({
-                format: 'yyyy-mm-dd hh:ii',
+                format: 'yyyy-mm-dd hh:00',
                 autoclose: true,
                 language: 'es',
                 today: true,
                 daysOfWeekDisabled: [0],
-                hoursDisabled: ['18:00', '19:00', '20:00', '21:00', '22:00', '23:00',
-                    '00:00', '01:00', '02:00', '03:00', '04:00', '05:00', '06:00', '07:00'],
+                hoursDisabled: ['18', '19', '20', '21', '22', '23', '0', '1', '2', '3', '4', '5', '6', '7'],
                 startDate: new Date(),
                 showMinute: false,
-                // minutesDisabled: ["05", "10", "15", "20", "20", "25", "30", "35", "40", "45", "50", "55",],
+                datesDisabled: ['2021-11-15 19:00'],
+                minutesDisabled: ["05", "10", "15", "20", "20", "25", "30", "35", "40", "45", "50", "55"],
                 onRenderHour: function (date) {
-                    var minuto = date.getUTCMinutes() > 9 ? date.getUTCMinutes() : "0" + date.getUTCMinutes();
                     var hora = date.getUTCHours() > 9 ? date.getUTCHours() : "0" + date.getUTCHours();
-                    if (disabledtimes_mapping.indexOf(formatDate(date) + ":" + hora+':15') > -1) {
+                    if (disabledtimes_mapping.indexOf(formatDate(date) + ":" + hora) > -1) {
                         return ['disabled'];
                     }
                 }
@@ -309,6 +423,8 @@ function set_data(data, hora_inicio) {
         tpl: '<span class="isloading-wrapper %wrapper%"><i class="fa fa-refresh fa-2x fa-spin"></i><br>%text%</span>',
     });
     setTimeout(function () {
+        mostrar();
+        $('#cancel_new').fadeOut();
         $.isLoading('hide');
         action_submit = 'edit';
         id = data.id;
@@ -317,6 +433,7 @@ function set_data(data, hora_inicio) {
         $('#id_user').val(data.venta.user.id).trigger("chosen:updated");
         $('#id_servicio').val(data.servicio.id).trigger("chosen:updated");
         $('#duracion_res').fadeIn();
+        $('#cancel_edit').fadeIn();
         $('#id_duracion_serv').val(data.servicio.duracion);
         duration_edit = data.servicio.duracion;
         $('#id_empleado').val(data.empleado.id).prop('disabled', false).trigger("chosen:updated");
@@ -344,28 +461,26 @@ function formatDate(datestr) {
     return month + "/" + day + "/" + date.getFullYear();
 }
 
-function resetDate(datestr, hora, minuto) {
-    var fecha = new Date(datestr);
-    var ano = fecha.getFullYear();
-    var mes = fecha.getMonth();
-    var dia = fecha.getDate();
-    return new Date(ano, mes, dia, hora, minuto)
+function mostrar() {
+    $('#agenda_calendar').removeClass('col-lg-12').addClass('col-lg-9');
+    calendar.destroy();
+    cargar_eventos();
+    $('#new').fadeOut();
+    $('#formulario_cita').fadeIn();
+    $('#id_empleado').chosen({no_results_text: "No se encontraron resultados para: "});
+    $('#id_servicio').chosen({no_results_text: "No se encontraron resultados para: "});
+    $('#id_user').chosen({no_results_text: "No se encontraron resultados para: "});
 
 }
 
-function exclude_duplicados(array1, array2) {
-    for (var i = 0; i < array2.length; i++) {
-        if (array2[i] === array1) {
-            console.log(true);
-        } else {
-            // console.log(array2[i]);
-            console.log('espacio');
-            // console.log(array1);
-            // console.log('fin');
-        }
-        //     for (var j = 0; j < array1.length; j++) {
-        //         if (array1[i] === array2[j])
-        //             console.log(true);
-        //     }
-    }
+function ocultar() {
+    calendar.destroy();
+    cargar_eventos();
+    $('#new').fadeIn();
+    $('#agenda_calendar').removeClass('col-lg-9').addClass('col-lg-12');
+    $('#formulario_cita').fadeOut();
+    $('#id_empleado').chosen('destroy');
+    $('#id_servicio').chosen('destroy');
+    $('#id_user').chosen('destroy');
+
 }

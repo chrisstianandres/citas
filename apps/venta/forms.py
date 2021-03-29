@@ -22,7 +22,8 @@ class VentaForm(forms.ModelForm):
             self.fields['fecha_reserva'].widget.attrs = {
                 'class': 'form-control',
                 'id': 'id_fecha_reserva',
-                'autocomplete': 'off'
+                'autocomplete': 'off',
+                'readonly': True
             }
             self.fields['duracion_servicio'].widget.attrs = {
                 'class': 'form-control input-sm'

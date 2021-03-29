@@ -1,3 +1,4 @@
+from django.contrib.auth.hashers import make_password
 from django.utils.decorators import method_decorator
 from apps.compra.models import Compra, Detalle_compra
 from apps.empleado.models import Empleado
@@ -14,10 +15,10 @@ from django.urls import reverse_lazy
 from django.views.decorators.csrf import csrf_exempt
 from django.views.generic import *
 
-from apps.backEnd import nombre_empresa
+from apps.backEnd import nombre_empresa, verificar
 from apps.servicio.models import Servicio
 
-from apps.user.forms import UserForm
+from apps.user.forms import UserForm, UserForm_cliente
 from apps.user.models import User
 from apps.venta.forms import VentaForm, Detalle_servicioForm
 from apps.venta.models import Venta, Detalle_venta, Detalle_servicios
@@ -281,6 +282,13 @@ class CitacrudView(ValidatePermissionRequiredMixin, TemplateView):
                     item = c.toJSON()
                     item['classname'] = 'label-success'
                     data.append(item)
+            elif action == 'search_citas_cliente':
+                data = []
+                query = Detalle_servicios.objects.filter(venta__estado=2, venta__user_id=request.user.id)
+                for c in query:
+                    item = c.toJSON()
+                    item['classname'] = 'label-info'
+                    data.append(item)
             elif action == 'search_horario_empleado':
                 data = []
                 id = request.POST['id']
@@ -340,12 +348,55 @@ class CitacrudView(ValidatePermissionRequiredMixin, TemplateView):
                 vent = self.model.objects.get(id=serv.venta.id)
                 vent.estado = 0
                 vent.save()
-
+            elif action == 'save_user':
+                f = UserForm_cliente(request.POST)
+                datos = request.POST
+                data = self.save_data(f, datos)
+                #
+                # use = User()
+                # use.username = datos['cedula']
+                # use.cedula = datos['cedula']
+                # use.first_name = datos['first_name']
+                # use.last_name = datos['last_name']
+                # use.sexo = datos['sexo']
+                # use.email = datos['email']
+                # use.telefono = datos['telefono']
+                # use.celular = datos['celular']
+                # use.direccion = datos['direccion']
+                # use.tipo = 0
+                # use.password = make_password(datos['cedula'])
+                # use.save()
             else:
                 data['error'] = 'No ha seleccionado una opcion'
         except Exception as e:
             data['error'] = str(e)
         return HttpResponse(json.dumps(data), content_type='application/json')
+
+    def save_data(self, f, datos):
+        data = {}
+        if f.is_valid():
+            if verificar(f.data['cedula']):
+                use = User()
+                use.username = datos['cedula']
+                use.cedula = datos['cedula']
+                use.first_name = datos['first_name']
+                use.last_name = datos['last_name']
+                use.sexo = datos['sexo']
+                use.email = datos['email']
+                use.telefono = datos['telefono']
+                use.celular = datos['celular']
+                use.direccion = datos['direccion']
+                use.tipo = 0
+                use.password = make_password(datos['cedula'])
+                use.save()
+                data['resp'] = True
+                data = use.toJSON()
+            else:
+                f.add_error("cedula", "Numero de Cedula no valido para Ecuador")
+                data['error'] = f.errors
+        else:
+            data['error'] = f.errors
+        return data
 
     def get_context_data(self, **kwargs):
         data = super().get_context_data(**kwargs)
@@ -356,6 +407,7 @@ class CitacrudView(ValidatePermissionRequiredMixin, TemplateView):
         data['empresa'] = empresa
         data['form'] = self.form_class()
         data['form2'] = self.second_form_class()
+        data['formp'] = UserForm_cliente()
         data['detalle'] = []
         return data
 

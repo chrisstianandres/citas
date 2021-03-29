@@ -15,85 +15,115 @@
 
 {% endblock %}
 {% block content %}
-
     <div class="row">
         <div class="col-xs-12">
             <!-- PAGE CONTENT BEGINS -->
             <div class="row">
-
-                <form id="form_cita" method="post" novalidate>
-                    <div class="col-sm-3">
-                        <div class="widget-box transparent">
-                            <div class="widget-header">
-                                <h4>Agendar Nueva Cita</h4>
-                            </div>
-
-                            <div class="widget-body">
-                                <div class="widget-main no-padding">
-
-                                    <div class="form-group">
-                                        <label for="id_user">{{ form.user.label_tag }}</label>
-                                        {{ form.user }}
-                                    </div>
-                                    <div class="form-group">
-                                        <label for="id_servicio">{{ form2.servicio.label_tag }}</label>
-                                        {{ form2.servicio }}
-                                    </div>
-                                    <div class="form-group" style="display: none" id="duracion_res">
-                                        <label for="id_duracion_serv">Duracion de Servicio</label>
-                                        <div class="input-group">
-                                            <div class="input-group-addon">
-                                                <i class="fa fa-clock-o bigger-110"></i>
-                                            </div>
-                                            <input type="text" name="duracion" class="form-control" readonly="readonly"
-                                                   id="id_duracion_serv">
-                                            <div class="input-group-addon">
-                                                Minutos
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div class="form-group">
-                                        <label for="id_empleado">{{ form2.empleado.label_tag }}</label>
-                                        {{ form2.empleado }}
-                                    </div>
-                                    <div class="form-group" style="display: none" id="fecha_res">
-                                        <label for="id_fecha_reserva">{{ form.fecha_reserva.label_tag }}</label>
-                                        <div class="input-group">
-                                            <div class="input-group-addon">
-                                                <i class="fa fa-calendar"></i></div>
-                                            {{ form.fecha_reserva }}
-                                        </div>
-                                    </div>
+                <div id="formulario_cita" style="display: none">
+                    <form id="form_cita" method="post" novalidate>
+                        <div class="col-sm-3" id="seccion_formulario">
+                            <div class="widget-box transparent">
+                                <div class="widget-header">
+                                    <h4>Agendar Nueva Cita</h4>
                                 </div>
-                                <div class="form-actions">
-                                    <div class="form-group">
-                                         <button class="btn btn-white btn-info btn-bold" type="submit">
-                                        <i class="ace-icon fa fa-floppy-o bigger-120 blue"></i>
-                                        Guardar
-                                    </button>
-                                        <button class="btn btn-white btn-danger btn-round" style="display: none" type="button" id="cancel_cita">
-                                        <i class="ace-icon fa fa-times red2"></i>
-                                       Anular Citar
-                                    </button>
+                                <div class="widget-body">
+                                    <div class="widget-main no-padding">
+                                        <div class="form-group">
+                                            <label for="id_user">{{ form.user.label_tag }}</label>
+                                            {% if request.user.tipo == 1 %}
+                                                <div class="input-group">
+                                                    {{ form.user }}
+                                                    <div class="input-group-btn">
+                                                        <button class="btn btn-white btn-info btn-bold btn-sm"
+                                                                data-toggle="tooltip" data-placement="top"
+                                                                title="Agregar Cliente" type="button" id="id_new_cli">
+                                                            <i class="ace-icon fa fa-plus-square bigger-120 blue"></i>
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            {% else %}
+                                                {{ form.user }}
+                                            {% endif %}
+                                        </div>
+                                        <div class="form-group">
+                                            <label for="id_servicio">{{ form2.servicio.label_tag }}</label>
+                                            {{ form2.servicio }}
+                                        </div>
+                                        <div class="form-group" style="display: none" id="duracion_res">
+                                            <label for="id_duracion_serv">Duracion de Servicio</label>
+                                            <div class="input-group">
+                                                <div class="input-group-addon">
+                                                    <i class="fa fa-clock-o bigger-110"></i>
+                                                </div>
+                                                <input type="text" name="duracion" class="form-control"
+                                                       readonly="readonly"
+                                                       id="id_duracion_serv">
+                                                <div class="input-group-addon">
+                                                    Minutos
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="form-group">
+                                            <label for="id_empleado">{{ form2.empleado.label_tag }}</label>
+                                            {{ form2.empleado }}
+                                        </div>
+                                        <div class="form-group" style="display: none" id="fecha_res">
+                                            <label for="id_fecha_reserva">{{ form.fecha_reserva.label_tag }}</label>
+                                            <div class="input-group">
+                                                <div class="input-group-addon">
+                                                    <i class="fa fa-calendar"></i></div>
+                                                {{ form.fecha_reserva }}
+                                            </div>
+                                        </div>
                                     </div>
+                                    <div class="form-actions">
+                                        <div class="form-group">
+                                            <button class="btn btn-white btn-info btn-round" type="submit">
+                                                <i class="ace-icon fa fa-floppy-o bigger-120 blue"></i>
+                                                Guardar
+                                            </button>
+                                            <button class="btn btn-white btn-danger btn-round" type="button" id="cancel_new">
+                                                <i class="ace-icon fa fa-ban bigger-120 red2"></i>
+                                                Cancelar
+                                            </button>
+                                            <button class="btn btn-white btn-danger btn-round" style="display: none"
+                                                    type="button" id="cancel_cita">
+                                                <i class="ace-icon fa fa-times red2"></i>
+                                                Anular Citar
+                                            </button>
+                                        </div>
 
-                                   <div class="form-group">
-                                         <button class="btn btn-white btn-success btn-round" style="display: none" type="button"
-                                                 id="new_cita" onclick="window.location.reload();">
-                                        <i class="ace-icon fa fa-plus-circle green"></i>
-                                        Nueva Cita
-                                    </button>
-                                   </div>
+                                        <div class="form-group">
+                                            <button class="btn btn-white btn-success btn-round" style="display: none"
+                                                    type="button"
+                                                    id="new_cita" onclick="window.location.reload();">
+                                                <i class="ace-icon fa fa-plus-circle green"></i>
+                                                Nueva Cita
+                                            </button>
+                                        </div>
+                                        <div class="form-group">
+                                            <button class="btn btn-white btn-warning btn-round" style="display: none"
+                                                    type="button" id="cancel_edit"
+                                                    onclick="window.location.reload();">
+                                                <i class="ace-icon fa fa-ban warning"></i>
+                                                Cancelar Edicion
+                                            </button>
+                                        </div>
 
 
+                                    </div>
                                 </div>
                             </div>
                         </div>
-                    </div>
-                </form>
-                <div class="col-sm-9">
-                    <div class="space"></div>
+                    </form>
+                </div>
 
+                <div id="agenda_calendar" class="col-lg-12">
+                    <div class="space"></div>
+                    <h3><i class="fa fa-calendar"></i> Calendario de citas</h3>
+                    <br>
+                    <button class="btn btn-danger btn-round" type="button" id="new"><i class="fa fa-plus-circle"></i> Nueva cita</button>
+                    <div class="space"></div>
                     <div id="calendar" class="fc fc-ltr fc-unthemed">
 
                     </div>
@@ -102,9 +132,46 @@
             <!-- PAGE CONTENT ENDS -->
         </div><!-- /.col -->
     </div>
+    <input type="hidden" value="{{ request.user.tipo }}" id="user_tipo">
+    <input type="hidden" value="{{ request.user.id }}" id="user">
+{% endblock %}
+{% block modals %}
+<div class="modal fade" id="modal_person" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+        <form method="post" id="form_person" enctype="multipart/form-data" action=".">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="exampleModalLabel"><i class="fa fa-plus"></i>&nbsp;Registro de
+                            un Cliente</h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="container-fluid">
+                            <div class="form-group">
+                                {{ formp.as_p }}
+                            </div>
+                            <div class="form-group">
+                                <input type="hidden" value="{{ action }}">
+                            </div>
+                        </div>
+
+                    </div>
+                    <div class="modal-footer">
+                        <button type="submit" class="btn btn-primary"><i class="fa fa-floppy-o"></i>&nbsp;Guardar
+                        </button>
+                        <button type="button" class="btn btn-danger" data-dismiss="modal"><i
+                                class="fa fa-times"></i> Cancelar
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
 {% endblock %}
 {% block extra %}
-{#    <script src="{% static 'apps/cliente/form.js' %}"></script>#}
+    {#    <script src="{% static 'apps/cliente/form.js' %}"></script>#}
     <script src="{% static 'apps/cita/form.js' %}"></script>
     <script src="{% static 'lib/jquery-ui/jquery-ui.min.js' %}"></script>
     <script src="{% static 'lib/jquery-ui/jquery-ui.js' %}"></script>
