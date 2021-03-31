@@ -99,15 +99,7 @@ class CrudView(ValidatePermissionRequiredMixin, TemplateView):
     def save_data(self, f):
         data = {}
         if f.is_valid():
-            f.save(commit=False)
-            if self.model.objects.filter(nombre__icontains=f.data['nombre']):
-                f.add_error("nombre", "Ya existe un servicio este nombre")
-                data['error'] = f.errors
-            else:
-                var = f.save()
-                data['resp'] = True
-                data['servicio'] = var.toJSON()
-                data['resp'] = True
+            f.save()
         else:
             data['error'] = f.errors
         return data
@@ -158,7 +150,7 @@ class UpdateView(ValidatePermissionRequiredMixin, UpdateView):
                 pk = self.kwargs['pk']
                 cat = self.model.objects.get(pk=int(pk))
                 f = self.form_class(request.POST, instance=cat)
-                data = self.edit_data(f, pk)
+                data = self.save_data(f)
             else:
                 data['error'] = 'No ha seleccionado ninguna opción'
         except Exception as e:
@@ -168,15 +160,7 @@ class UpdateView(ValidatePermissionRequiredMixin, UpdateView):
     def save_data(self, f):
         data = {}
         if f.is_valid():
-            f.save(commit=False)
-            if self.model.objects.filter(nombre__icontains=f.data['nombre']):
-                f.add_error("nombre", "Ya existe un servicio este nombre")
-                data['error'] = f.errors
-            else:
-                var = f.save()
-                data['resp'] = True
-                data['servicio'] = var.toJSON()
-                data['resp'] = True
+            f.save()
         else:
             data['error'] = f.errors
         return data
@@ -205,6 +189,7 @@ class UpdateView(ValidatePermissionRequiredMixin, UpdateView):
         data['action'] = 'edit'
         data['empresa'] = empresa
         dato = self.model.objects.get(pk=self.kwargs['pk'])
+        dato.duracion = dato.duracion/60
         data['form'] = self.form_class(instance=dato)
         return data
 

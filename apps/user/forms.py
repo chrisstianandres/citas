@@ -39,11 +39,6 @@ class UserForm(forms.ModelForm):
             self.fields['sexo'].widget.attrs = {
                 'class': 'form-control select2'
             }
-            self.fields['tipo'].widget.attrs = {
-                'class': 'form-control select2'
-            }
-            # self.fields["fecha_nacimiento"].widget = SelectDateWidget(years=years,
-            #                                                         attrs={'class': 'selectpicker'})
         # habilitar, desabilitar, y mas
 
     class Meta:
@@ -51,7 +46,6 @@ class UserForm(forms.ModelForm):
         fields = ['username',
                   'first_name',
                   'last_name',
-                  'tipo',
                   'cedula',
                   'email',
                   'avatar',
@@ -59,14 +53,12 @@ class UserForm(forms.ModelForm):
                   'telefono',
                   'celular',
                   'direccion',
-                  'groups',
                   'password'
                   ]
         labels = {
             'username': 'Nombre de Usuario',
             'first_name': 'Nombres',
             'last_name': 'Apellidos',
-            'tipo': 'Tipo de Usuario',
             'cedula': 'N° de cedula',
             'email': 'Correo',
             'avatar': 'Imagen',
@@ -83,12 +75,10 @@ class UserForm(forms.ModelForm):
             'last_name': forms.TextInput(),
             'cedula': forms.TextInput(),
             'sexo': forms.Select(),
-            'tipo': forms.Select(),
             'correo': forms.EmailInput(),
             'telefono': forms.TextInput(),
             'celular': forms.TextInput(),
             'direccion': forms.Textarea(),
-            'groups': forms.SelectMultiple(attrs={'class': 'form-control', 'style': '100%', 'multiple': 'multiple'}),
             'password': forms.PasswordInput(attrs={'class': 'form-control'}, render_value=True)
         }
 
@@ -288,28 +278,33 @@ class UserForm_cliente(forms.ModelForm):
         form = super()
         try:
             if form.is_valid():
-                ced = self.cleaned_data['cedula']
-                nombre = self.cleaned_data['first_name']
-                apellido = self.cleaned_data['last_name']
-                sex = self.cleaned_data['sexo']
-                correo = self.cleaned_data['email']
-                telefono = self.cleaned_data['telefono']
-                celular = self.cleaned_data['celular']
-                direccion = self.cleaned_data['direccion']
-                use = User()
-                use.username = ced
-                use.cedula = ced
-                use.first_name = nombre
-                use.last_name = apellido
-                use.sexo = sex
-                use.email = correo
-                use.telefono = telefono
-                use.celular = celular
-                use.direccion = direccion
-                use.tipo = 0
-                use.password = make_password(ced)
-                use.save()
-                return use
+                u = form.save(commit=False)
+                if u.pk is None:
+                    ced = self.cleaned_data['cedula']
+                    nombre = self.cleaned_data['first_name']
+                    apellido = self.cleaned_data['last_name']
+                    sex = self.cleaned_data['sexo']
+                    correo = self.cleaned_data['email']
+                    telefono = self.cleaned_data['telefono']
+                    celular = self.cleaned_data['celular']
+                    direccion = self.cleaned_data['direccion']
+                    use = User()
+                    use.username = ced
+                    use.cedula = ced
+                    use.first_name = nombre
+                    use.last_name = apellido
+                    use.sexo = sex
+                    use.email = correo
+                    use.telefono = telefono
+                    use.celular = celular
+                    use.direccion = direccion
+                    use.tipo = 0
+                    use.password = make_password(ced)
+                    use.save()
+                    return use
+                else:
+                    u.save()
+                return u
             else:
                 data['error'] = form.errors
         except Exception as e:

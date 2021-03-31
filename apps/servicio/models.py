@@ -9,7 +9,7 @@ class Servicio(models.Model):
     categoria = models.ForeignKey(Categoria, on_delete=models.PROTECT, null=True, blank=True)
     nombre = models.CharField(max_length=50)
     descripcion = models.CharField(max_length=50)
-    duracion = models.IntegerField(default=30)
+    duracion = models.IntegerField(default=60)
     precio = models.DecimalField(default=0.00, max_digits=9, decimal_places=2, blank=True, null=True)
 
     def __str__(self):

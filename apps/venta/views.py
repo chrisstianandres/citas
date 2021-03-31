@@ -188,7 +188,7 @@ class CrudView(ValidatePermissionRequiredMixin, TemplateView):
             elif action == 'search_prod':
                 data = []
                 ids = json.loads(request.POST['ids'])
-                query = Detalle_compra.objects.values('id', 'producto_id', 'precio_venta').\
+                query = Detalle_compra.objects.values('id', 'producto_id', 'precio_venta').filter(compra__estado=1).\
                     annotate(stock=Sum('stock_actual')) \
                     .order_by('stock').filter(stock_actual__gte=1)
                 for c in query.exclude(id__in=ids):
@@ -214,11 +214,41 @@ class CrudView(ValidatePermissionRequiredMixin, TemplateView):
                     item = p.toJSON()
                     item['sexo'] = p.get_sexo_display()
                     data.append(item)
+            elif action == 'save_user':
+                f = UserForm_cliente(request.POST)
+                datos = request.POST
+                data = self.save_data(f, datos)
             else:
                 data['error'] = 'No ha seleccionado una opcion'
         except Exception as e:
             data['error'] = str(e)
         return HttpResponse(json.dumps(data), content_type='application/json')
+
+    def save_data(self, f, datos):
+        data = {}
+        if f.is_valid():
+            if verificar(f.data['cedula']):
+                use = User()
+                use.username = datos['cedula']
+                use.cedula = datos['cedula']
+                use.first_name = datos['first_name']
+                use.last_name = datos['last_name']
+                use.sexo = datos['sexo']
+                use.email = datos['email']
+                use.telefono = datos['telefono']
+                use.celular = datos['celular']
+                use.direccion = datos['direccion']
+                use.tipo = 0
+                use.password = make_password(datos['cedula'])
+                use.save()
+                data['resp'] = True
+                data = use.toJSON()
+            else:
+                f.add_error("cedula", "Numero de Cedula no valido para Ecuador")
+                data['error'] = f.errors
+        else:
+            data['error'] = f.errors
+        return data
 
     def get_context_data(self, **kwargs):
         data = super().get_context_data(**kwargs)
@@ -230,6 +260,7 @@ class CrudView(ValidatePermissionRequiredMixin, TemplateView):
         data['empresa'] = empresa
         data['form'] = self.form_class()
         data['detalle'] = []
+        data['formp'] = UserForm_cliente()
         data['formc'] = UserForm()
         return data
 
@@ -253,7 +284,6 @@ class CitacrudView(ValidatePermissionRequiredMixin, TemplateView):
                 datos = json.loads(request.POST['cita'])
                 if datos:
                     with transaction.atomic():
-                        print(datos)
                         c = self.model()
                         c.user_id = datos['cliente']
                         c.fecha_factura = datos['fecha_reserva']
@@ -352,20 +382,6 @@ class CitacrudView(ValidatePermissionRequiredMixin, TemplateView):
                 f = UserForm_cliente(request.POST)
                 datos = request.POST
                 data = self.save_data(f, datos)
-                #
-                # use = User()
-                # use.username = datos['cedula']
-                # use.cedula = datos['cedula']
-                # use.first_name = datos['first_name']
-                # use.last_name = datos['last_name']
-                # use.sexo = datos['sexo']
-                # use.email = datos['email']
-                # use.telefono = datos['telefono']
-                # use.celular = datos['celular']
-                # use.direccion = datos['direccion']
-                # use.tipo = 0
-                # use.password = make_password(datos['cedula'])
-                # use.save()
             else:
                 data['error'] = 'No ha seleccionado una opcion'
         except Exception as e:

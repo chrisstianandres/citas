@@ -6,25 +6,8 @@ $(document).ready(function () {
 
     }
 
-    jQuery.validator.addMethod("lettersonly", function (value, element) {
-        return this.optional(element) || /^[a-z," "]+$/i.test(value);
-    }, "Letters and spaces only please");
+    validador();
 
-
-    $.validator.setDefaults({
-        errorClass: 'help-block',
-
-        highlight: function (element, errorClass, validClass) {
-            $(element).parent()
-                .addClass("has-error")
-                .removeClass("has-success");
-        },
-        unhighlight: function (element, errorClass, validClass) {
-            $(element).parent()
-                .addClass("has-success")
-                .removeClass("has-error");
-        }
-    });
     $("#form").validate({
         rules: {
             username: {
@@ -48,7 +31,8 @@ $(document).ready(function () {
                 required: true,
                 minlength: 10,
                 maxlength: 10,
-                digits: true
+                digits: true,
+                val_ced: true
             },
             email: {
                 required: true,
@@ -100,6 +84,7 @@ $(document).ready(function () {
                 minlength: "Tu numero de documento debe tener al menos 10 digitos",
                 digits: "Debe ingresar unicamente numeros",
                 maxlength: "Tu numero de documento debe tener maximo 10 digitos",
+                val_ced: 'Cedula no valida para Ecuador'
             },
             email: "Debe ingresar un correo valido",
             password: {
@@ -126,13 +111,13 @@ $(document).ready(function () {
         },
     });
 
-    $('#id_nombres').keyup(function () {
+    $('#id_first_name').keyup(function () {
         var changue = $(this).val().replace(/\b\w/g, function (l) {
             return l.toUpperCase()
         });
         $(this).val(changue);
     });
-    $('#id_apellidos').keyup(function () {
+    $('#id_last_name').keyup(function () {
         var changue = $(this).val().replace(/\b\w/g, function (l) {
             return l.toUpperCase()
         });
@@ -159,4 +144,22 @@ $(document).ready(function () {
             placeholder: 'Buscar...',
         });
     }
+
+
+        //enviar formulario de nuevo cliente
+    $('#form').on('submit', function (e) {
+        e.preventDefault();
+        var parametros = new FormData(this);
+        parametros.append('action', $('#action').val());
+        var isvalid = $(this).valid();
+        if (isvalid) {
+            save_with_ajax2('Alerta',
+                window.location.pathname, 'Esta seguro que desea guardar este usuario?', parametros,
+                function (response) {
+                    menssaje_ok('Exito!', 'Exito al guardar este usuario!', 'far fa-smile-wink', function () {
+                        window.location.href = '/persona/usuario/lista'
+                    });
+                });
+        }
+    });
 });

@@ -13,9 +13,9 @@ function datatable_fun() {
             dataSrc: ""
         },
         columns: [
-            {"data": "full_name_list"},
+            {"data": "full_name"},
             {"data": "cedula"},
-            {"data": "correo"},
+            {"data": "email"},
             {"data": "sexo"},
             {"data": "direccion"},
             {"data": "celular"},
@@ -23,8 +23,15 @@ function datatable_fun() {
         ],
         language: {
             url: '//cdn.datatables.net/plug-ins/1.10.15/i18n/Spanish.json',
+            buttons: {
+                copyTitle: 'Copiado al Portapapeles',
+                copySuccess: {
+                    _: '%d Lineas copiadas',
+                    1: '1 Linea copiada'
+                }
+            }
         },
-        dom: "<'row'<'col-sm-12 col-md-12'B>>" +
+        dom: "<'row'<'clearfix'<'pull-right tableTools-container'<'dt-buttons btn-overlap btn-group' B>>>>" +
             "<'row'<'col-sm-12 col-md-3'l>>" +
             "<'row'<'col-sm-12 col-md-12'f>>" +
             "<'row'<'col-sm-12'tr>>" +
@@ -36,13 +43,13 @@ function datatable_fun() {
 
                 },
                 container: {
-                    className: 'buttons-container'
+                    className: 'buttons-container float-md-right'
                 }
             },
             buttons: [
                 {
-                    text: '<i class="fa fa-file-pdf"></i> PDF',
-                    className: 'btn btn-danger btn-space float-right',
+                    text: '<span><i class="fa fa-print bigger-110 grey"></i> PDF</span>',
+                    className: 'dt-button buttons-print btn btn-white btn-primary btn-bold',
                     extend: 'pdfHtml5',
                     //filename: 'dt_custom_pdf',
                     orientation: 'landscape', //portrait
@@ -50,13 +57,17 @@ function datatable_fun() {
                     // download: 'open',
                     exportOptions:
                         {
-                            columns: [0, 1, 2, 3, 4, 5, 6],
+                            columns: [0, 1, 2, 3, 4, 5],
                             search: 'applied',
                             order: 'applied'
                         },
                     customize: customize
                 },
-
+                {
+                    text: '<i class="fa fa-copy bigger-110 pink"></i> Copiar</span>',
+                    className: 'dt-button buttons-copy buttons-html5 btn btn-white btn-primary btn-bold',
+                    extend: 'copy',
+                }
             ]
         },
         columnDefs: [
@@ -70,7 +81,7 @@ function datatable_fun() {
                 orderable: false,
                 render: function (data, type, row) {
                     var edit = '<a style="color: white" type="button" class="btn btn-primary btn-xs" rel="edit" ' +
-                        'data-toggle="tooltip" title="Editar Datos"><i class="fa fa-user-edit"></i></a>' + ' ';
+                        'data-toggle="tooltip" title="Editar Datos"><i class="fa fa-edit"></i></a>' + ' ';
                     var del = '<a type="button" class="btn btn-danger btn-xs"  style="color: white" rel="del" ' +
                         'data-toggle="tooltip" title="Eliminar"><i class="fa fa-trash"></i></a>' + ' ';
                     return edit + del
@@ -94,7 +105,7 @@ $(function () {
             var parametros = {'id': data.id};
             parametros['action'] = action;
             save_estado('Alerta',
-                '/cliente/nuevo', 'Esta seguro que desea eliminar este cliente?', parametros,
+                window.location.pathname, 'Esta seguro que desea eliminar este cliente?', parametros,
                 function () {
                     menssaje_ok('Exito!', 'Exito al eliminar este cliente!', 'far fa-smile-wink', function () {
                         datatable.ajax.reload(null, false)
@@ -102,52 +113,14 @@ $(function () {
                 })
         })
         .on('click', 'a[rel="edit"]', function () {
-
-            $(this).attr('href', '#');
-            $('#form').validate().resetForm();
             var tr = datatable.cell($(this).closest('td, li')).index();
             var data = datatable.row(tr.row).data();
-            var sexo = '1';
-            if (data.sexo==='Femenino'){
-                sexo = '0';
-            }
-            $('input[name="nombres"]').val(data.nombres);
-            $('input[name="apellidos"]').val(data.apellidos);
-            $('input[name="cedula"]').val(data.cedula).attr('readonly', true);
-            $('input[name="correo"]').val(data.correo);
-            $('select[name="sexo"]').val(sexo);
-            $('input[name="telefono"]').val(data.telefono);
-            $('input[name="celular"]').val(data.celular);
-            $('input[name="direccion"]').val(data.direccion);
-            action = 'edit';
             pk = data.id;
+            window.location.href = '/persona/cliente/editar/' + pk
 
         });
     //boton agregar cliente
     $('#nuevo').on('click', function () {
-        action = 'add';
-        pk = '';
-        reset('#form');
-        $('input[name="cedula"]').attr('readonly', false);
+        window.location.href = '/persona/cliente/nuevo'
     });
-
-    //enviar formulario de nuevo cliente
-    $('#form').on('submit', function (e) {
-        e.preventDefault();
-        var parametros = new FormData(this);
-        parametros.append('action', action);
-        parametros.append('id', pk);
-        var isvalid = $(this).valid();
-        if (isvalid) {
-            save_with_ajax2('Alerta',
-                '/cliente/nuevo', 'Esta seguro que desea guardar este cliente?', parametros,
-                function (response) {
-                    menssaje_ok('Exito!', 'Exito al guardar este cliente!', 'far fa-smile-wink', function () {
-                        window.location.reload();
-                    });
-                });
-        }
-    });
-
-
 });

@@ -34,5 +34,6 @@ urlpatterns = [
     path('compra/', include('apps.compra.urls', namespace='compra')),
     path('transaccion/', include('apps.venta.urls', namespace='venta')),
     path('servicio/', include('apps.servicio.urls', namespace='servicio')),
+    path('persona/', include('apps.user.urls', namespace='user')),
 ] + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)\
                   + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

@@ -198,8 +198,8 @@ var ventas = {
                     buttonup_class: 'btn btn-white btn-info btn-bold btn-xs',
                 });
                 $(row).find('input[name="duracion"]').TouchSpin({
-                    min: 15,
-                    max: 60,
+                    min: 1,
+                    max: 4,
                     step: 1,
                     buttondown_class: 'btn btn-white btn-success btn-bold btn-xs',
                     buttonup_class: 'btn btn-white btn-success btn-bold btn-xs',
@@ -266,9 +266,9 @@ $(function () {
 
     $('input[name="duracion_servicio"]').TouchSpin({
         min: 1,
-        max: 480,
+        max: 4,
         step: 1,
-        prefix: 'Minutos',
+        prefix: 'Hora/as',
         buttondown_class: 'btn btn-white btn-info btn-bold btn-sm',
         buttonup_class: 'btn btn-white btn-info btn-bold btn-sm',
     });
@@ -314,7 +314,7 @@ $(function () {
         });
 
 
-    $('#id_new_cliente')
+    $('#id_new_cli')
         .on('click', function () {
             $('#Modal_person').modal('show');
         });
@@ -323,17 +323,17 @@ $(function () {
         .on('submit', function (e) {
             e.preventDefault();
             var parametros = new FormData(this);
-            parametros.append('action', 'add');
+            parametros.append('action', 'save_user');
             parametros.append('id', '');
             var isvalid = $(this).valid();
             if (isvalid) {
                 save_with_ajax2('Alerta',
-                    '/cliente/nuevo', 'Esta seguro que desea guardar este cliente?', parametros,
+                    window.location.pathname, 'Esta seguro que desea guardar este cliente?', parametros,
                     function (response) {
                         menssaje_ok('Exito!', 'Exito al guardar este cliente!', 'far fa-smile-wink', function () {
                             $('#Modal_person').modal('hide');
-                            var newOption = new Option(response.cliente['full_name'], response.cliente['id'], false, true);
-                            $('#id_cliente').append(newOption).trigger('change');
+                            $('#id_user').append("<option value='" + response['id'] + "' selected='selected'>" + response['full_name'] + "</option>")
+                            .trigger("chosen:updated");
                         });
                     });
             }
@@ -361,7 +361,7 @@ $(function () {
                 var parametros;
                 ventas.items.fecha = $('#id_fecha_venta').val();
                 ventas.items.cliente = $('#id_user').val();
-                ventas.items.duracion = $('#id_duracion_servicio').val();
+                ventas.items.duracion = $('#id_duracion_servicio').val()*60;
                 parametros = {'ventas': JSON.stringify(ventas.items)};
                 parametros['action'] = 'add';
                 save_with_ajax('Alerta',

@@ -58,10 +58,10 @@ $(document).ready(function () {
     });
 
     $('#id_duracion').TouchSpin({
-            min: 5,
-            max: 60,
+            min: 1,
+            max: 4,
             step: 1,
-            prefix: 'Minutos',
+            prefix: 'Hora/as',
             buttondown_class: 'btn btn-white btn-info btn-bold btn-xs',
             buttonup_class: 'btn btn-white btn-info btn-bold btn-xs',
         });

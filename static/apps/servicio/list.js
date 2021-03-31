@@ -38,8 +38,11 @@ function datatable_fun() {
                 class: 'text-center',
                 orderable: false,
                 render: function (data, type, row) {
-                    return data+ ' Minutos'
-
+                    var tiempo = data/60;
+                    var hora;
+                    if(tiempo>1){hora= ' Horas'}
+                    else {hora= ' Hora'}
+                    return tiempo+ hora;
                 }
             },
             {

@@ -1,6 +1,6 @@
 {% extends 'front-end/list.html' %}
 {% load static %}
-{% block table %}
+{% block table_content %}
     <thead>
     <tr>
         <th style="width: 15%">Nombres</th>
@@ -19,5 +19,4 @@
 
 {% block extra %}
     <script src="{% static 'apps/cliente/list.js' %}"></script>
-    <script src="{% static 'apps/cliente/form.js' %}"></script>
 {% endblock %}

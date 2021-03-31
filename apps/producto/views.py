@@ -2,6 +2,7 @@ import json
 
 from datetime import datetime
 from django.db.models import Q, Sum
+from django.db.models.functions import Coalesce
 
 from django.http import HttpResponseRedirect, HttpResponse
 from django.http import JsonResponse
@@ -10,6 +11,7 @@ from django.views.decorators.csrf import csrf_exempt
 from django.views.generic import *
 from apps.backEnd import nombre_empresa
 from apps.categoria.forms import CategoriaForm
+from apps.compra.models import Detalle_compra
 from apps.empresa.models import Empresa
 from apps.mixins import ValidatePermissionRequiredMixin
 from apps.presentacion.forms import PresentacionForm
@@ -184,114 +186,133 @@ class report(ValidatePermissionRequiredMixin, ListView):
         return data
 
 
-# class sitio(ListView):
-#     model = Producto
-#
-#     @csrf_exempt
-#     def dispatch(self, request, *args, **kwargs):
-#         return super().dispatch(request, *args, **kwargs)
-#
-#     def post(self, request, *args, **kwargs):
-#         data = {}
-#         try:
-#             action = request.POST['action']
-#             if action == 'sitio':
-#                 mas = []
-#                 pop = []
-#                 h = datetime.today()
-#                 query = Detalle_venta.objects.filter(venta__estado=1).values('inventario__produccion__producto_id').annotate(
-#                     total=Sum('cantidad')).order_by('-total')[0:6]
-#                 for i in query:
-#                     pr = Producto.objects.get(id=int(i['inventario__produccion__producto_id']))
-#                     item = {'info': pr.producto_base.nombre, 'descripcion': pr.producto_base.descripcion}
-#                     item['id_venta'] = int(i['inventario__produccion__producto_id'])
-#                     item['id_reparacion'] = int(pr.id)
-#                     item['id_confeccion'] = int(pr.id)
-#                     item['pvp'] = format(pr.pvp, '.2f')
-#                     item['pvp_alq'] = format(pr.pvp_alq, '.2f')
-#                     item['pvp_confec'] = format(pr.pvp_confec, '.2f')
-#                     item['imagen'] = pr.get_image()
-#                     item['stock'] = pr.stock
-#                     mas.append(item)
-#                 data['masvendidos'] = mas
-#
-#                 query2 = Detalle_venta.objects.filter(venta__transaccion__fecha_trans__month=h.month,
-#                                                       venta__estado=2).values('inventario__producto__producto_base_id',
-#                                                                               'inventario__producto_id',
-#                                                                               'inventario__producto__pvp',
-#                                                                               'inventario__producto__pvp_alq',
-#                                                                               'inventario__producto__pvp_confec',
-#                                                                               'inventario__producto__imagen').annotate(
-#                     total=Sum('cantidad')).order_by('-total')[0:6]
-#                 for i in query2:
-#                     px = Producto_base.objects.get(id=int(i['inventario__producto__producto_base_id']))
-#                     pr = Producto.objects.get(id=int(i['inventario__producto_id']))
-#                     item = {'info': px.nombre, 'descripcion': px.descripcion}
-#                     item['id_venta'] = int(i['inventario__producto_id'])
-#                     item['id_reparacion'] = int(pr.id)
-#                     item['id_confeccion'] = int(pr.id)
-#                     item['pvp'] = format(i['inventario__producto__pvp'], '.2f')
-#                     item['pvp_alq'] = format(i['inventario__producto__pvp_alq'], '.2f')
-#                     item['pvp_confec'] = format(i['inventario__producto__pvp_confec'], '.2f')
-#                     item['imagen'] = pr.get_image()
-#                     item['stock'] = px.stock
-#                     pop.append(item)
-#                 data['popular'] = pop
-#             if action == 'categoria':
-#                 tipo = str(request.POST['tipo'])
-#                 mas = []
-#                 query = Producto.objects.filter(producto_base__categoria__nombre__icontains=tipo). \
-#                     values('producto_base_id', 'producto_base__nombre', 'producto_base__descripcion', 'id',
-#                            'pvp', 'pvp_alq', 'pvp_confec')
-#                 for i in query:
-#                     pb = Producto.objects.get(id=i['id'])
-#                     item = {'info': i['producto_base__nombre'], 'descripcion': i['producto_base__descripcion']}
-#                     item['id_venta'] = int(i['id'])
-#                     item['id_reparacion'] = int(i['id'])
-#                     item['id_confeccion'] = int(i['id'])
-#                     item['pvp'] = format(i['pvp'], '.2f')
-#                     item['pvp_alq'] = format(i['pvp_alq'], '.2f')
-#                     item['pvp_confec'] = format(i['pvp_confec'], '.2f')
-#                     item['imagen'] = pb.get_image()
-#                     item['stock'] = pb.stock
-#                     mas.append(item)
-#                 data['result'] = mas
-#                 # query2 = Detalle_venta.objects.filter(venta__transaccion__fecha_trans__month=h.month,
-#                 #                                      venta__estado=2).values('inventario__producto__producto_base_id',
-#                 #                                                              'inventario__producto_id',
-#                 #                                                              'inventario__producto__pvp',
-#                 #                                                              'inventario__producto__pvp_alq',
-#                 #                                                              'inventario__producto__pvp_confec',
-#                 #                                                              'inventario__producto__imagen').annotate(
-#                 #     total=Sum('cantidad')).order_by('-total')[0:3]
-#                 # for i in query2:
-#                 #     px = Producto_base.objects.get(id=int(i['inventario__producto__producto_base_id']))
-#                 #     pr = Producto.objects.get(id=int(i['inventario__producto_id']))
-#                 #     item = {'info': px.nombre, 'descripcion': px.descripcion}
-#                 #     item['id_venta'] = int(i['inventario__producto_id'])
-#                 #     item['id_reparacion'] = int(pr.id)
-#                 #     item['id_confeccion'] = int(pr.id)
-#                 #     item['pvp'] = format(i['inventario__producto__pvp'], '.2f')
-#                 #     item['pvp_alq'] = format(i['inventario__producto__pvp_alq'], '.2f')
-#                 #     item['pvp_confec'] = format(i['inventario__producto__pvp_confec'], '.2f')
-#                 #     item['imagen'] = pr.get_image()
-#                 #     pop.append(item)
-#                 # data['popular'] = pop
-#             else:
-#                 data['error'] = 'No ha seleccionado una opcion'
-#         except Exception as e:
-#             data['error'] = 'No ha seleccionado una opcion'
-#         return JsonResponse(data, safe=False)
-#
-#     def get_context_data(self, **kwargs):
-#         data = super().get_context_data(**kwargs)
-#         data['icono'] = opc_icono
-#         data['entidad'] = opc_entidad
-#         data['boton'] = 'Nuevo Producto'
-#         data['titulo'] = 'Listado de Productos'
-#         data['nuevo'] = '/producto/nuevo'
-#         data['empresa'] = empresa
-#         return data
+class inventario(ValidatePermissionRequiredMixin, ListView):
+    model = Producto
+    seccond_model = Detalle_compra
+    template_name = 'front-end/producto/inventario.html'
+    permission_required = 'producto.view_producto'
+
+    @csrf_exempt
+    def dispatch(self, request, *args, **kwargs):
+        return super().dispatch(request, *args, **kwargs)
+
+    def post(self, request, *args, **kwargs):
+        data = {}
+        try:
+            action = request.POST['action']
+            if action == 'list':
+                data = []
+                for c in self.model.objects.all():
+                    stock = self.seccond_model.objects.filter(compra__estado=1, producto_id=c.id).aggregate(
+                        stock=Coalesce(Sum('stock_actual'), 0)).get('stock')
+                    item = c.toJSON()
+                    item['stock'] = stock
+                    data.append(item)
+            elif action == 'list_list':
+                data = []
+                ids = json.loads(request.POST['ids'])
+                query = self.model.objects.all()
+                for c in query.exclude(id__in=ids):
+                    item = c.toJSON()
+                    item['precio'] = 0.50
+                    item['cantidad'] = 1
+                    item['subtotal'] = 0.00
+                    data.append(item)
+            # elif action == 'list_venta':
+            #     data = []
+            #     vent = Producto.objects.filter(stock__gte=1)
+            #     ids = json.loads(request.POST['ids'])
+            #     for c in vent.exclude(producto_base_id__in=ids):
+            #         data.append(c.toJSON())
+            # elif action == 'search':
+            #     data = []
+            #     term = request.POST['term']
+            #     ids = json.loads(request.POST['ids'])
+            #     query = Producto.objects.filter(producto_base__nombre__icontains=term, stock__gte=1)
+            #     for a in query.exclude(producto_base_id__in=ids)[0:10]:
+            #         result = {'id': int(a.id), 'text': str(a.producto_base.nombre)}
+            #         data.append(result)
+            # elif action == 'search_rep':
+            #     data = []
+            #     ids = json.loads(request.POST['ids'])
+            #     term = request.POST['term']
+            #     query = Producto.objects.filter(
+            #         Q(producto_base__nombre__icontains=term) | Q(producto_base__color__nombre__icontains=term))
+            #     for a in query.exclude(producto_base_id__in=ids)[0:10]:
+            #         result = {'id': int(a.id),
+            #                   'text': str(str(a.producto_base.nombre) + ' / ' + str(a.producto_base.color.nombre))}
+            #         data.append(result)
+            # elif action == 'get':
+            #     data = []
+            #     id = request.POST['id']
+            #     producto = Producto.objects.filter(pk=id)
+            #     empresa = Empresa.objects.first()
+            #     for i in producto:
+            #         item = i.toJSON()
+            #         item['cantidad'] = 1
+            #         item['subtotal'] = 0.00
+            #         item['iva_emp'] = empresa.iva
+            #         data.append(item)
+            # elif action == 'get_rep':
+            #     data = []
+            #     id = request.POST['id']
+            #     producto = Producto.objects.filter(pk=id)
+            #     empresa = Empresa.objects.first()
+            #     for i in producto:
+            #         item = i.toJSON()
+            #         item['cantidad'] = 1
+            #         item['pvp'] = 1.00
+            #         item['subtotal'] = 0.00
+            #         item['iva_emp'] = empresa.iva
+            #         data.append(item)
+            # elif action == 'get_confec':
+            #     data = []
+            #     id = request.POST['id']
+            #     producto = Producto.objects.filter(pk=id)
+            #     empresa = Empresa.objects.first()
+            #     for i in producto:
+            #         item = i.toJSON()
+            #         item['cantidad'] = 1
+            #         item['pvp'] = format(i.pvp_confec, '.2f')
+            #         item['subtotal'] = 0.00
+            #         item['iva_emp'] = empresa.iva
+            #         data.append(item)
+            # elif action == 'sitio':
+            #     data = []
+            #     h = datetime.today()
+            #     query = Detalle_venta.objects.filter(venta__transaccion__fecha_trans__month=h.month,
+            #                                          venta__estado=1).values('inventario__producto__producto_base_id',
+            #                                                                  'inventario__producto_id',
+            #                                                                  'inventario__producto__pvp',
+            #                                                                  'inventario__producto__pvp_alq',
+            #                                                                  'inventario__producto__pvp_confec',
+            #                                                                  'inventario__producto__imagen').annotate(
+            #         total=Sum('cantidad')).order_by('-total')[0:3]
+            #     for i in query:
+            #         px = Producto_base.objects.get(id=int(i['inventario__producto__producto_base_id']))
+            #         pr = Producto.objects.get(id=int(i['inventario__producto_id']))
+            #         item = {'info': px.nombre, 'descripcion': px.descripcion}
+            #         item['id_venta'] = int(i['inventario__producto_id'])
+            #         item['id_reparacion'] = int(pr.id)
+            #         item['id_confeccion'] = int(pr.id)
+            #         item['pvp'] = format(i['inventario__producto__pvp'], '.2f')
+            #         item['pvp_alq'] = format(i['inventario__producto__pvp_alq'], '.2f')
+            #         item['pvp_confec'] = format(i['inventario__producto__pvp_confec'], '.2f')
+            #         item['imagen'] = pr.get_image()
+            #         data.append(item)
+            else:
+                data['error'] = 'No ha seleccionado una opcion'
+        except Exception as e:
+            data['error'] = 'No ha seleccionado una opcion'
+        return JsonResponse(data, safe=False)
+
+    def get_context_data(self, **kwargs):
+        data = super().get_context_data(**kwargs)
+        data['icono'] = opc_icono
+        data['entidad'] = opc_entidad
+        data['titulo'] = 'Stock de Productos'
+        data['empresa'] = empresa
+        return data
 
 
 class Createview(ValidatePermissionRequiredMixin, CreateView):

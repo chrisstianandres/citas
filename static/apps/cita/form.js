@@ -219,15 +219,15 @@ $(function () {
             email: "Debe ingresar un correo valido",
             telefono: {
                 required: "Por favor ingresa tu numero convencional",
-                minlength: "Tu numero de documento debe tener al menos 9 digitos",
-                maxlength: "Tu numero de documento debe tener al menos 9 digitos",
+                minlength: "Tu numero de telefono 9 digitos",
+                maxlength: "Tu numero de tener no mas 9 digitos",
                 digits: "Debe ingresar unicamente numeros",
             },
             celular: {
                 required: "Por favor ingresa tu numero celular",
-                minlength: "Tu numero de documento debe tener al menos 10 digitos",
+                minlength: "Tu numero de celular debe tener al menos 10 digitos",
                 digits: "Debe ingresar unicamente numeros",
-                maxlength: "Tu numero de documento debe tener maximo 10 digitos",
+                maxlength: "Tu numero de celular debe tener maximo 10 digitos",
             },
             direccion: {
                 required: "Por favor ingresa una direccion",
@@ -236,7 +236,6 @@ $(function () {
             },
         },
     });
-
 });
 
 function cargar_eventos() {
