@@ -58,33 +58,42 @@ class lista(ValidatePermissionRequiredMixin, ListView):
                     if request.user.tipo == 1:
                         query = Venta.objects.filter(estado=1)
                     else:
-                        query = Venta.objects.filter(estado=1, transaccion__user_id=request.user.id)
+                        query = Venta.objects.filter(estado=1, user_id=request.user.id)
                 else:
                     if request.user.tipo == 1:
-                        query = Venta.objects.filter(estado=0, fecha_factura__range=[start, end])
+                        query = Venta.objects.filter(estado=1, fecha_factura__range=[start, end])
                     else:
-                        query = Venta.objects.filter(estado=0, transaccion__user_id=request.user.id,
+                        query = Venta.objects.filter(estado=1, user_id=request.user.id,
                                                      fecha_factura__range=[start, end])
                 for c in query:
                     data.append(c.toJSON())
             elif action == 'detalle':
                 id = request.POST['id']
                 if id:
-                    # inventario__produccion__producto__producto_base_id
                     data = []
-                    result = Detalle_venta.objects.filter(venta_id=id).values('inventario__produccion__producto_id',
-                                                                              'cantidad', 'pvp_actual', 'subtotal'). \
-                        annotate(Count('inventario__produccion__producto_id'))
+                    result = Detalle_venta.objects.filter(venta_id=id)
+                    result2 = Detalle_servicios.objects.filter(venta_id=id)
                     for p in result:
-                        # pr = Producto_base.objects.get(id=int(p['inventario__produccion__producto__producto_base_id']))
-                        pb = Producto.objects.get(id=p['inventario__produccion__producto_id'])
                         data.append({
-                            'producto': pb.producto_base.nombre,
-                            'categoria': pb.producto_base.categoria.nombre,
-                            'presentacion': pb.presentacion.nombre,
-                            'cantidad': p['cantidad'],
-                            'pvp': p['pvp_actual'],
-                            'subtotal': p['subtotal']
+                            'nombre': p.det_compra.producto.nombre,
+                            'tipo': 'Producto',
+                            'duracion': 'N/A',
+                            'categoria': p.det_compra.producto.categoria.nombre,
+                            'presentacion': p.det_compra.producto.presentacion.nombre,
+                            'cantidad': p.cantidad,
+                            'precio': p.pvp,
+                            'subtotal': p.subtotal,
+                        })
+                    for s in result2:
+                        data.append({
+                            'nombre': s.servicio.nombre,
+                            'tipo': 'Servicio',
+                            'duracion': s.servicio.duracion,
+                            'categoria': s.servicio.categoria.nombre,
+                            'presentacion': 'N/A',
+                            'cantidad': s.cantidad,
+                            'precio': s.valor,
+                            'subtotal': s.subtotals,
                         })
             # elif action == 'estado':
             #     id = request.POST['id']
@@ -103,19 +112,10 @@ class lista(ValidatePermissionRequiredMixin, ListView):
             #             es.save()
             #     else:
             #         data['error'] = 'Ha ocurrido un error'
-            elif action == 'pagar':
-                id = request.POST['id']
-                if id:
-                    with transaction.atomic():
-                        es = Venta.objects.get(id=id)
-                        es.estado = 1
-                        es.save()
-                else:
-                    data['error'] = 'Ha ocurrido un error'
             else:
                 data['error'] = 'No ha seleccionado una opcion'
         except Exception as e:
-            data['error'] = 'No ha seleccionado una opcion'
+            data['error'] = str(e)
         return JsonResponse(data, safe=False)
 
     def get_context_data(self, **kwargs):
@@ -670,7 +670,7 @@ def datachartcontr():
 
 class report(ValidatePermissionRequiredMixin, ListView):
     model = Venta
-    template_name = 'front-end/venta/venta_report_product.html'
+    template_name = 'front-end/venta/report_product.html'
     permission_required = 'venta.view_venta'
 
     @csrf_exempt
@@ -691,26 +691,82 @@ class report(ValidatePermissionRequiredMixin, ListView):
             if action == 'report':
                 data = []
                 if start_date == '' and end_date == '':
-                    query = Detalle_venta.objects.values('venta__transaccion__fecha_trans',
-                                                         'inventario__produccion__producto_id',
-                                                         'pvp_actual').order_by().annotate(
+                    query = Detalle_venta.objects.values('venta__fecha_factura', 'det_compra__producto_id', 'pvp')\
+                        .annotate(
                         Sum('cantidad')).filter(venta__estado=1)
                 else:
-                    query = Detalle_venta.objects.values('venta__transaccion__fecha_trans',
-                                                         'inventario__produccion__producto_id',
-                                                         'pvp_actual') \
-                        .filter(venta__transaccion__fecha_trans__range=[start_date, end_date],
-                                venta__estado=1).order_by().annotate(
-                        Sum('cantidad'))
+                    query = Detalle_venta.objects.values('venta__fecha_factura', 'det_compra__producto_id', 'pvp') \
+                        .filter(venta__fecha_factura__range=[start_date, end_date],
+                                venta__estado=1).order_by().annotate(Sum('cantidad'))
                 for p in query:
-                    total = p['pvp_actual'] * p['cantidad__sum']
-                    print(iva)
-                    pr = Producto.objects.get(id=int(p['inventario__produccion__producto_id']))
+                    total = p['pvp'] * p['cantidad__sum']
+                    pr = Producto.objects.get(id=int(p['det_compra__producto_id']))
                     data.append([
-                        p['venta__transaccion__fecha_trans'].strftime("%d/%m/%Y"),
-                        pr.producto_base.nombre,
+                        p['venta__fecha_factura'].strftime("%d/%m/%Y"),
+                        pr.nombre,
+                        pr.categoria.nombre,
+                        pr.presentacion.nombre,
                         int(p['cantidad__sum']),
-                        format(p['pvp_actual'], '.2f'),
+                        format(p['pvp'], '.2f'),
+                        format(total, '.2f'),
+                        format((float(total) * iva), '.2f'),
+                        format(((float(total) * iva) + float(total)), '.2f')
+                    ])
+            else:
+                data['error'] = 'No ha seleccionado una opcion'
+        except Exception as e:
+            data['error'] = str(e)
+        return JsonResponse(data, safe=False)
+
+    def get_context_data(self, **kwargs):
+        data = super().get_context_data(**kwargs)
+        data['icono'] = opc_icono
+        data['entidad'] = opc_entidad
+        data['titulo'] = 'Reporte de Ventas por productos'
+        data['empresa'] = empresa
+        data['filter_prod'] = '/transaccion/venta/lista'
+        return data
+
+
+class report_servicios(ValidatePermissionRequiredMixin, ListView):
+    model = Venta
+    template_name = 'front-end/venta/report_services.html'
+    permission_required = 'venta.view_venta'
+
+    @csrf_exempt
+    def dispatch(self, request, *args, **kwargs):
+        return super().dispatch(request, *args, **kwargs)
+
+    def get_queryset(self):
+        return Venta.objects.none()
+
+    def post(self, request, *args, **kwargs):
+        data = {}
+        try:
+            start_date = request.POST.get('start_date', '')
+            end_date = request.POST.get('end_date', '')
+            empresa = Empresa.objects.first()
+            iva = float(empresa.iva / 100)
+            action = request.POST['action']
+            if action == 'report':
+                data = []
+                if start_date == '' and end_date == '':
+                    query = Detalle_servicios.objects.values('venta__fecha_factura', 'servicio_id', 'valor')\
+                        .annotate(Sum('cantidad')).filter(venta__estado=1)
+                else:
+                    query = Detalle_servicios.objects.values('venta__fecha_factura', 'servicio_id', 'valor') \
+                        .filter(venta__fecha_factura__range=[start_date, end_date],venta__estado=1).\
+                        annotate(Sum('cantidad'))
+                for p in query:
+                    total = p['valor'] * p['cantidad__sum']
+                    pr = Servicio.objects.get(id=int(p['servicio_id']))
+                    data.append([
+                        p['venta__fecha_factura'].strftime("%d/%m/%Y"),
+                        pr.nombre,
+                        pr.categoria.nombre,
+                        pr.duracion,
+                        int(p['cantidad__sum']),
+                        format(p['valor'], '.2f'),
                         format(total, '.2f'),
                         format((float(total) * iva), '.2f'),
                         format(((float(total) * iva) + float(total)), '.2f')
@@ -725,15 +781,15 @@ class report(ValidatePermissionRequiredMixin, ListView):
         data = super().get_context_data(**kwargs)
         data['icono'] = opc_icono
         data['entidad'] = opc_entidad
-        data['titulo'] = 'Reporte de Ventas'
+        data['titulo'] = 'Reporte de ventas por servicios'
         data['empresa'] = empresa
-        data['filter_prod'] = '/venta/lista'
+        data['filter_prod'] = '/transaccion/venta/lista'
         return data
 
 
 class report_total(ValidatePermissionRequiredMixin, ListView):
     model = Venta
-    template_name = 'front-end/venta/venta_report_total.html'
+    template_name = 'front-end/venta/report_total.html'
     permission_required = 'venta.view_venta'
 
     @csrf_exempt
@@ -752,25 +808,21 @@ class report_total(ValidatePermissionRequiredMixin, ListView):
             if action == 'report':
                 data = []
                 if start_date == '' and end_date == '':
-                    query = Venta.objects.values('transaccion__fecha_trans', 'transaccion__cliente__nombres',
-                                                 'transaccion__cliente__apellidos', 'transaccion__user__username')\
-                        .annotate(Sum('transaccion__subtotal')). \
-                        annotate(Sum('transaccion__iva')).annotate(Sum('transaccion__total')).filter(estado=1)
+                    query = Venta.objects.values('fecha_factura', 'user__first_name',
+                                                 'user__last_name')\
+                        .annotate(Sum('subtotal')).annotate(Sum('iva')).annotate(Sum('total')).filter(estado=1)
                 else:
-                    query = Venta.objects.values('transaccion__fecha_trans', 'transaccion__cliente__nombres',
-                                                 'transaccion__cliente__apellidos',
-                                                 'transaccion__user__username').filter(
-                        transaccion__fecha_trans__range=[start_date, end_date], estado=1). \
-                        annotate(Sum('transaccion__subtotal')). \
-                        annotate(Sum('transaccion__iva')).annotate(Sum('transaccion__total'))
+                    query = Venta.objects.values('fecha_factura', 'user__first_name',
+                                                 'user__last_name').filter(
+                        fecha_factura__range=[start_date, end_date], estado=1). \
+                        annotate(Sum('subtotal')).annotate(Sum('iva')).annotate(Sum('total'))
                 for p in query:
                     data.append([
-                        p['transaccion__fecha_trans'].strftime("%d/%m/%Y"),
-                        p['transaccion__cliente__nombres'] + " " + p['transaccion__cliente__apellidos'],
-                        p['transaccion__user__username'],
-                        format(p['transaccion__subtotal__sum'], '.2f'),
-                        format((p['transaccion__iva__sum']), '.2f'),
-                        format(p['transaccion__total__sum'], '.2f')
+                        p['fecha_factura'].strftime("%d/%m/%Y"),
+                        p['user__first_name'] + " " + p['user__last_name'],
+                        format(p['subtotal__sum'], '.2f'),
+                        format((p['iva__sum']), '.2f'),
+                        format(p['total__sum'], '.2f')
                     ])
             else:
                 data['error'] = 'No ha seleccionado una opcion'
@@ -781,10 +833,10 @@ class report_total(ValidatePermissionRequiredMixin, ListView):
     def get_context_data(self, **kwargs):
         data = super().get_context_data(**kwargs)
         data['icono'] = opc_icono
-        data['entidad'] = 'Ventas Finalizadas'
+        data['entidad'] = 'Total en Ventas'
         data['titulo'] = 'Reporte de Ventas'
         data['empresa'] = empresa
-        data['filter_prod'] = '/venta/lista'
+        data['filter_prod'] = '/transaccion/venta/lista'
         return data
 
 

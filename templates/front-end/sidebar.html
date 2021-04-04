@@ -9,24 +9,6 @@
     </script>
 
     <div class="sidebar-shortcuts" id="sidebar-shortcuts">
-        <div class="sidebar-shortcuts-large" id="sidebar-shortcuts-large">
-            <button class="btn btn-success">
-                <i class="ace-icon fa fa-signal"></i>
-            </button>
-
-            <button class="btn btn-info">
-                <i class="ace-icon fa fa-pencil"></i>
-            </button>
-
-            <button class="btn btn-warning">
-                <i class="ace-icon fa fa-users"></i>
-            </button>
-
-            <button class="btn btn-danger">
-                <i class="ace-icon fa fa-cogs"></i>
-            </button>
-        </div>
-
         <div class="sidebar-shortcuts-mini" id="sidebar-shortcuts-mini">
             <span class="btn btn-success"></span>
 
@@ -46,245 +28,263 @@
             </a>
 
             <b class="arrow"></b>
-        </li>
-
-        <li class="">
-            <a href="{% url 'user:lista_cliente' %}">
-                <i class="menu-icon fa fa-user"></i>
-                <span class="menu-text">
+        </li> <!-- /Menu -->
+        {% if request.user.tipo == 1 %}
+            <li class="">
+                <a href="{% url 'user:lista_cliente' %}">
+                    <i class="menu-icon fa fa-user"></i>
+                    <span class="menu-text">
 								Clientes
 							</span>
-            </a>
-        </li>
-        <li class="">
-            <a href="{% url 'servicio:lista' %}">
-                <i class="menu-icon fa fa-server"></i>
-                <span class="menu-text">Gestion de Servicio</span>
-            </a>
-        </li>
-        <li class="">
-            <a href="{% url 'venta:cita_nuevo' %}">
-                <i class="menu-icon fa fa-book"></i>
-                <span class="menu-text">
+                </a>
+            </li>
+            <li class="">
+                <a href="{% url 'servicio:lista' %}">
+                    <i class="menu-icon fa fa-server"></i>
+                    <span class="menu-text">Gestion de Servicio</span>
+                </a>
+            </li>
+            <li class="">
+                <a href="{% url 'venta:cita_nuevo' %}">
+                    <i class="menu-icon fa fa-book"></i>
+                    <span class="menu-text">
 								Gestion de Agenda
 							</span>
-            </a>
-        </li>
-         <li class="">
-            <a href="#" class="dropdown-toggle">
-               <i class="menu-icon fa fa-money"></i>
-                <span class="menu-text"> Transacciones </span>
+                </a>
+            </li>
+            <li class="">
+                <a href="#" class="dropdown-toggle">
+                    <i class="menu-icon fa fa-money"></i>
+                    <span class="menu-text"> Transacciones </span>
 
-                <b class="arrow fa fa-angle-down"></b>
-            </a>
+                    <b class="arrow fa fa-angle-down"></b>
+                </a>
 
-            <b class="arrow"></b>
+                <b class="arrow"></b>
 
-            <ul class="submenu">
-                <li class="">
-                    <a href="{% url 'compra:lista' %}">
-                        <i class="menu-icon fa fa-caret-right"></i>
-                        Compras
-                    </a>
+                <ul class="submenu">
+                    <li class="">
+                        <a href="{% url 'compra:lista' %}">
+                            <i class="menu-icon fa fa-caret-right"></i>
+                            Compras
+                        </a>
 
-                    <b class="arrow"></b>
-                </li>
+                        <b class="arrow"></b>
+                    </li>
 
-                <li class="">
-                    <a href="{% url 'venta:lista' %}">
-                        <i class="menu-icon fa fa-caret-right"></i>
-                        Ventas
-                    </a>
+                    <li class="">
+                        <a href="{% url 'venta:lista' %}">
+                            <i class="menu-icon fa fa-caret-right"></i>
+                            Ventas
+                        </a>
 
-                    <b class="arrow"></b>
-                </li>
-            </ul>
-        </li>
+                        <b class="arrow"></b>
+                    </li>
+                </ul>
+            </li>
 
-        <li class="">
-            <a href="{% url 'producto:inventario' %}">
-                <i class="menu-icon fa fa-pencil-square-o"></i>
-                <span class="menu-text"> Inventario </span>
-            </a>
-        </li>
+            <li class="">
+                <a href="{% url 'producto:inventario' %}">
+                    <i class="menu-icon fa fa-pencil-square-o"></i>
+                    <span class="menu-text"> Inventario </span>
+                </a>
+            </li>
 
-        <li class="">
-            <a href="#" class="dropdown-toggle">
-                <i class="menu-icon fa fa-list-alt"></i>
-                <span class="menu-text"> Productos </span>
+            <li class="">
+                <a href="#" class="dropdown-toggle">
+                    <i class="menu-icon fa fa-list-alt"></i>
+                    <span class="menu-text"> Productos </span>
 
-                <b class="arrow fa fa-angle-down"></b>
-            </a>
+                    <b class="arrow fa fa-angle-down"></b>
+                </a>
 
-            <b class="arrow"></b>
+                <b class="arrow"></b>
 
-            <ul class="submenu">
-                <li class="">
-                    <a href="{% url 'producto:nuevo' %}">
-                        <i class="menu-icon fa fa-caret-right"></i>
-                        Nuevo Producto
-                    </a>
+                <ul class="submenu">
+                    <li class="">
+                        <a href="{% url 'producto:nuevo' %}">
+                            <i class="menu-icon fa fa-caret-right"></i>
+                            Nuevo Producto
+                        </a>
 
-                    <b class="arrow"></b>
-                </li>
+                        <b class="arrow"></b>
+                    </li>
 
-                <li class="">
-                    <a href="{% url 'producto:lista' %}">
-                        <i class="menu-icon fa fa-caret-right"></i>
-                        Lista de Productos
-                    </a>
+                    <li class="">
+                        <a href="{% url 'producto:lista' %}">
+                            <i class="menu-icon fa fa-caret-right"></i>
+                            Lista de Productos
+                        </a>
 
-                    <b class="arrow"></b>
-                </li>
+                        <b class="arrow"></b>
+                    </li>
 
-                <li class="">
-                    <a href="{% url 'categoria:nuevo' %}">
-                        <i class="menu-icon fa fa-caret-right"></i>
-                        Nueva Categoria
-                    </a>
+                    <li class="">
+                        <a href="{% url 'categoria:nuevo' %}">
+                            <i class="menu-icon fa fa-caret-right"></i>
+                            Nueva Categoria
+                        </a>
 
-                    <b class="arrow"></b>
-                </li>
+                        <b class="arrow"></b>
+                    </li>
 
-                <li class="">
-                    <a href="{% url 'categoria:lista' %}">
-                        <i class="menu-icon fa fa-caret-right"></i>
-                        Lista de Categorias
-                    </a>
+                    <li class="">
+                        <a href="{% url 'categoria:lista' %}">
+                            <i class="menu-icon fa fa-caret-right"></i>
+                            Lista de Categorias
+                        </a>
 
-                    <b class="arrow"></b>
-                </li>
+                        <b class="arrow"></b>
+                    </li>
 
-                <li class="">
-                    <a href="{% url 'presentacion:nuevo' %}">
-                        <i class="menu-icon fa fa-caret-right"></i>
-                        Nueva Presentacion
-                    </a>
+                    <li class="">
+                        <a href="{% url 'presentacion:nuevo' %}">
+                            <i class="menu-icon fa fa-caret-right"></i>
+                            Nueva Presentacion
+                        </a>
 
-                    <b class="arrow"></b>
-                </li>
+                        <b class="arrow"></b>
+                    </li>
 
-                <li class="">
-                   <a href="{% url 'presentacion:lista' %}">
-                        <i class="menu-icon fa fa-caret-right"></i>
-                       Lista de Presentaciones
-                    </a>
+                    <li class="">
+                        <a href="{% url 'presentacion:lista' %}">
+                            <i class="menu-icon fa fa-caret-right"></i>
+                            Lista de Presentaciones
+                        </a>
 
-                    <b class="arrow"></b>
-                </li>
-            </ul>
-        </li>
+                        <b class="arrow"></b>
+                    </li>
+                </ul>
+            </li>
 
-        <li class="">
-            <a href="{%  url 'empleado:lista' %}">
-                <i class="menu-icon fa fa-group"></i>
-                <span class="menu-text">
+            <li class="">
+                <a href="{% url 'empleado:lista' %}">
+                    <i class="menu-icon fa fa-group"></i>
+                    <span class="menu-text">
 								Emplelados
 							</span>
-            </a>
-        </li>
+                </a>
+            </li>
 
-        <li class="">
-            <a href="{%  url 'empleado:lista' %}">
-                <i class="menu-icon fa fa-male"></i>
-                <span class="menu-text">
+            <li class="">
+                <a href="{% url 'empleado:lista' %}">
+                    <i class="menu-icon fa fa-male"></i>
+                    <span class="menu-text">
 								Usuarios
 							</span>
-            </a>
-        </li>
-        <li class="">
-            <a href="{% url 'equipos:lista' %}">
-                <i class="menu-icon fa fa-rocket"></i>
-                <span class="menu-text"> Equipos </span>
-            </a>
+                </a>
+            </li>
+            <li class="">
+                <a href="{% url 'equipos:lista' %}">
+                    <i class="menu-icon fa fa-rocket"></i>
+                    <span class="menu-text"> Equipos </span>
+                </a>
 
-            <b class="arrow"></b>
-        </li>
+                <b class="arrow"></b>
+            </li>
 
-        <li class="">
-            <a href="#" class="dropdown-toggle">
-                <i class="menu-icon fa fa-file-archive-o"></i>
-                <span class="menu-text"> Informes </span>
+            <li class="">
+                <a href="#" class="dropdown-toggle">
+                    <i class="menu-icon fa fa-file-archive-o"></i>
+                    <span class="menu-text"> Informes </span>
 
-                <b class="arrow fa fa-angle-down"></b>
-            </a>
+                    <b class="arrow fa fa-angle-down"></b>
+                </a>
 
-            <b class="arrow"></b>
+                <b class="arrow"></b>
 
-            <ul class="submenu">
-                <li class="">
-                    <a href="profile.html">
-                        <i class="menu-icon fa fa-caret-right"></i>
-                        User Profile
-                    </a>
+                <ul class="submenu">
+                    <li class="">
+                        <a href="{% url 'venta:report_total' %}">
+                            <i class="menu-icon fa fa-caret-right"></i>
+                            Ventas
+                        </a>
 
-                    <b class="arrow"></b>
-                </li>
+                        <b class="arrow"></b>
+                    </li>
 
-                <li class="">
-                    <a href="inbox.html">
-                        <i class="menu-icon fa fa-caret-right"></i>
-                        Inbox
-                    </a>
+                    <li class="">
+                        <a href="inbox.html">
+                            <i class="menu-icon fa fa-caret-right"></i>
+                            Compras
+                        </a>
 
-                    <b class="arrow"></b>
-                </li>
+                        <b class="arrow"></b>
+                    </li>
 
-                <li class="">
-                    <a href="pricing.html">
-                        <i class="menu-icon fa fa-caret-right"></i>
-                        Pricing Tables
-                    </a>
+                    <li class="">
+                        <a href="pricing.html">
+                            <i class="menu-icon fa fa-caret-right"></i>
+                            Empleados
+                        </a>
 
-                    <b class="arrow"></b>
-                </li>
+                        <b class="arrow"></b>
+                    </li>
 
-                <li class="">
-                    <a href="invoice.html">
-                        <i class="menu-icon fa fa-caret-right"></i>
-                        Invoice
-                    </a>
+                    <li class="">
+                        <a href="invoice.html">
+                            <i class="menu-icon fa fa-caret-right"></i>
+                            Invoice
+                        </a>
 
-                    <b class="arrow"></b>
-                </li>
+                        <b class="arrow"></b>
+                    </li>
 
-                <li class="">
-                    <a href="timeline.html">
-                        <i class="menu-icon fa fa-caret-right"></i>
-                        Timeline
-                    </a>
+                    <li class="">
+                        <a href="timeline.html">
+                            <i class="menu-icon fa fa-caret-right"></i>
+                            Timeline
+                        </a>
 
-                    <b class="arrow"></b>
-                </li>
+                        <b class="arrow"></b>
+                    </li>
 
-                <li class="">
-                    <a href="search.html">
-                        <i class="menu-icon fa fa-caret-right"></i>
-                        Search Results
-                    </a>
+                    <li class="">
+                        <a href="search.html">
+                            <i class="menu-icon fa fa-caret-right"></i>
+                            Search Results
+                        </a>
 
-                    <b class="arrow"></b>
-                </li>
+                        <b class="arrow"></b>
+                    </li>
 
-                <li class="">
-                    <a href="email.html">
-                        <i class="menu-icon fa fa-caret-right"></i>
-                        Email Templates
-                    </a>
+                    <li class="">
+                        <a href="email.html">
+                            <i class="menu-icon fa fa-caret-right"></i>
+                            Email Templates
+                        </a>
 
-                    <b class="arrow"></b>
-                </li>
+                        <b class="arrow"></b>
+                    </li>
 
-                <li class="">
-                    <a href="login.html">
-                        <i class="menu-icon fa fa-caret-right"></i>
-                        Login &amp; Register
-                    </a>
+                    <li class="">
+                        <a href="login.html">
+                            <i class="menu-icon fa fa-caret-right"></i>
+                            Login &amp; Register
+                        </a>
 
-                    <b class="arrow"></b>
-                </li>
-            </ul>
-        </li>
+                        <b class="arrow"></b>
+                    </li>
+                </ul>
+            </li>
+        {% else %}
+            <li class="">
+                <a href="{% url 'venta:cita_nuevo' %}">
+                    <i class="menu-icon fa fa-book"></i>
+                    <span class="menu-text">
+								Mis citas
+							</span>
+                </a>
+            </li>
+            <li class="">
+                <a href="{% url 'venta:lista' %}">
+                    <i class="menu-icon fa fa-money"></i>
+                    <span class="menu-text">
+								Mis Compras
+							</span>
+                </a>
+            </li>
+        {% endif %}
     </ul><!-- /.nav-list -->
 
     <div class="sidebar-toggle sidebar-collapse" id="sidebar-collapse">

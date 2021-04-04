@@ -82,7 +82,15 @@ function datatable_fun() {
                 class: 'text-center',
                 orderable: false,
                 render: function (data, type, row) {
-                    return '<span class="badge badge-primary">'+data+'</span>'
+                    var span;
+                    if (data === 0){
+                         span = '<span class="badge badge-danger">'+data+'</span>';
+                    } else if (data > 1 && data <= 5){
+                        span = '<span class="badge badge-warning">'+data+'</span>';
+                    } else if(data>5){
+                        span = '<span class="badge badge-success">'+data+'</span>';
+                    }
+                    return span
                 }
             },
         ]

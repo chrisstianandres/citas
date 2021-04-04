@@ -1,18 +1,22 @@
 {% extends 'front-end/base.html' %}
 {% load static %}
 {% block content %}
-    <div class="row">
-    {% block botones_head %}
-    <div class="container-fluid">
-            <a type="button" class="btn btn-white btn-success" href="{{ nuevo }}"><i class="fa fa-plus-circle"></i>
-                Nuevo</a>
-            <button type="button" class="btn btn-white btn-danger" onclick="window.location.reload();"><span
-                    class="glyphicon glyphicon-refresh"></span> Actualizar
-            </button>
-        </div>
-    {% endblock %}
 
-        <br>
+    <div class="row">
+
+            {% block botones_head %}
+                <div class="container-fluid">
+                {% if request.user.tipo == 1 %}
+                    <a type="button" class="btn btn-white btn-success" href="{{ nuevo }}"><i
+                            class="fa fa-plus-circle"></i>
+                        Nuevo</a> {% endif %}
+                    <button type="button" class="btn btn-white btn-danger" onclick="window.location.reload();"><span
+                            class="glyphicon glyphicon-refresh"></span> Actualizar
+                    </button>
+                </div>
+            {% endblock %}
+            <br>
+
         <div class="col-xs-12">
             <br>
             <div class="table-header">
@@ -25,9 +29,9 @@
                     {% endblock %}
 
                 </table>
-            {% block table_footer %}
-            
-            {% endblock %}
+                {% block table_footer %}
+
+                {% endblock %}
             </div>
         </div>
     </div>

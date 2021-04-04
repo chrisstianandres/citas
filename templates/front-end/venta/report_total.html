@@ -3,6 +3,27 @@
 {% block formulario %}
 
 {% endblock %}
+{% block botones_head %}
+    <div class="row">
+        <div class="container-fluid">
+            <div class="form-group">
+                <a type="button" class="btn btn-white btn-danger" onclick="window.location.reload();"><span
+                        class="glyphicon glyphicon-refresh"></span> Actualizar
+                </a>
+                <a type="button" class="btn btn-white btn-primary" href="{% url 'venta:report_by_product' %}"><i
+                        class="fa fa-sort-numeric-desc"></i> Por Productos
+                </a>
+                <a type="button" class="btn btn-white btn-default" href="{% url 'venta:report_by_services' %}"><i
+                        class="fa fa-bullhorn"></i> Por Servicios
+                </a>
+            </div>
+            <div class="form-group col-lg-3">
+                <label for="fecha"><strong>Filtar por Fecha:</strong></label>
+                <input type="text" name="fecha" id="fecha" class="form-control form-control-sm input-sm">
+            </div>
+        </div>
+    </div>
+{% endblock %}
 {% block elements %}
     <br>
     <div class="row">
@@ -12,7 +33,7 @@
     </div>
     <br>
 {% endblock %}
-{% block table %}
+{% block table_content %}
     <thead>
     <tr>
         <th>Fecha</th>
@@ -34,12 +55,6 @@
 
     </tr>
     </tfoot>
-{% endblock %}
-{% block table_footer %}
-    <a type="button" class="btn btn-success btn-sm" id="reload"
-       onclick=" location.reload();">
-        <i class="fas fa-sync-alt"></i> Actualizar
-    </a>
 {% endblock %}
 {% block extra %}
     <script src="{% static 'apps/venta/report_total.js' %}"></script>

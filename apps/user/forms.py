@@ -220,9 +220,9 @@ class UserForm_cliente(forms.ModelForm):
             # })
 
             self.fields['first_name'].widget = TextInput(
-                attrs={'placeholder': 'Ingrese sus dos nombres', 'class': 'form-control form-rounded'})
+                attrs={'placeholder': 'Ingrese su nombre', 'class': 'form-control form-rounded'})
             self.fields['last_name'].widget = TextInput(
-                attrs={'placeholder': 'Ingrese sus dos Apellidos', 'class': 'form-control form-rounded'})
+                attrs={'placeholder': 'Ingrese su apellido', 'class': 'form-control form-rounded'})
             self.fields['cedula'].widget = TextInput(
                 attrs={'placeholder': 'Ingrese numero de cedula', 'class': 'form-control form-rounded'})
             self.fields['email'].widget = EmailInput(

@@ -1,5 +1,7 @@
+from django.contrib.auth.hashers import make_password
 from django.contrib.auth.models import Group
 from django.core.exceptions import ObjectDoesNotExist
+from django.db import transaction
 from django.shortcuts import render, HttpResponseRedirect
 from django.contrib.auth import *
 from django.http import HttpResponse
@@ -11,9 +13,12 @@ from django.views.generic import FormView, TemplateView
 from django.contrib.auth.mixins import LoginRequiredMixin, AccessMixin
 import json
 from django.views.decorators.csrf import csrf_exempt
+from django.contrib.auth import get_user_model
+from django.contrib.auth.models import Permission
 
 # -----------------------------------------------PAGINA PRINCIPAL-----------------------------------------------------#
 # from apps.user.forms import UserForm, UserForm_online
+from apps.user.forms import UserForm_cliente
 from apps.user.models import User
 from apps.empresa.models import Empresa
 
@@ -39,11 +44,49 @@ def menu(request):
 def logeo(request):
     data = {}
     if not request.user.is_authenticated:
-        data['title'] = 'Inicio de Sesion'
+        data['titulo'] = 'Inicio de Sesion'
         data['nomb'] = nombre_empresa()
+        data['form'] = UserForm_cliente()
     else:
         return HttpResponseRedirect("/menu")
-    return render(request, 'front-end/login2.html', data)
+    return render(request, 'front-end/login.html', data)
+
+
+@csrf_exempt
+def cliente_add(request):
+    data = {}
+    f = UserForm_cliente(request.POST)
+    datos = request.POST
+    if f.is_valid():
+        with transaction.atomic():
+            if verificar(f.data['cedula']):
+                use = User()
+                use.username = datos['cedula']
+                use.cedula = datos['cedula']
+                use.first_name = datos['first_name']
+                use.last_name = datos['last_name']
+                use.sexo = datos['sexo']
+                use.email = datos['email']
+                use.telefono = datos['telefono']
+                use.celular = datos['celular']
+                use.direccion = datos['direccion']
+                use.tipo = 0
+                use.password = make_password(datos['cedula'])
+                use.save()
+                permission = Permission.objects.get(codename='add_venta')
+                permission2 = Permission.objects.get(codename='view_venta')
+                use.user_permissions.add(permission)
+                use.user_permissions.add(permission2)
+                # venta.add_venta
+
+                # u.user_permissions.add(permission)
+                data['resp'] = 'error'
+            else:
+                f.add_error("cedula", "Numero de Cedula no valido para Ecuador")
+                data['error'] = f.errors
+    else:
+        data['error'] = f.errors
+    return HttpResponse(json.dumps(data), content_type="application/json")
 
 
 # class signin(TemplateView):
@@ -120,8 +163,7 @@ def connect(request):
             else:
                 data['error'] = '<strong>Usuario Inactivo </strong>'
         else:
-            data['error'] = '<strong>Usuario no valido </strong><br>' \
-                            'Verifica las credenciales de acceso y vuelve a intentarlo.'
+            data['error'] = '<strong>Usuario o contraseña no validos </strong><br>'
     else:
         data['error'] = 'Metodo Request no es Valido.'
     return HttpResponse(json.dumps(data), content_type="application/json")

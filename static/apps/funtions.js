@@ -262,6 +262,7 @@ function save_with_ajax2(title, url, content, parametros, callback) {
 
 function reset(formulario) {
     var validator = $(formulario).validate();
+    console.log(formulario);
     validator.resetForm();
     $('.has-success').removeClass('has-success');
     $('.has-error').removeClass('has-error');
@@ -620,4 +621,11 @@ function year_footer() {
 
 }
 
+
+function salir() {
+    var parametros = {'data': ''};
+    save_estado('Cerrando Sesion', '/logout', 'Esta Seguro que quieres cerrar sesion?', parametros, function () {
+        window.location.href = '/login';
+    })
+}
 

@@ -32,7 +32,7 @@ $(function () {
         destroy: true,
         responsive: true,
         autoWidth: false,
-        order: [[ 2, "asc" ]],
+        order: [[2, "asc"]],
         ajax: {
             url: window.location.pathname,
             type: 'POST',
@@ -41,42 +41,54 @@ $(function () {
         },
         language: {
             url: '//cdn.datatables.net/plug-ins/1.10.15/i18n/Spanish.json',
+            buttons: {
+                copyTitle: 'Copiado al Portapapeles',
+                copySuccess: {
+                    _: '%d Lineas copiadas',
+                    1: '1 Linea copiada'
+                }
+            }
         },
 
-          dom: "<'row'<'col-sm-12 col-md-12'B>>" +
+        dom: "<'row'<'clearfix'<'pull-right tableTools-container'<'dt-buttons btn-overlap btn-group' B>>>>" +
             "<'row'<'col-sm-12 col-md-3'l>>" +
-            "<'row'<'col-sm-12 col-md-12'f>>"+
+            "<'row'<'col-sm-12 col-md-12'f>>" +
             "<'row'<'col-sm-12'tr>>" +
             "<'row'<'col-sm-12 col-md-5'i><'col-sm-12 col-md-7'p>>",
-         buttons: {
-             dom: {
+        buttons: {
+            dom: {
                 button: {
                     className: '',
 
                 },
                 container: {
-                    className: 'buttons-container float-right'
+                    className: 'buttons-container float-md-right'
                 }
             },
             buttons: [
-            {
-                text: '<i class="far fa-file-pdf"></i> PDF</i>',
-                className: 'btn btn-danger',
-                extend: 'pdfHtml5',
-                footer: true,
-                //filename: 'dt_custom_pdf',
-                orientation: 'landscape', //portrait
-                pageSize: 'A4', //A3 , A5 , A6 , legal , letter
-                download: 'open',
-                exportOptions: {
-                    columns: [0, 1, 2, 3, 4, 5, 6, 7, 8],
-                    search: 'applied',
-                    order: 'applied'
+                {
+                    text: '<span><i class="fa fa-print bigger-110 grey"></i> PDF</span>',
+                    className: 'dt-button buttons-print btn btn-white btn-primary btn-bold',
+                    extend: 'pdfHtml5',
+                    footer: true,
+                    filename: 'Reporte de Ventas por productos',
+                    orientation: 'landscape', //portrait
+                    pageSize: 'A4', //A3 , A5 , A6 , legal , letter
+                    download: 'open',
+                    exportOptions: {
+                        columns: [0, 1, 2, 3, 4, 5, 6, 7, 8],
+                        search: 'applied',
+                        order: 'applied'
+                    },
+                    customize: customize_report,
                 },
-                customize: customize_report
-            },
-        ]
-         },
+                {
+                    text: '<i class="fa fa-copy bigger-110 pink"></i> Copiar</span>',
+                    className: 'dt-button buttons-copy buttons-html5 btn btn-white btn-primary btn-bold',
+                    extend: 'copy',
+                }
+            ]
+        },
         columnDefs: [
             {
                 targets: '_all',
@@ -84,15 +96,7 @@ $(function () {
 
             },
             {
-                targets: [2],
-                class: 'text-center',
-                orderable: false,
-                render: function (data, type, row) {
-                    return parseFloat(data).toFixed(2)+' Lbs';
-                }
-            },
-            {
-                targets: [-2, -3, -4, -6, -7],
+                targets: [-2, -3, -4],
                 class: 'text-center',
                 orderable: false,
                 render: function (data, type, row) {
@@ -106,6 +110,24 @@ $(function () {
                     return '$ ' + data;
                 }
             },
+            {
+                targets: [3],
+                render: function (data, type, row) {
+                    var tipe = typeof data;
+                    if (tipe === 'number'){
+                        var result = data/60;
+                        if (result>1){
+                             return result+ ' Horas'
+                        } else {
+                             return result+ ' Hora'
+                        }
+
+                    } else {
+                        return data;
+                    }
+
+                }
+            },
         ],
         footerCallback: function (row, data, start, end, display) {
             var api = this.api(), data;
@@ -117,27 +139,47 @@ $(function () {
                         i : 0;
             };
             // Total over this page
-            cantidad = api.column(4, {page: 'current'}).data().reduce(function (a, b) {return intVal(a) + intVal(b);}, 0);
-            cantidad_full = api.column( 4 ).data().reduce( function (a, b) {return intVal(a) + intVal(b);}, 0 );
+            cantidad = api.column(4, {page: 'current'}).data().reduce(function (a, b) {
+                return intVal(a) + intVal(b);
+            }, 0);
+            cantidad_full = api.column(4).data().reduce(function (a, b) {
+                return intVal(a) + intVal(b);
+            }, 0);
 
 
-            precio = api.column(5, {page: 'current'}).data().reduce(function (a, b) {return intVal(a) + intVal(b);}, 0);
+            precio = api.column(5, {page: 'current'}).data().reduce(function (a, b) {
+                return intVal(a) + intVal(b);
+            }, 0);
 
-            precio_full = api.column( 5 ).data().reduce( function (a, b) {return intVal(a) + intVal(b);}, 0 );
+            precio_full = api.column(5).data().reduce(function (a, b) {
+                return intVal(a) + intVal(b);
+            }, 0);
 
 
-            sin_iva = api.column(6, {page: 'current'}).data().reduce(function (a, b) {return intVal(a) + intVal(b);}, 0);
-            siniva_full = api.column( 6 ).data().reduce( function (a, b) {return intVal(a) + intVal(b);}, 0 );
+            sin_iva = api.column(6, {page: 'current'}).data().reduce(function (a, b) {
+                return intVal(a) + intVal(b);
+            }, 0);
+            siniva_full = api.column(6).data().reduce(function (a, b) {
+                return intVal(a) + intVal(b);
+            }, 0);
 
 
-            iva = api.column(7, {page: 'current'}).data().reduce(function (a, b) {return intVal(a) + intVal(b);}, 0);
-            iva_full = api.column( 7 ).data().reduce( function (a, b) {return intVal(a) + intVal(b);}, 0 );
+            iva = api.column(7, {page: 'current'}).data().reduce(function (a, b) {
+                return intVal(a) + intVal(b);
+            }, 0);
+            iva_full = api.column(7).data().reduce(function (a, b) {
+                return intVal(a) + intVal(b);
+            }, 0);
 
-            con_iva = api.column(8, {page: 'current'}).data().reduce(function (a, b) {return intVal(a) + intVal(b);}, 0);
-            con_iva_full = api.column( 8 ).data().reduce( function (a, b) {return intVal(a) + intVal(b);}, 0 );
+            con_iva = api.column(8, {page: 'current'}).data().reduce(function (a, b) {
+                return intVal(a) + intVal(b);
+            }, 0);
+            con_iva_full = api.column(8).data().reduce(function (a, b) {
+                return intVal(a) + intVal(b);
+            }, 0);
 
             // Update footer
-            $(api.column(4).footer()).html(parseInt(cantidad) + '( ' + parseInt(cantidad_full)+ ')');
+            $(api.column(4).footer()).html(parseInt(cantidad) + '( ' + parseInt(cantidad_full) + ')');
             $(api.column(5).footer()).html(
                 '$' + parseFloat(precio).toFixed(2) + '(     $ ' + parseFloat(precio_full).toFixed(2) + ')'
             );
@@ -149,7 +191,7 @@ $(function () {
                 '$' + parseFloat(iva).toFixed(2) + '(    $ ' + parseFloat(iva_full).toFixed(2) + ')'
                 // parseFloat(data).toFixed(2)
             );
-             $(api.column(8).footer()).html(
+            $(api.column(8).footer()).html(
                 '$' + parseFloat(con_iva).toFixed(2) + '(    $ ' + parseFloat(con_iva_full).toFixed(2) + ')'
                 // parseFloat(data).toFixed(2)
             );

@@ -83,7 +83,7 @@ function datatable_fun() {
                     pageSize: 'A4', //A3 , A5 , A6 , legal , letter
                     download: 'open',
                     exportOptions: {
-                        columns: [0, 1, 2, 3, 4, 5],
+                        columns: [0, 1, 2, 3, 4, 5, 6],
                         search: 'applied',
                         order: 'applied'
                     },
@@ -106,9 +106,8 @@ function datatable_fun() {
                 targets: [-1],
                 class: 'text-center',
                 render: function (data, type, row) {
-                    console.log(row);
                     var detalle = '<a type="button" rel="detalle" class="btn btn-success btn-xs btn-round" style="color: white" data-toggle="tooltip" title="Detalle de Venta" ><i class="fa fa-search"></i></a>' + ' ';
-                    var devolver = '<a type="button" rel="devolver" class="btn btn-danger btn-xs btn-round" style="color: white" data-toggle="tooltip" title="Anular"><i class="fa fa-times"></i></a>' + ' ';
+                    var devolver = row.user.tipo===0? '<a type="button" rel="devolver" class="btn btn-danger btn-xs btn-round" style="color: white" data-toggle="tooltip" title="Anular"><i class="fa fa-times"></i></a>'+' ':' ';
                     var pdf = '<a type="button" href= "/venta/printpdf/' + data + '" rel="pdf" ' +
                         'class="btn btn-primary btn-xs btn-round" style="color: white" data-toggle="tooltip" ' +
                         'title="Reporte PDF"><i class="fa fa-file-pdf-o"></i></a>';
@@ -213,12 +212,14 @@ $(function () {
                     dataSrc: ""
                 },
                 columns: [
-                    {data: 'lote.raza.nombre'},
-                    {data: 'valores.peso'},
-                    {data: 'valores.valor_libra'},
-                    {data: 'valores.pvp_actual'},
-                    {data: 'valores.cantidad'},
-                    {data: 'valores.subtotal'}
+                    {data: 'nombre'},
+                    {data: 'tipo'},
+                    {data: 'duracion'},
+                    {data: 'categoria'},
+                    {data: 'presentacion'},
+                    {data: 'cantidad'},
+                    {data: 'precio'},
+                    {data: 'subtotal'},
                 ],
                 columnDefs: [
                     {
@@ -226,21 +227,14 @@ $(function () {
                         class: 'text-center'
                     },
                     {
-                        targets: [-1, -3, -4],
+                        targets: [-1, -2],
                         class: 'text-center',
                         orderable: false,
                         render: function (data, type, row) {
+                            console.log(row);
                             return '$' + parseFloat(data).toFixed(2);
                         }
-                    },
-                    {
-                        targets: [1],
-                        class: 'text-center',
-                        orderable: false,
-                        render: function (data, type, row) {
-                            return parseFloat(data).toFixed(2) + ' Lbs';
-                        }
-                    },
+                    }
                 ],
             });
         });
