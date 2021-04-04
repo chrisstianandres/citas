@@ -1,5 +1,5 @@
 import json
-from django.db.models import Q
+from django.db.models import Q, Count, Sum
 from django.http import HttpResponse, JsonResponse
 from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt
@@ -9,7 +9,7 @@ from apps.backEnd import nombre_empresa, verificar
 from apps.empleado.forms import EmpleadoForm
 from apps.empleado.models import Empleado
 from apps.mixins import ValidatePermissionRequiredMixin
-# from apps.ubicacion.models import *
+from apps.venta.models import Detalle_servicios
 
 opc_icono = 'fa fa-users'
 opc_entidad = 'Empleados'
@@ -206,8 +206,9 @@ class DeleteView(ValidatePermissionRequiredMixin, DeleteView):
 
 class report(ValidatePermissionRequiredMixin, ListView):
     model = Empleado
-    template_name = 'front-end/cliente/report.html'
-    permission_required = 'cliente.view_cliente'
+    seccond_model = Detalle_servicios
+    template_name = 'front-end/empleado/report.html'
+    permission_required = 'empleado.view_empleado'
 
     @csrf_exempt
     def dispatch(self, request, *args, **kwargs):
@@ -219,27 +220,87 @@ class report(ValidatePermissionRequiredMixin, ListView):
     def post(self, request, *args, **kwargs):
         data = {}
         action = request.POST['action']
-        if action == 'report':
-            data = []
-            start_date = request.POST.get('start_date', '')
-            end_date = request.POST.get('end_date', '')
-            try:
+        start_date = request.POST.get('start_date', '')
+        end_date = request.POST.get('end_date', '')
+        try:
+            if action == 'report':
+                data = []
                 if start_date == '' and end_date == '':
                     query = self.model.objects.all()
                 else:
                     query = self.model.objects.filter(fecha__range=[start_date, end_date])
-
                 for p in query:
                     data.append(p.toJSON())
-            except:
-                pass
-            return JsonResponse(data, safe=False)
+            elif action == 'rendimiento':
+                if start_date == '' and end_date == '':
+                    query = self.seccond_model.objects.filter(venta__estado=1)
+                else:
+                    query = self.seccond_model.objects.filter(venta__estado=1, fecha__range=[start_date, end_date])
+                for em in query:
+                    print(em)
+            else:
+                data['error'] = 'No ha seleccionado ninguna opcion'
+        except Exception as e:
+            data['error'] = str(e)
+        return JsonResponse(data, safe=False)
 
     def get_context_data(self, **kwargs):
         data = super().get_context_data(**kwargs)
         data['icono'] = opc_icono
-        data['entidad'] = 'Reporte de Empleados'
+        data['entidad'] = opc_entidad
         data['titulo'] = 'Reporte de Empleados'
+        data['empresa'] = empresa
+        return data
+
+
+class report_rendimiento(ValidatePermissionRequiredMixin, ListView):
+    model = Empleado
+    seccond_model = Detalle_servicios
+    template_name = 'front-end/empleado/report_rendimiento.html'
+    permission_required = 'empleado.view_empleado'
+
+    @csrf_exempt
+    def dispatch(self, request, *args, **kwargs):
+        return super().dispatch(request, *args, **kwargs)
+
+    def get_queryset(self):
+        return self.model.objects.none()
+
+    def post(self, request, *args, **kwargs):
+        data = {}
+        action = request.POST['action']
+        start_date = request.POST.get('start_date', '')
+        end_date = request.POST.get('end_date', '')
+        try:
+            if action == 'report':
+                data = []
+                if start_date == '' and end_date == '':
+                    query = self.seccond_model.objects.values('venta__fecha_factura', 'empleado__nombres',
+                                                              'empleado__apellidos', 'servicio__nombre',
+                                                              'venta__duracion_servicio').filter(venta__estado=1).\
+                        annotate(serv=Sum('cantidad')).annotate(tiempo=Sum('venta__duracion_servicio'))\
+                        .order_by('venta__fecha_factura')
+                else:
+                    query = self.seccond_model.objects.filter(venta__fecha_reserva__range=[start_date, end_date]).values('venta__fecha_factura', 'empleado__nombres',
+                                                              'empleado__apellidos', 'servicio__nombre',
+                                                              'venta__duracion_servicio').\
+                        annotate(serv=Sum('cantidad')).annotate(tiempo=Sum('venta__duracion_servicio')).\
+                        filter(venta__estado=1)
+                for em in query:
+                    item = em
+                    item['full_name'] = '{} {}'.format(em['empleado__nombres'], em['empleado__apellidos'])
+                    data.append(em)
+            else:
+                data['error'] = 'No ha seleccionado ninguna opcion'
+        except Exception as e:
+            data['error'] = str(e)
+        return JsonResponse(data, safe=False)
+
+    def get_context_data(self, **kwargs):
+        data = super().get_context_data(**kwargs)
+        data['icono'] = opc_icono
+        data['entidad'] = opc_entidad
+        data['titulo'] = 'Reporte de Rendimento de Empleados'
         data['empresa'] = empresa
         return data
 

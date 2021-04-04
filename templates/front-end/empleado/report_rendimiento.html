@@ -7,9 +7,12 @@
                 <a type="button" class="btn btn-white btn-danger" onclick="window.location.reload();"><span
                         class="glyphicon glyphicon-refresh"></span> Actualizar
                 </a>
+                 <a type="button" class="btn btn-white btn-warning" href="{% url 'empleado:reporte' %}"><i
+                        class="fa fa-calendar"></i> Por Fecha de Registro
+                </a>
             </div>
             <div class="form-group col-lg-3">
-                <label for="fecha"><strong>Filtar por Fecha de registro:</strong></label>
+                <label for="fecha"><strong>Filtar por Fecha:</strong></label>
                 <input type="text" name="fecha" id="fecha" class="form-control form-control-sm input-sm">
             </div>
         </div>
@@ -19,13 +22,11 @@
     <thead>
     <tr>
         <th>Fecha</th>
-        <th>Cliente</th>
-        <th>Genero</th>
-        <th>Cedula</th>
-        <th>Correo</th>
-        <th>Direccion</th>
-        <th>Telefono</th>
-        <th>Celular</th>
+        <th>Empleado</th>
+        <th>Servicio</th>
+        <th>Duracion</th>
+        <th>Cantidad</th>
+        <th>Tiempo Total</th>
     </tr>
     </thead>
     <tbody>
@@ -33,5 +34,5 @@
 {% endblock %}
 
 {% block extra %}
-    <script src="{% static 'apps/cliente/report.js' %}"></script>
+    <script src="{% static 'apps/empleado/report_rendimiento.js' %}"></script>
 {% endblock %}

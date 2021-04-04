@@ -257,7 +257,7 @@ class printpdf(ValidatePermissionRequiredMixin, View):
 
 class report(ValidatePermissionRequiredMixin, ListView):
     model = Compra
-    template_name = 'front-end/compra/compra_report_product.html'
+    template_name = 'front-end/compra/report_product.html'
     permission_required = 'compra.view_compra'
 
     @csrf_exempt
@@ -276,20 +276,20 @@ class report(ValidatePermissionRequiredMixin, ListView):
                 start_date = request.POST.get('start_date', '')
                 end_date = request.POST.get('end_date', '')
                 if start_date == '' and end_date == '':
-                    query = Detalle_compra.objects.values('compra__fecha_compra', 'material__producto_base__nombre',
-                                                          'p_compra_actual'). \
+                    query = Detalle_compra.objects.filter(compra__estado=1).values('compra__fecha', 'producto__nombre',
+                                                          'precio_compra'). \
                         order_by().annotate(Sum('cantidad')).annotate(Sum('compra__total')).annotate(Sum('subtotal'))
                 else:
-                    query = (Detalle_compra.objects.values('compra__fecha_compra', 'material__producto_base__nombre',
-                                                           'p_compra_actual').
-                        filter(compra__fecha_compra__range=[start_date, end_date]).order_by().annotate(
+                    query = (Detalle_compra.objects.filter(compra__estado=1).values('compra__fecha', 'producto__nombre',
+                                                           'precio_compra').
+                        filter(compra__fecha__range=[start_date, end_date]).order_by().annotate(
                         Sum('cantidad'))).annotate(Sum('compra__total'))
                 for p in query:
                     data.append([
-                        p['compra__fecha_compra'].strftime("%d/%m/%Y"),
-                        p['material__producto_base__nombre'],
+                        p['compra__fecha'].strftime("%d/%m/%Y"),
+                        p['producto__nombre'],
                         int(p['cantidad__sum']),
-                        format(p['p_compra_actual'], '.2f'),
+                        format(p['precio_compra'], '.2f'),
                         format(p['compra__total__sum'], '.2f')])
             else:
                 data['error'] = 'No ha seleccionado una opcion'
@@ -301,7 +301,6 @@ class report(ValidatePermissionRequiredMixin, ListView):
         data = super().get_context_data(**kwargs)
         data['icono'] = opc_icono
         data['entidad'] = opc_entidad
-        data['boton'] = 'Nueva Compra'
         data['titulo'] = 'Reporte de Compras'
         data['empresa'] = empresa
         return data
@@ -309,7 +308,7 @@ class report(ValidatePermissionRequiredMixin, ListView):
 
 class report_total(ValidatePermissionRequiredMixin, ListView):
     model = Compra
-    template_name = 'front-end/compra/compra_report_total.html'
+    template_name = 'front-end/compra/report_total.html'
     permission_required = 'compra.view_compra'
 
     @csrf_exempt
@@ -328,17 +327,14 @@ class report_total(ValidatePermissionRequiredMixin, ListView):
             if action == 'report':
                 data = []
                 if start_date == '' and end_date == '':
-                    query = Compra.objects.values('fecha_compra', 'proveedor__nombre', 'user__username', ).order_by(). \
-                        annotate(Sum('total'))
+                    query = Compra.objects.filter(estado=1).values('fecha', 'proveedor__nombre',).annotate(Sum('total'))
                 else:
-                    query = Compra.objects.values('fecha_compra', 'proveedor__nombre', 'user__username').filter(
-                        fecha_compra__range=[start_date, end_date]).order_by(). \
-                        annotate(Sum('total'))
+                    query = Compra.objects.filter(estado=1).values('fecha', 'proveedor__nombre').filter(
+                        fecha__range=[start_date, end_date]).annotate(Sum('total'))
                 for p in query:
                     data.append([
-                        p['fecha_compra'].strftime("%d/%m/%Y"),
+                        p['fecha'].strftime("%d/%m/%Y"),
                         p['proveedor__nombre'],
-                        p['user__username'],
                         format(p['total__sum'], '.2f')
                     ])
             else:

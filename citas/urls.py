@@ -24,6 +24,7 @@ from citas import settings
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('menu', login_required(backEnd.menu), name='menu'),
+    path('', login_required(backEnd.menu)),
     path('login', backEnd.logeo, name='login'),
     path('register', backEnd.cliente_add, name='register'),
     path('logout', login_required(backEnd.disconnect), name='logout'),

@@ -1,9 +1,9 @@
+
 var datos = {
     fechas: {
         'start_date': '',
         'end_date': '',
-        'tipo': 0,
-        'action': 'report'
+        'action': 'report',
     },
     add: function (data) {
         if (data.key === 1) {
@@ -30,7 +30,7 @@ $(function () {
     daterange();
     datatable = $("#datatable").DataTable({
         destroy: true,
-        responsive: true,
+        scrollX: true,
         autoWidth: false,
         order: [[2, "asc"]],
         ajax: {
@@ -50,7 +50,7 @@ $(function () {
             }
         },
 
-        dom: "<'row'<'clearfix'<'pull-right tableTools-container'<'dt-buttons btn-overlap btn-group' B>>>>" +
+         dom: "<'row'<'clearfix'<'pull-right tableTools-container'<'dt-buttons btn-overlap btn-group' B>>>>" +
             "<'row'<'col-sm-12 col-md-3'l>>" +
             "<'row'<'col-sm-12 col-md-12'f>>" +
             "<'row'<'col-sm-12'tr>>" +
@@ -62,7 +62,7 @@ $(function () {
 
                 },
                 container: {
-                    className: 'buttons-container float-md-right'
+                    className: 'buttons-container float-right'
                 }
             },
             buttons: [
@@ -71,18 +71,18 @@ $(function () {
                     className: 'dt-button buttons-print btn btn-white btn-primary btn-bold',
                     extend: 'pdfHtml5',
                     footer: true,
-                    filename: 'Reporte de Ventas por productos',
+                    //filename: 'dt_custom_pdf',
                     orientation: 'landscape', //portrait
                     pageSize: 'A4', //A3 , A5 , A6 , legal , letter
                     download: 'open',
                     exportOptions: {
-                        columns: [0, 1, 2, 3, 4, 5, 6, 7, 8],
+                        columns: [0, 1, 2, 3, 4,5],
                         search: 'applied',
                         order: 'applied'
                     },
-                    customize: customize_report,
+                    customize:customize_report
                 },
-                {
+                 {
                     text: '<i class="fa fa-copy bigger-110 pink"></i> Copiar</span>',
                     className: 'dt-button buttons-copy buttons-html5 btn btn-white btn-primary btn-bold',
                     extend: 'copy',
@@ -96,11 +96,11 @@ $(function () {
 
             },
             {
-                targets: [-2, -3, -4],
+                targets: [-2],
                 class: 'text-center',
                 orderable: false,
                 render: function (data, type, row) {
-                    return '$' + parseFloat(data).toFixed(2);
+                    return '$ ' + data;
                 }
             },
             {
@@ -113,6 +113,7 @@ $(function () {
         ],
         footerCallback: function (row, data, start, end, display) {
             var api = this.api(), data;
+
             // Remove the formatting to get integer data for summation
             var intVal = function (i) {
                 return typeof i === 'string' ?
@@ -121,62 +122,30 @@ $(function () {
                         i : 0;
             };
             // Total over this page
-            cantidad = api.column(4, {page: 'current'}).data().reduce(function (a, b) {
-                return intVal(a) + intVal(b);
-            }, 0);
-            cantidad_full = api.column(4).data().reduce(function (a, b) {
-                return intVal(a) + intVal(b);
-            }, 0);
-
-
-            precio = api.column(5, {page: 'current'}).data().reduce(function (a, b) {
+            pageTotal = api
+                .column(4, {page: 'current'}).data().reduce(function (a, b) {
+                    return intVal(a) + intVal(b);
+                }, 0);
+            total = api.column(4).data().reduce(function (a, b) {
                 return intVal(a) + intVal(b);
             }, 0);
 
-            precio_full = api.column(5).data().reduce(function (a, b) {
-                return intVal(a) + intVal(b);
-            }, 0);
-
-
-            sin_iva = api.column(6, {page: 'current'}).data().reduce(function (a, b) {
-                return intVal(a) + intVal(b);
-            }, 0);
-            siniva_full = api.column(6).data().reduce(function (a, b) {
-                return intVal(a) + intVal(b);
-            }, 0);
-
-
-            iva = api.column(7, {page: 'current'}).data().reduce(function (a, b) {
-                return intVal(a) + intVal(b);
-            }, 0);
-            iva_full = api.column(7).data().reduce(function (a, b) {
-                return intVal(a) + intVal(b);
-            }, 0);
-
-            con_iva = api.column(8, {page: 'current'}).data().reduce(function (a, b) {
-                return intVal(a) + intVal(b);
-            }, 0);
-            con_iva_full = api.column(8).data().reduce(function (a, b) {
+            cantTotal = api
+                .column(2, {page: 'current'})
+                .data()
+                .reduce(function (a, b) {
+                    return intVal(a) + intVal(b);
+                }, 0);
+            cantotal = api.column(2).data().reduce(function (a, b) {
                 return intVal(a) + intVal(b);
             }, 0);
 
             // Update footer
-            $(api.column(4).footer()).html(parseInt(cantidad) + '( ' + parseInt(cantidad_full) + ')');
-            $(api.column(5).footer()).html(
-                '$' + parseFloat(precio).toFixed(2) + '(     $ ' + parseFloat(precio_full).toFixed(2) + ')'
-            );
-            $(api.column(6).footer()).html(
-                '$' + parseFloat(sin_iva).toFixed(2) + '(    $ ' + parseFloat(siniva_full).toFixed(2) + ')'
+            $(api.column(4).footer()).html(
+                '$' + parseFloat(pageTotal).toFixed(2) + '( $ ' + parseFloat(total).toFixed(2) + ')'
                 // parseFloat(data).toFixed(2)
             );
-            $(api.column(7).footer()).html(
-                '$' + parseFloat(iva).toFixed(2) + '(    $ ' + parseFloat(iva_full).toFixed(2) + ')'
-                // parseFloat(data).toFixed(2)
-            );
-            $(api.column(8).footer()).html(
-                '$' + parseFloat(con_iva).toFixed(2) + '(    $ ' + parseFloat(con_iva_full).toFixed(2) + ')'
-                // parseFloat(data).toFixed(2)
-            );
+            $(api.column(2).footer()).html(cantTotal+ '('+cantotal+')');
         },
 
     });
@@ -187,8 +156,8 @@ function daterange() {
     $('input[name="fecha"]').daterangepicker({
         locale: {
             format: 'YYYY-MM-DD',
-            applyLabel: '<i class="fas fa-search"></i> Buscar',
-            cancelLabel: '<i class="fas fa-times"></i> Cancelar',
+            applyLabel: '<i class="fa fa-search"></i> Buscar',
+            cancelLabel: '<i class="fa fa-ban"></i> Cancelar',
         }
     }).on('apply.daterangepicker', function (ev, picker) {
         picker['key'] = 1;

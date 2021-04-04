@@ -3,21 +3,29 @@
 {% block formulario %}
 
 {% endblock %}
-{% block elements %}
-    <br>
+{% block botones_head %}
     <div class="row">
-        <div class="col-lg-4">
-            <label for="fecha"><strong>Rango de Fechas:</strong></label>
-            <input type="text" name="fecha" id="fecha" class="form-control form-control-sm input-sm"></div>
+        <div class="container-fluid">
+            <div class="form-group">
+                <a type="button" class="btn btn-white btn-danger" onclick="window.location.reload();"><span
+                        class="glyphicon glyphicon-refresh"></span> Actualizar
+                </a>
+                 <a type="button" class="btn btn-white btn-success" href="{% url 'compra:report_by_product' %}"><i
+                        class="fa fa-clock-o"></i> Por Productos
+                </a>
+            </div>
+            <div class="form-group col-lg-3">
+                <label for="fecha"><strong>Filtar por Fecha de compra:</strong></label>
+                <input type="text" name="fecha" id="fecha" class="form-control form-control-sm input-sm">
+            </div>
+        </div>
     </div>
-    <br>
 {% endblock %}
-{% block table %}
+{% block table_content %}
     <thead>
     <tr>
         <th>Fecha</th>
         <th>Proveedor</th>
-        <th>Usuario</th>
         <th>Total</th>
     </tr>
     </thead>
@@ -26,18 +34,14 @@
     <tfoot>
     <tr>
         <th></th>
-        <th></th>
         <th style="text-align:center"><strong>Total: Esta pagina (Total filtrado)</strong></th>
         <th></th>
 
     </tr>
     </tfoot>
 {% endblock %}
-{% block botones %}
-
-{% endblock %}
 {% block extra %}
-    <script src="{% static 'apps/compra/compra_report_total.js' %}"></script>
+    <script src="{% static 'apps/compra/report_total.js' %}"></script>
     <script src="{% static 'apps/funtions.js' %}"></script>
 {% endblock %}
 {% block javascript %}

@@ -165,13 +165,17 @@ $(function () {
 });
 
 function daterange() {
+    var hoy = new  Date;
     // $("div.toolbar").html('<br><div class="col-lg-3"><input type="text" name="fecha" class="form-control form-control-sm input-sm"></div> <br>');
     $('input[name="fecha"]').daterangepicker({
         locale: {
             format: 'YYYY-MM-DD',
-            applyLabel: '<i class="fas fa-search"></i> Buscar',
-            cancelLabel: '<i class="fas fa-times"></i> Cancelar',
-        }
+            applyLabel: '<i class="fa fa-search"></i> Buscar',
+            cancelLabel: '<i class="fa fa-ban"></i> Cancelar',
+        },
+        showDropdowns: true,
+        maxYear: hoy.getFullYear(),
+        minYear: (hoy.getFullYear())-5,
     }).on('apply.daterangepicker', function (ev, picker) {
         picker['key'] = 1;
         datos.add(picker);

@@ -24,7 +24,7 @@
 					<ul class="nav ace-nav">
 						<li class="light-blue dropdown-modal">
 							<a data-toggle="dropdown" href="#" class="dropdown-toggle">
-								<img class="nav-user-photo" src="{%  static 'assets/images/avatars/user.jpg'%}" alt="user_foto" />
+								<img class="nav-user-photo" src="{{ request.user.get_image }}" alt="user_foto" />
 								<span class="user-info">
 									<small>Bienvenido,</small>
 									{{ request.user.get_full_name }}
@@ -35,14 +35,7 @@
 
 							<ul class="user-menu dropdown-menu-right dropdown-menu dropdown-yellow dropdown-caret dropdown-close">
 								<li>
-									<a href="#">
-										<i class="ace-icon fa fa-cog"></i>
-										Configuracion
-									</a>
-								</li>
-
-								<li>
-									<a href="profile.html">
+									<a href="{% url 'user:perfil' %}">
 										<i class="ace-icon fa fa-user"></i>
 										Perfil
 									</a>

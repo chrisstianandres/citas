@@ -329,9 +329,9 @@ function customize(doc) {
     doc.defaultStyle.fontSize = 12;
     doc.styles.tableHeader.fontSize = 12;
     doc.content[1].table.body[0].forEach(function (h) {
-        h.fillColor = '#97AF83'
+        h.fillColor = '#B86E8A'
     });
-    doc.styles.title = {color: '#2D1D10', fontSize: '16', alignment: 'center'};
+    doc.styles.title = {color: '#000000', fontSize: '16', alignment: 'center'};
     doc['header'] = (function () {
         return {
             columns: [
