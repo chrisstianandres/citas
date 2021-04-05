@@ -1,3 +1,4 @@
+var action = 'add';
 var dt_detalle;
 var tbl_productos;
 var tbl_empleados_list;
@@ -7,6 +8,7 @@ var iva_emp = $('#iva_emp').val();
 var ventas = {
     items: {
         fecha: '',
+        venta: '',
         cliente: '',
         duracion: '',
         subtotal: 0.00,
@@ -56,7 +58,7 @@ var ventas = {
     calculate_duracion: function () {
         var duracion = 0.00;
         $.each(this.items.detalle, function (pos, dict) {
-            if (value.tipo === 'Servicio') {
+            if (dict.tipo === 'Servicio') {
                 duracion += dict.duracion
             }
         });
@@ -79,8 +81,7 @@ var ventas = {
                 'empleado': {}
             };
             this.items.detalle.push(array);
-        }
-        else {
+        } else {
             array = {
                 'nombre': data.nombre,
                 'tipo': data.tipo,
@@ -181,6 +182,10 @@ var ventas = {
                     step: 1,
                     buttondown_class: 'btn btn-white btn-danger btn-bold btn-xs',
                     buttonup_class: 'btn btn-white btn-danger btn-bold btn-xs',
+                }).keypress(function (e) {
+                    if (e.which !== 8 && e.which !== 0 && (e.which < 48 || e.which > 57)) {
+                        return false;
+                    }
                 });
                 $(row).find('input[name="cantidad_serv"]').TouchSpin({
                     min: 1,
@@ -188,6 +193,10 @@ var ventas = {
                     step: 1,
                     buttondown_class: 'btn btn-white btn-danger btn-bold btn-xs',
                     buttonup_class: 'btn btn-white btn-danger btn-bold btn-xs',
+                }).keypress(function (e) {
+                    if (e.which !== 8 && e.which !== 0 && (e.which < 48 || e.which > 57)) {
+                        return false;
+                    }
                 });
                 $(row).find('input[name="precio"]').TouchSpin({
                     min: 0.50,
@@ -196,6 +205,10 @@ var ventas = {
                     decimals: 2,
                     buttondown_class: 'btn btn-white btn-info btn-bold btn-xs',
                     buttonup_class: 'btn btn-white btn-info btn-bold btn-xs',
+                }).keypress(function (e) {
+                    if (e.which !== 8 && e.which !== 0 && (e.which < 48 || e.which > 57)) {
+                        return false;
+                    }
                 });
                 $(row).find('input[name="duracion"]').TouchSpin({
                     min: 1,
@@ -203,6 +216,10 @@ var ventas = {
                     step: 1,
                     buttondown_class: 'btn btn-white btn-success btn-bold btn-xs',
                     buttonup_class: 'btn btn-white btn-success btn-bold btn-xs',
+                }).keypress(function (e) {
+                    if (e.which !== 8 && e.which !== 0 && (e.which < 48 || e.which > 57)) {
+                        return false;
+                    }
                 });
                 if (data.tipo === 'Producto') {
                     $(row).find('a[rel="det"]').hide();
@@ -213,6 +230,17 @@ var ventas = {
 
 };
 $(function () {
+    if (localStorage.getItem('cita')) {
+        var factura_cita = JSON.parse(localStorage.getItem('cita'));
+        $('#id_user').val(factura_cita.cliente).prop('disabled', true).trigger("chosen:updated");
+        $('#id_new_cli').fadeOut();
+        ventas.items.detalle.push(factura_cita.detalle[0]);
+        ventas.items.venta = factura_cita.venta;
+        ventas.list();
+        action = 'cita_factura'
+    } else {
+        ventas.list();
+    }
     buscar_productos();
     //seccion Medcicinas
     $('#table_detalle tbody')
@@ -271,6 +299,10 @@ $(function () {
         prefix: 'Hora/as',
         buttondown_class: 'btn btn-white btn-info btn-bold btn-sm',
         buttonup_class: 'btn btn-white btn-info btn-bold btn-sm',
+    }).keypress(function (e) {
+        if (e.which !== 8 && e.which !== 0 && (e.which < 48 || e.which > 57)) {
+            return false;
+        }
     });
     $('#vaciar')
         .on('click', function () {
@@ -333,7 +365,7 @@ $(function () {
                         menssaje_ok('Exito!', 'Exito al guardar este cliente!', 'far fa-smile-wink', function () {
                             $('#Modal_person').modal('hide');
                             $('#id_user').append("<option value='" + response['id'] + "' selected='selected'>" + response['full_name'] + "</option>")
-                            .trigger("chosen:updated");
+                                .trigger("chosen:updated");
                         });
                     });
             }
@@ -361,16 +393,19 @@ $(function () {
                 var parametros;
                 ventas.items.fecha = $('#id_fecha_venta').val();
                 ventas.items.cliente = $('#id_user').val();
-                ventas.items.duracion = $('#id_duracion_servicio').val()*60;
+                ventas.items.duracion = $('#id_duracion_servicio').val() * 60;
                 parametros = {'ventas': JSON.stringify(ventas.items)};
-                parametros['action'] = 'add';
+                console.log(ventas.items);
+                parametros['action'] = action;
                 save_with_ajax('Alerta',
                     window.location.pathname, 'Esta seguro que desea guardar esta Venta?', parametros, function (response) {
                         printpdf('Alerta!', '¿Desea generar el comprobante en PDF?', function () {
                             window.open('/venta/printpdf/' + response['id'], '_blank');
-                            window.location.href = '/transaccion/venta/lista'
+                            localStorage.clear();
+                            window.location.href = '/transaccion/lista'
                         }, function () {
-                            window.location.href = '/transaccion/venta/lista'
+                            localStorage.clear();
+                            window.location.href = '/transaccion/lista'
                         })
                     });
             }

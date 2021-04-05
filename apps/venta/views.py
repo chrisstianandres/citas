@@ -185,6 +185,50 @@ class CrudView(ValidatePermissionRequiredMixin, TemplateView):
                 else:
                     data['resp'] = False
                     data['error'] = "Datos Incompletos"
+            if action == 'cita_factura':
+                datos = json.loads(request.POST['ventas'])
+                if datos:
+                    with transaction.atomic():
+                        c = self.model.objects.get(id=datos['venta'])
+                        c.estado = 1
+                        c.fecha_factura = datos['fecha']
+                        c.duracion_servicio = datos['duracion']
+                        c.subtotal = float(datos['subtotal'])
+                        c.iva = float(datos['iva'])
+                        c.total = float(datos['total'])
+                        c.save()
+                        if datos['detalle']:
+                            for i in datos['detalle']:
+                                if i['tipo'] == 'Producto':
+                                    dv = Detalle_venta()
+                                    dv.venta_id = c.id
+                                    dv.det_compra_id = int(i['id'])
+                                    dv.cantidad = int(i['cantidad'])
+                                    dv.pvp = float(i['precio'])
+                                    dv.subtotal = float(i['subtotal'])
+                                    dv.save()
+                                else:
+
+                                    if Detalle_servicios.objects.get(venta_id=c.id, servicio_id=int(i['id'])):
+                                        ds = Detalle_servicios.objects.get(venta_id=c.id, servicio_id=int(i['id']))
+                                        ds.valor = float(i['precio'])
+                                        ds.cantidad = int(i['cantidad'])
+                                        ds.subtotals = float(i['subtotal'])
+                                        ds.save()
+                                    else:
+                                        ds = Detalle_servicios()
+                                        ds.venta_id = c.id
+                                        ds.empleado_id = int(i['empleado']['id'])
+                                        ds.servicio_id = int(i['id'])
+                                        ds.valor = float(i['precio'])
+                                        ds.cantidad = int(i['cantidad'])
+                                        ds.subtotals = float(i['subtotal'])
+                                        ds.save()
+                        data['id'] = c.id
+                        data['resp'] = True
+                else:
+                    data['resp'] = False
+                    data['error'] = "Datos Incompletos"
             elif action == 'search_prod':
                 data = []
                 ids = json.loads(request.POST['ids'])
@@ -257,6 +301,7 @@ class CrudView(ValidatePermissionRequiredMixin, TemplateView):
         data['boton'] = 'Guardar Venta'
         data['titulo'] = 'Nueva Venta'
         data['nuevo'] = '/venta/nuevo'
+        data['titulo_factuta'] = 'Nueva Venta'
         data['empresa'] = empresa
         data['form'] = self.form_class()
         data['detalle'] = []

@@ -57,12 +57,16 @@ $(document).ready(function () {
         },
     });
 
-    $('#id_nombre').keyup(function () {
+    $('#id_nombre_categoria').keyup(function () {
         var pal = $(this).val();
         var changue = pal.substr(0, 1).toUpperCase() + pal.substr(1);
         $(this).val(changue);
-    });
-    $('#id_descripcion').keyup(function () {
+    }).keypress(function (e) {
+        if (e.which >= 48 && e.which <= 57) {
+            return false;
+        }
+    });  //Para solo letras;
+    $('#id_descripcion_categoria').keyup(function () {
         var pal = $(this).val();
         var changue = pal.substr(0, 1).toUpperCase() + pal.substr(1);
         $(this).val(changue);

@@ -16,6 +16,42 @@ var citas = {
 };
 
 
+var ventas = {
+    items: {
+        fecha: '',
+        venta: '',
+        cliente: '',
+        duracion: '',
+        subtotal: 0.00,
+        iva: 0.00,
+        total: 0.00,
+        detalle: []
+    },
+    add: function (data, empleado) {
+        var array;
+        array = {
+            'nombre': data.nombre,
+            'tipo': 'Servicio',
+            'duracion': (data.duracion) / 60,
+            'categoria': data.categoria.nombre,
+            'presentacion': 'N/A',
+            'stock': 'N/A',
+            'cantidad': 1,
+            'precio': data.precio,
+            'subtotal': 1,
+            'id': data.id,
+            'empleado': empleado
+        };
+        this.items.detalle.push(array);
+        this.list();
+    },
+    list: function () {
+        localStorage.setItem('cita', JSON.stringify(ventas.items));
+    },
+
+};
+
+
 $(function () {
     if (user_tipo === '0') {
         search_citas = 'search_citas_cliente';
@@ -291,30 +327,47 @@ function cargar_eventos() {
                         data: {'action': 'edit_event', 'id': info.event.id},
                     })
                         .done(function (data) {
-                                var today = new Date(), string, hora_inicio,
-                                    hora_hoy = today.getHours() + ':' + today.getMinutes();
+                                var today = new Date(), string, hora_inicio;
+                                var mes, dia;
+                                hora_hoy = today.getHours() + ':' + today.getMinutes();
                                 if (!data.hasOwnProperty('error')) {
                                     if (today.getMonth() + 1 < 10) {
-                                        string = today.getFullYear() + '-' + '0' + (today.getMonth() + 1) + '-' + today.getDate();
+                                        mes = '0' + (today.getMonth() + 1);
                                     } else {
-                                        string = today.getFullYear() + '-' + (today.getMonth() + 1) + '-' + today.getDate();
+                                        mes = (today.getMonth() + 1);
                                     }
+                                    if (today.getDate() + 1 < 10) {
+                                        dia = '0' + (today.getDate());
+                                    } else {
+                                        dia = today.getDate();
+                                    }
+                                    string = string = today.getFullYear() + '-' + mes + '-' + dia;
                                     var val_fecha = data[0].venta.fecha_reserva >= string;
                                     if (val_fecha) {
                                         if (data[0].venta.fecha_reserva === string) {
                                             if (parseInt(data[0].venta.hora_inicio) + ':00' >= hora_hoy) {
-                                                printpdf('Atencion!', 'Esta seguro que desea editar esta cita?', function () {
+                                                preguntar('Atencion!', 'Que de desea hacer con este cita?', function () {
                                                     set_data(data[0], hora_inicio);
                                                 }, function () {
+                                                    localStorage.clear();
+                                                    ventas.items.cliente = data[0].venta.user.id;
+                                                    ventas.items.venta = data[0].venta.id;
+                                                    ventas.add(data[0].servicio, data[0].empleado);
+                                                    window.location.href = '/transaccion/venta/nuevo'
                                                 });
                                             } else {
                                                 menssaje_error('Alerta!', 'Solo puede editar citas que aun esten vigentes', '', function () {
                                                 })
                                             }
                                         } else {
-                                            printpdf('Atencion!', 'Esta seguro que desea editar esta cita?', function () {
+                                            preguntar('Atencion!', 'Esta seguro que desea editar esta cita?', function () {
                                                 set_data(data[0], hora_inicio);
                                             }, function () {
+                                                localStorage.clear();
+                                                ventas.items.cliente = data[0].venta.user.id;
+                                                ventas.items.venta = data[0].venta.id;
+                                                ventas.add(data[0].servicio, data[0].empleado);
+                                                window.location.href = '/transaccion/venta/nuevo'
                                             });
                                         }
 

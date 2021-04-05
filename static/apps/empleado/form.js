@@ -173,12 +173,55 @@ $(document).ready(function () {
         },
     });
 
-    $('#id_nombres').keyup(function () {
+
+    $('#id_nombres').keypress(function (e) {
         var changue = $(this).val().replace(/\b\w/g, function (l) {
             return l.toUpperCase()
         });
         $(this).val(changue);
+        if (e.which >= 48 && e.which <= 57) {
+            return false;
+        }
     });
+    $('#id_apellidos').keypress(function (e) {
+        var changue = $(this).val().replace(/\b\w/g, function (l) {
+            return l.toUpperCase()
+        });
+        $(this).val(changue);
+        if (e.which >= 48 && e.which <= 57) {
+            return false;
+        }
+    });
+    $('#id_cedula').keypress(function (e) {
+        //if the letter is not digit then display error and don't type anything
+        if (e.which !== 8 && e.which !== 0 && (e.which < 48 || e.which > 57)) {
+            //display error message
+            $("#errmsg").html("Solo numeros").show().fadeOut("slow");
+            return false;
+        }
+    });//Para solo numeros
+    $('#id_telefono').keypress(function (e) {
+        //if the letter is not digit then display error and don't type anything
+        if (e.which !== 8 && e.which !== 0 && (e.which < 48 || e.which > 57)) {
+            //display error message
+            $("#errmsg").html("Solo numeros").show().fadeOut("slow");
+            return false;
+        }
+    });//Para solo numeros
+    $('#id_celular').keypress(function (e) {
+        //if the letter is not digit then display error and don't type anything
+        if (e.which !== 8 && e.which !== 0 && (e.which < 48 || e.which > 57)) {
+            //display error message
+            $("#errmsg").html("Solo numeros").show().fadeOut("slow");
+            return false;
+        }
+    });//Para solo numeros
+    $('#id_direccion').keypress(function (e) {
+        var changue = $(this).val().replace(/\b\w/g, function (l) {
+            return l.toUpperCase()
+        });
+        $(this).val(changue);
+    });  //Para solo letras
 
 
 

@@ -150,8 +150,27 @@ function printpdf(title, content, callback, cancel) {
         showCancelButton: true,
         confirmButtonColor: '#3085d6',
         cancelButtonColor: '#d33',
-        confirmButtonText: 'Si',
-        cancelButtonText: 'No'
+        confirmButtonText: 'si',
+        cancelButtonText: 'no'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            callback();
+        } else {
+            cancel();
+        }
+    });
+}
+
+function preguntar(title, content, callback, cancel) {
+    Swal.fire({
+        title: title,
+        text: content,
+        icon: 'info',
+        showCancelButton: true,
+        confirmButtonColor: '#3085d6',
+        cancelButtonColor: '#d33',
+        confirmButtonText: 'Editar',
+        cancelButtonText: 'Facturar'
     }).then((result) => {
         if (result.isConfirmed) {
             callback();

@@ -1,15 +1,23 @@
 {% extends 'front-end/list.html' %}
 
 {% load static %}
-{% block elements %}
-    <br>
+{% block botones_head %}
     <div class="row">
-        <div class="col-lg-4">
-            <label for="fecha"><strong>Filtrar por fecha:</strong></label>
-            <input type="text" name="fecha" id="fecha" class="form-control form-control-sm input-sm">
+        <div class="container-fluid">
+            <div class="form-group">
+                <a type="button" class="btn btn-white btn-success" href="{% url 'compra:nuevo' %}"><i
+                        class="fa fa-plus-circle"></i> Nuevo
+                </a>
+                <a type="button" class="btn btn-white btn-danger" onclick="window.location.reload();"><span
+                        class="glyphicon glyphicon-refresh"></span> Actualizar
+                </a>
+            </div>
+            <div class="form-group col-lg-3">
+                <label for="fecha"><strong>Filtar por Fecha de compra:</strong></label>
+                <input type="text" name="fecha" id="fecha" class="form-control form-control-sm input-sm">
+            </div>
         </div>
     </div>
-    <br>
 {% endblock %}
 {% block table_content %}
     <thead>
@@ -27,15 +35,6 @@
     </thead>
     <tbody>
     </tbody>
-{% endblock %}
-{% block table_footer %}
-    <a type="button" class="btn btn-warning btn-sm" href="{% url 'compra:nuevo' %}">
-        <i class="fa fa-shopping-basket"></i> Nueva Compra
-    </a>
-    <a type="button" class="btn btn-primary btn-sm" id="reload"
-       onclick=" location.reload();">
-        <i class="fa fa-refresh"></i> Actualizar
-    </a>
 {% endblock %}
 {% block modal %}
     <div class="modal fade" id="Modal" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle"

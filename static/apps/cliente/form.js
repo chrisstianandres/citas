@@ -6,90 +6,6 @@ $(document).ready(function () {
     }
 
     validador();
-
-    // $("#form").validate({
-    //     rules: {
-    //         nombres: {
-    //             required: true,
-    //             minlength: 3,
-    //             maxlength: 50,
-    //             lettersonly: true,
-    //         },
-    //         apellidos: {
-    //             required: true,
-    //             minlength: 3,
-    //             maxlength: 50,
-    //             lettersonly: true,
-    //         },
-    //         cedula: {
-    //             required: true,
-    //             minlength: 10,
-    //             maxlength: 10,
-    //             digits: true,
-    //             val_ced: true
-    //         },
-    //         correo: {
-    //             required: true,
-    //             email: true
-    //         },
-    //         telefono: {
-    //             required: true,
-    //             minlength: 9,
-    //             maxlength: 9,
-    //             digits: true
-    //         },
-    //         celular: {
-    //             required: true,
-    //             minlength: 10,
-    //             maxlength: 10,
-    //             digits: true
-    //         },
-    //         direccion: {
-    //             required: true,
-    //             minlength: 5,
-    //             maxlength: 50
-    //         },
-    //
-    //
-    //     },
-    //     messages: {
-    //         nombres: {
-    //             required: "Por favor ingresa tus nombres",
-    //             minlength: "Debe ingresar al menos un nombre",
-    //             lettersonly: "Debe ingresar unicamente letras y espacios"
-    //         },
-    //         apellidos: {
-    //             required: "Por favor ingresa tus apellidos",
-    //             minlength: "Debe ingresar al menos un apellido",
-    //             lettersonly: "Debe ingresar unicamente letras y espacios"
-    //         },
-    //         cedula: {
-    //             required: "Por favor ingresa tu numero de documento",
-    //             minlength: "Tu numero de documento debe tener al menos 10 digitos",
-    //             digits: "Debe ingresar unicamente numeros",
-    //             maxlength: "Tu numero de documento debe tener maximo 10 digitos",
-    //             val_ced: "Numero de cedula no valido para Ecuador",
-    //         },
-    //         correo: "Debe ingresar un correo valido",
-    //         telefono: {
-    //             required: "Por favor ingresa tu numero de telefono",
-    //             minlength: "Tu numero de documento debe tener al menos 9 digitos",
-    //             digits: "Debe ingresar unicamente numeros",
-    //             maxlength: "Tu numero de documento debe tener maximo 9 digitos",
-    //         },
-    //         celular: {
-    //             required: "Por favor ingresa tu numero celular",
-    //             minlength: "Tu numero de documento debe tener al menos 10 digitos",
-    //             digits: "Debe ingresar unicamente numeros",
-    //             maxlength: "Tu numero de documento debe tener maximo 10 digitos",
-    //         },
-    //         direccion: {
-    //             required: "Por favor ingresa una direccion",
-    //             minlength: "Ingresa al menos 5 letras",
-    //             maxlength: "Tu direccion debe tener maximo 50 caracteres",
-    //         },
-    //     },
-    // });
     $("#form").validate({
         rules: {
             first_name: {
@@ -251,12 +167,52 @@ $(document).ready(function () {
         },
     });
 
-    $('#id_first_name').keyup(function () {
+    $('#id_first_name').keypress(function (e) {
         var changue = $(this).val().replace(/\b\w/g, function (l) {
             return l.toUpperCase()
         });
         $(this).val(changue);
+        if (e.which >= 48 && e.which <= 57) {
+            return false;
+        }
     });
+    $('#id_last_name').keypress(function (e) {
+        var changue = $(this).val().replace(/\b\w/g, function (l) {
+            return l.toUpperCase()
+        });
+        $(this).val(changue);
+        if (e.which >= 48 && e.which <= 57) {
+            return false;
+        }
+    });
+    $('#id_cedula').keypress(function (e) {
+        //if the letter is not digit then display error and don't type anything
+        if (e.which !== 8 && e.which !== 0 && (e.which < 48 || e.which > 57)) {
+            return false;
+        }
+    });//Para solo numeros
+    $('#id_telefono').keypress(function (e) {
+        //if the letter is not digit then display error and don't type anything
+        if (e.which !== 8 && e.which !== 0 && (e.which < 48 || e.which > 57)) {
+            //display error message
+            $("#errmsg").html("Solo numeros").show().fadeOut("slow");
+            return false;
+        }
+    });//Para solo numeros
+    $('#id_celular').keypress(function (e) {
+        //if the letter is not digit then display error and don't type anything
+        if (e.which !== 8 && e.which !== 0 && (e.which < 48 || e.which > 57)) {
+            //display error message
+            $("#errmsg").html("Solo numeros").show().fadeOut("slow");
+            return false;
+        }
+    });//Para solo numeros
+    $('#id_direccion').keypress(function (e) {
+       var changue = $(this).val().replace(/\b\w/g, function (l) {
+            return l.toUpperCase()
+        });
+        $(this).val(changue);
+    });  //Para solo letras
 
     //enviar formulario de nuevo cliente
     $('#form').on('submit', function (e) {

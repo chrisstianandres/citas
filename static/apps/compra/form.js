@@ -98,6 +98,10 @@ var compras = {
                     step: 1,
                     buttondown_class: 'btn btn-white btn-info btn-bold btn-xs',
                     buttonup_class: 'btn btn-white btn-info btn-bold btn-xs',
+                }).keypress(function (e) {
+                    if (e.which !== 8 && e.which !== 0 && (e.which < 48 || e.which > 57)) {
+                        return false;
+                    }
                 });
                 $(row).find('input[name="precio"]').TouchSpin({
                     min: 0.50,
@@ -106,8 +110,11 @@ var compras = {
                     step: 0.01,
                     buttondown_class: 'btn btn-white btn-info btn-bold btn-sm',
                     buttonup_class: 'btn btn-white btn-info btn-bold btn-sm',
+                }).keypress(function (e) {
+                    if (e.which !== 8 && e.which !== 0 && (e.which < 48 || e.which > 57)) {
+                        return false;
+                    }
                 });
-
             }
         });
     }
@@ -125,11 +132,14 @@ $(function () {
             buttondown_class: 'btn btn-white btn-info btn-bold btn-sm',
             buttonup_class: 'btn btn-white btn-info btn-bold btn-sm',
             prefix: '%'
-        }).val('12.00')
-        .on('change keyup', function () {
-            compras.items.tasa_iva = parseFloat($(this).val());
-            compras.calculate();
-        })
+        }).val('12.00').keypress(function (e) {
+        if (e.which !== 8 && e.which !== 0 && (e.which < 48 || e.which > 57)) {
+            return false;
+        }
+    }).on('change keyup', function () {
+        compras.items.tasa_iva = parseFloat($(this).val());
+        compras.calculate();
+    })
     ;
 
     //seccion Productos

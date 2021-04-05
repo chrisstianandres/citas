@@ -2,12 +2,12 @@ var form_edit = $("#form_edit");
 var form_password = $("#form_password");
 $(document).ready(function () {
     validador();
-       $.validator.addMethod("passwordcheck", function (value) {
-            return /^[A-Za-z0-9\d=!\-@._*]*$/.test(value) // consists of only these
-                && /[a-z]/.test(value) // has a lowercase letter
-                && /\d/.test(value) // has a digit
-                && /[\[\]?*+|{}\\()@.\n\r]/.test(value)// has a special character
-        },  "La contraseña debe contener de 8 a 20 carácteres alfanuméricos (a-z A-Z), contener mínimo un dígito (0-9) y un carácter especial");
+    $.validator.addMethod("passwordcheck", function (value) {
+        return /^[A-Za-z0-9\d=!\-@._*]*$/.test(value) // consists of only these
+            && /[a-z]/.test(value) // has a lowercase letter
+            && /\d/.test(value) // has a digit
+            && /[\[\]?*+|{}\\()@.\n\r]/.test(value)// has a special character
+    }, "La contraseña debe contener de 8 a 20 carácteres alfanuméricos (a-z A-Z), contener mínimo un dígito (0-9) y un carácter especial");
     form_edit.validate({
         rules: {
             username: {
@@ -137,18 +137,54 @@ $(document).ready(function () {
         $('#buttons_form_password').fadeIn();
     });
 
-    $('#id_first_name').keyup(function () {
+    $('#id_first_name').keypress(function (e) {
         var changue = $(this).val().replace(/\b\w/g, function (l) {
             return l.toUpperCase()
         });
         $(this).val(changue);
+        if (e.which >= 48 && e.which <= 57) {
+            return false;
+        }
     });
-    $('#id_last_name').keyup(function () {
+    $('#id_last_name').keypress(function (e) {
         var changue = $(this).val().replace(/\b\w/g, function (l) {
             return l.toUpperCase()
         });
         $(this).val(changue);
+        if (e.which >= 48 && e.which <= 57) {
+            return false;
+        }
     });
+    $('#id_cedula').keypress(function (e) {
+        //if the letter is not digit then display error and don't type anything
+        if (e.which !== 8 && e.which !== 0 && (e.which < 48 || e.which > 57)) {
+            //display error message
+            $("#errmsg").html("Solo numeros").show().fadeOut("slow");
+            return false;
+        }
+    });//Para solo numeros
+    $('#id_telefono').keypress(function (e) {
+        //if the letter is not digit then display error and don't type anything
+        if (e.which !== 8 && e.which !== 0 && (e.which < 48 || e.which > 57)) {
+            //display error message
+            $("#errmsg").html("Solo numeros").show().fadeOut("slow");
+            return false;
+        }
+    });//Para solo numeros
+    $('#id_celular').keypress(function (e) {
+        //if the letter is not digit then display error and don't type anything
+        if (e.which !== 8 && e.which !== 0 && (e.which < 48 || e.which > 57)) {
+            //display error message
+            $("#errmsg").html("Solo numeros").show().fadeOut("slow");
+            return false;
+        }
+    });//Para solo numeros
+    $('#id_direccion').keypress(function (e) {
+        var changue = $(this).val().replace(/\b\w/g, function (l) {
+            return l.toUpperCase()
+        });
+        $(this).val(changue);
+    });  //Para solo letras
 
     //enviar formulario
     $("#form_edit").on('submit', function (e) {
