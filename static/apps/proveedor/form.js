@@ -2,7 +2,7 @@ $(document).ready(function () {
 
     validador();
 
-    if ($('#id_num_doc').val() !== '' || null){
+    if ($('#id_num_doc').val() !== '' || null) {
         $('#id_num_doc').prop('readonly', true);
         $('#id_tipo').attr('disabled', true);
     }
@@ -131,13 +131,39 @@ $(document).ready(function () {
         },
     });
 
-    $('#id_nombres').keyup(function () {
-        var changue = $(this).val().replace(/\b\w/g, function (l) {
-            return l.toUpperCase()
+    $('#id_nombres').keypress(function (e) {
+            if (e.which >= 48 && e.which <= 57) {
+                return false;
+            }
+        })
+        .keyup(function (e) {
+            var changue = titleCase($(this).val());
+            $(this).val(changue);
         });
-        $(this).val(changue);
-    });
 
+
+    $('#id_apellidos')
+        .keypress(function (e) {
+            if (e.which >= 48 && e.which <= 57) {
+                return false;
+            }
+        })
+        .keyup(function (e) {
+            var changue = titleCase($(this).val());
+            $(this).val(changue);
+        });
+
+    function titleCase(texto) {
+        const re = /(^|[^A-Za-zÁÉÍÓÚÜÑáéíóúüñ])(?:([a-záéíóúüñ])|([A-ZÁÉÍÓÚÜÑ]))|([A-ZÁÉÍÓÚÜÑ]+)/gu;
+        return texto.replace(re,
+            (m, caracterPrevio, minuscInicial, mayuscInicial, mayuscIntermedias) => {
+                const locale = ['es', 'gl', 'ca', 'pt', 'en'];
+                if (mayuscIntermedias)
+                    return mayuscIntermedias.toLocaleLowerCase(locale);
+                return caracterPrevio + (minuscInicial ? minuscInicial.toLocaleUpperCase(locale) : mayuscInicial);
+            }
+        );
+    }
 
     //enviar formulario
     $('#form').on('submit', function (e) {
@@ -151,7 +177,7 @@ $(document).ready(function () {
                 window.location.pathname, 'Esta seguro que desea guardar este proveedor?', parametros,
                 function (response) {
                     menssaje_ok('Exito!', 'Exito al guardar este proveedor!', 'far fa-smile-wink', function () {
-                        window.location.href='/proveedor/lista';
+                        window.location.href = '/proveedor/lista';
                     });
                 });
         }

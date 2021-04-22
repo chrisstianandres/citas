@@ -9,5 +9,4 @@ urlpatterns = [
     path('nuevo', login_required(CrudView.as_view()), name='nuevo'),
     path('editar/<int:pk>', login_required(UpdateView.as_view()), name='editar'),
     path('eliminar/<int:pk>', login_required(DeleteView.as_view()), name='eliminar'),
-
 ]

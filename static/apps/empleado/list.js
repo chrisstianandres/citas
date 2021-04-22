@@ -87,7 +87,9 @@ function datatable_fun() {
                         'data-toggle="tooltip" title="Editar Datos"><i class="fa fa-pencil"></i></a>' + ' ';
                     var del = '<a type="button" class="btn btn-danger btn-xs"  style="color: white" rel="del" ' +
                         'data-toggle="tooltip" title="Eliminar"><i class="fa fa-trash"></i></a>' + ' ';
-                    return edit + del
+                    var est = '<a type="button" class="btn btn-success btn-xs"  style="color: white" rel="est" ' +
+                        'data-toggle="tooltip" title="Cambiar estado"><i class="fa fa-cog"></i></a>' + ' ';
+                    return edit + del + est;
 
                 }
             },
@@ -125,7 +127,7 @@ $(function () {
                 '/empleado/eliminar/' + data.id, 'Esta seguro que desea eliminar este empleado?', parametros,
                 function () {
                     menssaje_ok('Exito!', 'Exito al eliminar este empleado!', 'far fa-smile-wink', function () {
-                        location.reload();
+                        datatable.ajax.reload(null, false);
                     })
                 })
         })
@@ -133,5 +135,19 @@ $(function () {
             var tr = datatable.cell($(this).closest('td, li')).index();
             var data = datatable.row(tr.row).data();
             window.location.href = '/empleado/editar/' + data.id
+        })
+        .on('click', 'a[rel="est"]', function () {
+            action = 'estado';
+            var tr = datatable.cell($(this).closest('td, li')).index();
+            var data = datatable.row(tr.row).data();
+            var parametros = {'id': data.id};
+            parametros['action'] = action;
+            save_estado('Alerta',
+                window.location.pathname, 'Esta seguro que desea cambiar el estado de este empleado?', parametros,
+                function () {
+                    menssaje_ok('Exito!', 'Exito al cambiar de estado a este empleado!', 'far fa-smile-wink', function () {
+                        datatable.ajax.reload(null, false);
+                    })
+                })
         });
 });

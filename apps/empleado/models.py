@@ -11,7 +11,7 @@ SEXO = (
 )
 
 ESTADO = (
-    (1, 'LABORANDO'),
+    (1, 'SUSPENDIDO'),
     (0, 'DISPONIBLE'),
 )
 

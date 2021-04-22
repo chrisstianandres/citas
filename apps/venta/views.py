@@ -185,7 +185,7 @@ class CrudView(ValidatePermissionRequiredMixin, TemplateView):
                 else:
                     data['resp'] = False
                     data['error'] = "Datos Incompletos"
-            if action == 'cita_factura':
+            elif action == 'cita_factura':
                 datos = json.loads(request.POST['ventas'])
                 if datos:
                     with transaction.atomic():

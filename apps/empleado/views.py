@@ -1,4 +1,6 @@
 import json
+from datetime import datetime
+
 from django.db.models import Q, Count, Sum
 from django.http import HttpResponse, JsonResponse
 from django.utils.decorators import method_decorator
@@ -43,6 +45,19 @@ class lista(ValidatePermissionRequiredMixin, ListView):
                     item = a.toJSON()
                     item['text'] = a.get_full_name()
                     data.append(item)
+            elif action == 'estado':
+                id = request.POST['id']
+                query = self.model.objects.get(id=id)
+                check = Detalle_servicios.objects.filter(empleado_id=id, venta__fecha_reserva__gte=datetime.now(),
+                                                         venta__hora_fin__gte=datetime.now().hour)
+                if check.count() == 0:
+                    if query.estado == 1:
+                        query.estado = 0
+                    else:
+                        query.estado = 1
+                    query.save()
+                else:
+                    data['error'] = 'No se puede suspender porque este empleado aun tiene citas por antender'
             else:
                 data['error'] = 'No ha seleccionado una opcion'
             import json

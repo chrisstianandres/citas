@@ -3,6 +3,7 @@ from datetime import datetime
 from django import forms
 
 from .models import Venta, Detalle_servicios
+from ..empleado.models import Empleado
 from ..user.models import User
 
 
@@ -93,6 +94,7 @@ class Detalle_servicioForm(forms.ModelForm):
                 'class': 'form-control',
                 'disabled': True
             }
+            self.fields['empleado'].queryset = Empleado.objects.filter(estado=0)
             self.fields['servicio'].widget.attrs = {
                 'class': 'form-control'
             }
