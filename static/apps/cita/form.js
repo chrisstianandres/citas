@@ -211,14 +211,14 @@ $(function () {
                 minlength: 10,
                 maxlength: 10,
                 digits: true,
-                val_ced: true
+                validar: true
             },
             email: {
                 required: true,
                 email: true
             },
             telefono: {
-                required: true,
+                required: false,
                 minlength: 9,
                 maxlength: 9,
                 digits: true
@@ -226,6 +226,7 @@ $(function () {
             celular: {
                 required: true,
                 minlength: 10,
+                maxlength: 10,
                 digits: true
             },
             direccion: {
@@ -238,11 +239,13 @@ $(function () {
             first_name: {
                 required: "Por favor ingresa tus nombres",
                 minlength: "Debe ingresar al menos tres letras",
+                maxlength: "Debe ingresar maximo 50 caracteres",
                 lettersonly: "Debe ingresar unicamente letras y espacios"
             },
             last_name: {
                 required: "Por favor ingresa tus apellidos",
                 minlength: "Debe ingresar al menos tres letras",
+                maxlength: "Debe ingresar maximo 50 caracteres",
                 lettersonly: "Debe ingresar unicamente letras y espacios"
             },
             cedula: {
@@ -250,11 +253,10 @@ $(function () {
                 minlength: "Tu numero de documento debe tener al menos 10 digitos",
                 digits: "Debe ingresar unicamente numeros",
                 maxlength: "Tu numero de documento debe tener maximo 10 digitos",
-                val_ced: "Numero de cedula no valido para Ecuador"
+                validar: "Numero de cedula no valido para Ecuador"
             },
             email: "Debe ingresar un correo valido",
             telefono: {
-                required: "Por favor ingresa tu numero convencional",
                 minlength: "Tu numero de telefono 9 digitos",
                 maxlength: "Tu numero de tener no mas 9 digitos",
                 digits: "Debe ingresar unicamente numeros",
@@ -272,6 +274,42 @@ $(function () {
             },
         },
     });
+
+    $('#id_first_name').keypress(function (e) {
+        if (e.which >= 48 && e.which <= 57) {
+            return false;
+        }
+    }).keyup(function (e) {
+        var changue = titleCase($(this).val());
+        $(this).val(changue);
+    });
+    $('#id_last_name').keypress(function (e) {
+        if (e.which >= 48 && e.which <= 57) {
+            return false;
+        }
+    }).keyup(function (e) {
+        var changue = titleCase($(this).val());
+        $(this).val(changue);
+    });
+    $('#id_cedula').keypress(function (e) {
+        //if the letter is not digit then display error and don't type anything
+        if (e.which !== 8 && e.which !== 0 && (e.which < 48 || e.which > 57)) {
+            return false;
+        }
+    });//Para solo numeros
+    $('#id_telefono').keypress(function (e) {
+        //if the letter is not digit then display error and don't type anything
+        if (e.which !== 8 && e.which !== 0 && (e.which < 48 || e.which > 57)) {
+            return false;
+        }
+    });//Para solo numeros
+    $('#id_celular').keypress(function (e) {
+        //if the letter is not digit then display error and don't type anything
+        if (e.which !== 8 && e.which !== 0 && (e.which < 48 || e.which > 57)) {
+            return false;
+        }
+    });//Para solo numeros
+
 });
 
 function cargar_eventos() {
@@ -536,3 +574,5 @@ function ocultar() {
     $('#id_user').chosen('destroy');
 
 }
+
+

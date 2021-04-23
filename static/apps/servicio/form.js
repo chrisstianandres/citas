@@ -67,44 +67,32 @@ $(document).ready(function () {
         }).keypress(function (e) {
         //if the letter is not digit then display error and don't type anything
         if (e.which !== 8 && e.which !== 0 && (e.which < 48 || e.which > 57)) {
-            //display error message
-            $("#errmsg").html("Solo numeros").show().fadeOut("slow");
             return false;
         }
     });//Para solo numeros;
 
         $('#id_precio').TouchSpin({
-            min: 0.50,
-            max: 1000.00,
+            min: 2.50,
+            max: 200.00,
             step: 0.01,
             decimals: 2,
             prefix: '$',
             buttondown_class: 'btn btn-white btn-info btn-bold btn-xs',
             buttonup_class: 'btn btn-white btn-info btn-bold btn-xs',
         }).keypress(function (e) {
-        //if the letter is not digit then display error and don't type anything
         if (e.which !== 8 && e.which !== 0 && (e.which < 48 || e.which > 57)) {
-            //display error message
-            $("#errmsg").html("Solo numeros").show().fadeOut("slow");
             return false;
         }
     });//Para solo numeros;
 
     $('#id_nombre').keyup(function () {
-        var pal = $(this).val();
-        var changue = pal.substr(0, 1).toUpperCase() + pal.substr(1);
+        var changue = titleCase($(this).val());
         $(this).val(changue);
     }).keypress(function (e) {
         if (e.which >= 48 && e.which <= 57) {
             return false;
         }
     });  //Para solo letras
-    $('#id_descripcion').keyup(function () {
-        var pal = $(this).val();
-        var changue = pal.substr(0, 1).toUpperCase() + pal.substr(1);
-        $(this).val(changue);
-    });
-
 
     //enviar formulario de nuevo cliente
     $('#form').on('submit', function (e) {
