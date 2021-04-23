@@ -16,13 +16,13 @@ $(document).ready(function () {
         },
         messages: {
             nombre: {
-                required: "Porfavor ingresa el nombre de la categoria",
+                required: "Por favor ingresa el nombre de la categoria",
                 minlength: "Debe ingresar al menos 3 letras",
                 lettersonly: "Debe ingresar unicamente letras y espacios",
                 maxlength: "La descripcion debe tener maximo 50 caracteres",
             },
             descripcion: {
-                required: "Porfavor ingresa una descripcion",
+                required: "Por favor ingresa una descripcion",
                 minlength: "Ingresa al menos 5 letras",
                 maxlength: "La descripcion debe tener maximo 50 caracteres",
             },
@@ -57,20 +57,18 @@ $(document).ready(function () {
         },
     });
 
-    $('#id_nombre_categoria').keyup(function () {
-        var pal = $(this).val();
-        var changue = pal.substr(0, 1).toUpperCase() + pal.substr(1);
-        $(this).val(changue);
-    }).keypress(function (e) {
+    $('#id_nombre_categoria').keyup(function (e) {
+            var changue = titleCase($(this).val());
+            $(this).val(changue);
+        }).keypress(function (e) {
         if (e.which >= 48 && e.which <= 57) {
             return false;
         }
     });  //Para solo letras;
-    $('#id_descripcion_categoria').keyup(function () {
-        var pal = $(this).val();
-        var changue = pal.substr(0, 1).toUpperCase() + pal.substr(1);
-        $(this).val(changue);
-    });
+    $('#id_descripcion_categoria').keyup(function (e) {
+            var changue = titleCase($(this).val());
+            $(this).val(changue);
+        });
 
 
     //enviar formulario de nuevo cliente

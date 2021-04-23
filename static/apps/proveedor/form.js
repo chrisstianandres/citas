@@ -131,7 +131,7 @@ $(document).ready(function () {
         },
     });
 
-    $('#id_nombres').keypress(function (e) {
+    $('#id_nombre').keypress(function (e) {
             if (e.which >= 48 && e.which <= 57) {
                 return false;
             }
@@ -140,30 +140,6 @@ $(document).ready(function () {
             var changue = titleCase($(this).val());
             $(this).val(changue);
         });
-
-
-    $('#id_apellidos')
-        .keypress(function (e) {
-            if (e.which >= 48 && e.which <= 57) {
-                return false;
-            }
-        })
-        .keyup(function (e) {
-            var changue = titleCase($(this).val());
-            $(this).val(changue);
-        });
-
-    function titleCase(texto) {
-        const re = /(^|[^A-Za-zÁÉÍÓÚÜÑáéíóúüñ])(?:([a-záéíóúüñ])|([A-ZÁÉÍÓÚÜÑ]))|([A-ZÁÉÍÓÚÜÑ]+)/gu;
-        return texto.replace(re,
-            (m, caracterPrevio, minuscInicial, mayuscInicial, mayuscIntermedias) => {
-                const locale = ['es', 'gl', 'ca', 'pt', 'en'];
-                if (mayuscIntermedias)
-                    return mayuscIntermedias.toLocaleLowerCase(locale);
-                return caracterPrevio + (minuscInicial ? minuscInicial.toLocaleUpperCase(locale) : mayuscInicial);
-            }
-        );
-    }
 
     //enviar formulario
     $('#form').on('submit', function (e) {

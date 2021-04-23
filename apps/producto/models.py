@@ -9,8 +9,8 @@ from citas.settings import STATIC_URL, MEDIA_URL
 class Producto(models.Model):
     categoria = models.ForeignKey(Categoria, on_delete=models.PROTECT)
     presentacion = models.ForeignKey(Presentacion, on_delete=models.PROTECT)
-    nombre = models.CharField(max_length=50)
-    descripcion = models.CharField(max_length=50)
+    nombre = models.CharField(max_length=100)
+    descripcion = models.CharField(max_length=200)
     imagen = models.ImageField(upload_to='productos', blank=True, null=True)
 
     def __str__(self):

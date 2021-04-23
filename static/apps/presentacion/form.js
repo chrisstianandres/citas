@@ -71,20 +71,14 @@ $(document).ready(function () {
         },
     });
 
-    $('#id_nombre_presentacion').keyup(function () {
-        var pal = $(this).val();
-        var changue = pal.substr(0, 1).toUpperCase() + pal.substr(1);
-        $(this).val(changue);
-    }).keypress(function (e) {
+    $('#id_nombre_presentacion').keyup(function (e) {
+            var changue = titleCase($(this).val());
+            $(this).val(changue);
+        }).keypress(function (e) {
         if (e.which >= 48 && e.which <= 57) {
             return false;
         }
     });  //Para solo letras;
-    $('#id_descripcion_presentacion').keyup(function () {
-        var pal = $(this).val();
-        var changue = pal.substr(0, 1).toUpperCase() + pal.substr(1);
-        $(this).val(changue);
-    });
 
         //enviar formulario de nuevo cliente
     $('#form').on('submit', function (e) {

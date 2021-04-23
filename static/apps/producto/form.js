@@ -11,7 +11,7 @@ $(document).ready(function () {
             descripcion: {
                 required: true,
                 minlength: 3,
-                maxlength: 50
+                maxlength: 200
             },
             categoria: {
                 required: true
@@ -24,12 +24,13 @@ $(document).ready(function () {
             nombre: {
                 required: "Por favor ingresa un valor",
                 minlength: "Debe ingresar al menos 3 letras",
-                lettersonly: "Debe ingresar unicamente letras y espacios"
+                lettersonly: "Debe ingresar unicamente letras y espacios",
+                maxlength: "Debe ingresar maximo 100 carcateres"
             },
             descripcion: {
                 required: "Por favor ingresa un valor",
                 minlength: "Debe ingresar al menos 3 letras",
-                lettersonly: "Debe ingresar unicamente letras y espacios"
+                maxlength: "Debe ingresar maximo 200 carcateres"
             },
             categoria: {
                 required: "Por favor selecciona una categoria"
@@ -40,23 +41,13 @@ $(document).ready(function () {
         },
     });
     $('#id_nombre_producto').keyup(function () {
-        var pal = $(this).val();
-        var changue = pal.substr(0, 1).toUpperCase() + pal.substr(1);
+        var changue = titleCase($(this).val());
         $(this).val(changue);
     }).keypress(function (e) {
         if (e.which >= 48 && e.which <= 57) {
             return false;
         }
     });  //Para solo letras;
-    $('#id_descripcion_producto').keyup(function () {
-        var pal = $(this).val();
-        var changue = pal.substr(0, 1).toUpperCase() + pal.substr(1);
-        $(this).val(changue);
-    });  //Para solo letras;
-
-
-
-
 
     $('#id_categoria_producto')
         .select2({

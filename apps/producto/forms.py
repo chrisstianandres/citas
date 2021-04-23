@@ -14,11 +14,11 @@ class ProductoForm(forms.ModelForm):
                 'class': 'form-control'
             })
             self.fields['nombre'].widget = TextInput(
-                attrs={'placeholder': 'Ingrese el nombre del producto', 'class': 'form-control',
+                attrs={'placeholder': 'Ingrese el nombre del producto (maximo 100 caracteres)', 'class': 'form-control',
                        'id': 'id_nombre_producto'})
-            self.fields['descripcion'].widget = TextInput(
-                attrs={'placeholder': 'Ingrese una descripcion del producto', 'class': 'form-control',
-                       'id': 'id_descripcion_producto'})
+            # self.fields['descripcion'].widget = TextInput(
+            #     attrs={'placeholder': 'Ingrese una descripcion del producto (maximo 200 caracteres)', 'class': 'form-control',
+            #            'id': 'id_descripcion_producto'})
             self.fields['categoria'].widget.attrs = {
                 'class': 'form-control select2 input-sm',
                 'id': 'id_categoria_producto'}
@@ -35,15 +35,16 @@ class ProductoForm(forms.ModelForm):
                   ]
         labels = {
             'nombre': 'Nombre',
-            'descripcion': 'Decripcion',
+            'descripcion': 'Descripcion',
             'categoria': 'Categoria',
             'presentacion': 'Presentacion',
             'imagen': 'Imagen',
         }
         widgets = {
             'nombre': forms.TextInput(),
-            'descripcion': forms.TextInput(),
-            'decripcion': forms.Textarea(attrs={'col': '3', 'row': '2'})
+            'descripcion': forms.Textarea(attrs={'cols': '50', 'rows': '2',
+                                                 'placeholder': 'Ingrese una descripcion del producto (maximo 200 caracteres)',
+                                                 'class': 'form-control', 'id': 'id_descripcion_producto'})
         }
 
 

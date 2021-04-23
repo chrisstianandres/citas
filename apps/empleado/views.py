@@ -135,7 +135,7 @@ class CrudView(ValidatePermissionRequiredMixin, TemplateView):
         data = super().get_context_data(**kwargs)
         data['icono'] = opc_icono
         data['entidad'] = opc_entidad
-        data['titulo'] = 'Nueva Presentacion'
+        data['titulo'] = 'Nuevo Empleado'
         data['nuevo'] = '/empleado/nuevo'
         data['action'] = 'add'
         data['empresa'] = empresa
