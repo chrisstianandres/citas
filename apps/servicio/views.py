@@ -65,12 +65,12 @@ class CrudView(ValidatePermissionRequiredMixin, TemplateView):
         action = request.POST['action']
         try:
             if action == 'add':
-                f = self.form_class(request.POST)
+                f = self.form_class(request.POST, request.FILES)
                 data = self.save_data(f)
             elif action == 'edit':
                 pk = request.POST['id']
                 cat = self.model.objects.get(pk=int(pk))
-                f = self.form_class(request.POST, instance=cat)
+                f = self.form_class(request.POST, request.FILES, instance=cat)
                 data = self.edit_data(f, pk)
             elif action == 'delete':
                 pk = request.POST['id']
@@ -149,7 +149,7 @@ class UpdateView(ValidatePermissionRequiredMixin, UpdateView):
             if action == 'edit':
                 pk = self.kwargs['pk']
                 cat = self.model.objects.get(pk=int(pk))
-                f = self.form_class(request.POST, instance=cat)
+                f = self.form_class(request.POST, request.FILES, instance=cat)
                 data = self.save_data(f)
             else:
                 data['error'] = 'No ha seleccionado ninguna opción'

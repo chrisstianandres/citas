@@ -4,7 +4,7 @@ from apps.compra.models import Compra, Detalle_compra
 from apps.empleado.models import Empleado
 from apps.mixins import ValidatePermissionRequiredMixin
 import json
-from datetime import datetime
+from datetime import datetime, timedelta
 
 from django.db import transaction
 from django.db.models import Sum, Count
@@ -232,7 +232,7 @@ class CrudView(ValidatePermissionRequiredMixin, TemplateView):
             elif action == 'search_prod':
                 data = []
                 ids = json.loads(request.POST['ids'])
-                query = Detalle_compra.objects.values('id', 'producto_id', 'precio_venta').filter(compra__estado=1).\
+                query = Detalle_compra.objects.values('id', 'producto_id', 'precio_venta').filter(compra__estado=1). \
                     annotate(stock=Sum('stock_actual')) \
                     .order_by('stock').filter(stock_actual__gte=1)
                 for c in query.exclude(id__in=ids):
@@ -367,7 +367,8 @@ class CitacrudView(ValidatePermissionRequiredMixin, TemplateView):
             elif action == 'search_horario_empleado':
                 data = []
                 id = request.POST['id']
-                query = Detalle_servicios.objects.filter(empleado_id=id, venta__estado=2, venta__fecha_reserva__gte=datetime.now())
+                query = Detalle_servicios.objects.filter(empleado_id=id, venta__estado=2,
+                                                         venta__fecha_reserva__gte=datetime.now())
                 for p in query:
                     item = p.toJSON()
                     item['fecha_factura'] = p.venta.fecha_factura.strftime('%m/%d/%Y')
@@ -378,7 +379,7 @@ class CitacrudView(ValidatePermissionRequiredMixin, TemplateView):
                 id = request.POST['id']
                 exclude = request.POST['exclude']
                 query = Detalle_servicios.objects.filter(empleado_id=id, venta__estado=2,
-                                                         venta__fecha_reserva__gte=datetime.now()).\
+                                                         venta__fecha_reserva__gte=datetime.now()). \
                     exclude(venta_id=exclude)
                 for p in query:
                     item = p.toJSON()
@@ -632,21 +633,9 @@ def grap(request):
         action = request.POST['action']
         if action == 'chart':
             data = {
-                'dat': {
-                    'name': 'Total de ventas',
-                    'type': 'column',
-                    'colorByPoint': True,
-                    'showInLegend': True,
-                    'data': grap_data(),
-                },
                 'year': datetime.now().year,
-                'chart2': {
-                    'data': dataChart2(),
-                },
-                'chart3': {
-                    'compras': datachartcontr(),
-                    'ventas': grap_data()
-                },
+                'ventas': grap_data(),
+                'carrusel': grap_imagenes(),
                 'tarjets': {
                     'data': data_tarjets()
                 }
@@ -662,26 +651,46 @@ def grap_data():
     year = datetime.now().year
     data = []
     for y in range(1, 13):
-        total = Venta.objects.filter(transaccion__fecha_trans__year=year, transaccion__fecha_trans__month=y,
-                                     estado=1).aggregate(r=Coalesce(Sum('transaccion__total'), 0)).get('r')
+        total = Venta.objects.filter(fecha_factura__year=year, fecha_factura__month=y,
+                                     estado=1).aggregate(r=Coalesce(Sum('total'), 0)).get('r')
         data.append(float(total))
     return data
 
 
+def grap_imagenes():
+    data = []
+    imagenes = Servicio.objects.all()
+    for i in imagenes:
+        if i.imagen:
+            print(i)
+            data.append(i.toJSON())
+    return data
+
+
 def data_tarjets():
-    year = datetime.now().year
-    ventas = Venta.objects.filter(transaccion__fecha_trans__year=year, estado=1).aggregate(
-        r=Coalesce(Count('id'), 0)).get('r')
-    compras = Compra.objects.filter(fecha_compra__year=year, estado=1).aggregate(r=Coalesce(Count('id'), 0)).get('r')
-    inventario = Inventario_producto.objects.filter(produccion__produccion__fecha_ingreso__year=year, estado=1).aggregate(
-        r=Coalesce(Count('id'), 0)).get('r')
-    agotados = Producto.objects.filter(stock=0).count()
-    data = {
-        'ventas': int(ventas),
-        'compras': int(compras),
-        'inventario': int(inventario),
-        'agotados': int(agotados),
-    }
+    data = {}
+    try:
+        week_start = datetime.now().today()
+        week_start -= timedelta(days=week_start.weekday())
+        week_end = week_start + timedelta(days=7)
+        citas_dia = Venta.objects.filter(fecha_reserva=datetime.now(), estado=2).count()
+        citas_semana_hoy = Venta.objects.filter(fecha_reserva__gte=week_start, fecha_reserva__lt=week_end, estado=2).count()
+        total_empleados = Empleado.objects.filter(estado=0).count()
+        recaudacion_dia = Venta.objects.values('total').filter(fecha_reserva=datetime.now(), estado=2).aggregate(
+            r=Coalesce(Sum('total'), 0)).get('r')
+        recaudacion_semana = Venta.objects.values('total').filter(fecha_reserva__gte=week_start, fecha_reserva__lt=week_end,
+                                                                  estado=2).aggregate(r=Coalesce(Sum('total'), 0)).get('r')
+        citas_not = Venta.objects.filter(fecha_reserva__gte=week_start, fecha_reserva__lt=datetime.now(), estado=2).count()
+        data = {
+            'citas_dia': int(citas_dia),
+            'citas_semana_hoy': int(citas_semana_hoy),
+            'total_empleados': int(total_empleados),
+            'recaudacion_dia': format(float(recaudacion_dia), '.2f'),
+            'recaudacion_semana': format(float(recaudacion_semana), '.2f'),
+            'citas_not': int(citas_not),
+        }
+    except Exception as e:
+        print(e)
     return data
 
 
@@ -736,7 +745,7 @@ class report(ValidatePermissionRequiredMixin, ListView):
             if action == 'report':
                 data = []
                 if start_date == '' and end_date == '':
-                    query = Detalle_venta.objects.values('venta__fecha_factura', 'det_compra__producto_id', 'pvp')\
+                    query = Detalle_venta.objects.values('venta__fecha_factura', 'det_compra__producto_id', 'pvp') \
                         .annotate(
                         Sum('cantidad')).filter(venta__estado=1)
                 else:
@@ -796,11 +805,11 @@ class report_servicios(ValidatePermissionRequiredMixin, ListView):
             if action == 'report':
                 data = []
                 if start_date == '' and end_date == '':
-                    query = Detalle_servicios.objects.values('venta__fecha_factura', 'servicio_id', 'valor')\
+                    query = Detalle_servicios.objects.values('venta__fecha_factura', 'servicio_id', 'valor') \
                         .annotate(Sum('cantidad')).filter(venta__estado=1)
                 else:
                     query = Detalle_servicios.objects.values('venta__fecha_factura', 'servicio_id', 'valor') \
-                        .filter(venta__fecha_factura__range=[start_date, end_date],venta__estado=1).\
+                        .filter(venta__fecha_factura__range=[start_date, end_date], venta__estado=1). \
                         annotate(Sum('cantidad'))
                 for p in query:
                     total = p['valor'] * p['cantidad__sum']
@@ -854,7 +863,7 @@ class report_total(ValidatePermissionRequiredMixin, ListView):
                 data = []
                 if start_date == '' and end_date == '':
                     query = Venta.objects.values('fecha_factura', 'user__first_name',
-                                                 'user__last_name')\
+                                                 'user__last_name') \
                         .annotate(Sum('subtotal')).annotate(Sum('iva')).annotate(Sum('total')).filter(estado=1)
                 else:
                     query = Venta.objects.values('fecha_factura', 'user__first_name',
@@ -908,7 +917,7 @@ class report_total_reserva(ValidatePermissionRequiredMixin, ListView):
                 data = []
                 if start_date == '' and end_date == '':
                     query = Venta.objects.values('transaccion__fecha_trans', 'transaccion__cliente__nombres',
-                                                 'transaccion__cliente__apellidos', 'transaccion__user__username')\
+                                                 'transaccion__cliente__apellidos', 'transaccion__user__username') \
                         .annotate(Sum('transaccion__subtotal')). \
                         annotate(Sum('transaccion__iva')).annotate(Sum('transaccion__total')).filter(estado=2)
                 else:

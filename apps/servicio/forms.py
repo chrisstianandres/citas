@@ -1,3 +1,4 @@
+from PIL import Image
 from django import forms
 from datetime import *
 
@@ -30,11 +31,11 @@ class ServicioForm(forms.ModelForm):
     class Meta:
         model = Servicio
         fields = ['nombre', 'categoria',
-                  'descripcion', 'duracion', 'precio'
+                  'descripcion', 'imagen', 'duracion', 'precio'
                   ]
         labels = {
             'nombre': 'Nombre', 'precio': 'Precio', 'categoria': 'Categoria',
-            'descripcion': 'Decripcion', 'duracion': 'Duracion (Maximo 4)'
+            'descripcion': 'Decripcion', 'imagen': 'Imagen', 'duracion': 'Duracion (Maximo 4)'
         }
         widgets = {
             'nombre': forms.TextInput(),
@@ -62,6 +63,11 @@ class ServicioForm(forms.ModelForm):
                     u.duracion = dur * 60
                     u.save()
                     data['resp'] = True
+                image = Image.open(u.imagen)
+                size = (1000, 500)
+                image = image.resize(size, Image.ANTIALIAS)
+                print(u.imagen.path)
+                image.save(u.imagen.path)
             else:
                 data['error'] = form.errors
         except Exception as e:

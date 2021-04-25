@@ -11,12 +11,12 @@ function datatable_fun() {
             dataSrc: ""
         },
         columns: [
-            {"data": "id"},
             {"data": "nombre"},
             {"data": "descripcion"},
             {"data": "categoria.nombre"},
             {"data": "precio"},
             {"data": "duracion"},
+            {"data": "imagen"},
             {"data": "id"}
         ],
         language:
@@ -25,7 +25,7 @@ function datatable_fun() {
             },
         columnDefs: [
             {
-                targets: [-3],
+                targets: [-4],
                 class: 'text-center',
                 render: function (data, type, row) {
                     return '$ '+ data
@@ -34,7 +34,7 @@ function datatable_fun() {
 
             },
             {
-                targets: [-2],
+                targets: [-3],
                 class: 'text-center',
                 orderable: false,
                 render: function (data, type, row) {
@@ -43,6 +43,14 @@ function datatable_fun() {
                     if(tiempo>1){hora= ' Horas'}
                     else {hora= ' Hora'}
                     return tiempo+ hora;
+                }
+            },
+            {
+                targets: [-2],
+                class: 'text-center',
+                orderable: false,
+                render: function (data) {
+                    return '<img src="' + data + '" width="50" height="50" class="img-circle elevation-2" alt="Image">';
                 }
             },
             {
