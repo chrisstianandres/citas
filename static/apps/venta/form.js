@@ -1,4 +1,4 @@
-var action = 'add';
+var action2 = 'add';
 var dt_detalle;
 var tbl_productos;
 var tbl_empleados_list;
@@ -237,8 +237,9 @@ $(function () {
         ventas.items.detalle.push(factura_cita.detalle[0]);
         ventas.items.venta = factura_cita.venta;
         ventas.list();
-        action = 'cita_factura'
-    } else {
+        action2 = 'cita_factura'
+    }
+    else {
         ventas.list();
     }
     buscar_productos();
@@ -395,8 +396,7 @@ $(function () {
                 ventas.items.cliente = $('#id_user').val();
                 ventas.items.duracion = $('#id_duracion_servicio').val() * 60;
                 parametros = {'ventas': JSON.stringify(ventas.items)};
-                console.log(ventas.items);
-                parametros['action'] = action;
+                parametros['action'] = action2;
                 save_with_ajax('Alerta',
                     window.location.pathname, 'Esta seguro que desea guardar esta Venta?', parametros, function (response) {
                         printpdf('Alerta!', '¿Desea generar el comprobante en PDF?', function () {

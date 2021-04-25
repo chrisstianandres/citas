@@ -108,7 +108,7 @@ function datatable_fun() {
                 render: function (data, type, row) {
                     var detalle = '<a type="button" rel="detalle" class="btn btn-success btn-xs btn-round" style="color: white" data-toggle="tooltip" title="Detalle de Venta" ><i class="fa fa-search"></i></a>' + ' ';
                     var devolver = row.user.tipo===0? '<a type="button" rel="devolver" class="btn btn-danger btn-xs btn-round" style="color: white" data-toggle="tooltip" title="Anular"><i class="fa fa-times"></i></a>'+' ':' ';
-                    var pdf = '<a type="button" href= "/venta/printpdf/' + data + '" rel="pdf" ' +
+                    var pdf = '<a type="button" href= "/transaccion/printpdf/' + data + '" rel="pdf" ' +
                         'class="btn btn-primary btn-xs btn-round" style="color: white" data-toggle="tooltip" ' +
                         'title="Reporte PDF"><i class="fa fa-file-pdf-o"></i></a>';
                     return detalle + devolver + pdf;

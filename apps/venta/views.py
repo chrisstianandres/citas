@@ -71,18 +71,20 @@ class lista(ValidatePermissionRequiredMixin, ListView):
                 id = request.POST['id']
                 if id:
                     data = []
-                    result = Detalle_venta.objects.filter(venta_id=id)
+                    result = Detalle_venta.objects.values('det_compra__producto_id', 'pvp', 'subtotal').filter(venta_id=id, venta__estado=1). \
+                        annotate(cantidad=Sum('cantidad')).order_by('cantidad')
                     result2 = Detalle_servicios.objects.filter(venta_id=id)
-                    for p in result:
+                    for p1 in result:
+                        p = Producto.objects.get(id=p1['det_compra__producto_id'])
                         data.append({
-                            'nombre': p.det_compra.producto.nombre,
+                            'nombre': p.nombre,
                             'tipo': 'Producto',
                             'duracion': 'N/A',
-                            'categoria': p.det_compra.producto.categoria.nombre,
-                            'presentacion': p.det_compra.producto.presentacion.nombre,
-                            'cantidad': p.cantidad,
-                            'precio': p.pvp,
-                            'subtotal': p.subtotal,
+                            'categoria': p.categoria.nombre,
+                            'presentacion': p.presentacion.nombre,
+                            'cantidad': p1['cantidad'],
+                            'precio': p1['pvp'],
+                            'subtotal': p1['subtotal'],
                         })
                     for s in result2:
                         data.append({
@@ -146,8 +148,8 @@ class CrudView(ValidatePermissionRequiredMixin, TemplateView):
 
     def post(self, request, *args, **kwargs):
         data = {}
-        action = request.POST['action']
         try:
+            action = request.POST['action']
             if action == 'add':
                 datos = json.loads(request.POST['ventas'])
                 if datos:
@@ -166,11 +168,46 @@ class CrudView(ValidatePermissionRequiredMixin, TemplateView):
                                 if i['tipo'] == 'Producto':
                                     dv = Detalle_venta()
                                     dv.venta_id = c.id
-                                    dv.det_compra_id = int(i['id'])
-                                    dv.cantidad = int(i['cantidad'])
-                                    dv.pvp = float(i['precio'])
-                                    dv.subtotal = float(i['subtotal'])
-                                    dv.save()
+                                    if Detalle_compra.objects.filter(producto_id=int(i['id']), compra__estado=1, stock_actual__gte=int(i['cantidad'])).exists():
+                                        for det in Detalle_compra.objects.filter(producto_id=int(i['id']), compra__estado=1, stock_actual__gte=int(i['cantidad'])):
+                                            dv = Detalle_venta()
+                                            dv.venta_id = c.id
+                                            dv.det_compra_id = det.id
+                                            dv.cantidad = int(i['cantidad'])
+                                            dv.pvp = float(i['precio'])
+                                            dv.subtotal = float(i['subtotal'])
+                                            dv.save()
+                                            det.stock_actual -= int(i['cantidad'])
+                                            det.save()
+                                            break
+                                    else:
+                                        cantidad = int(i['cantidad'])
+                                        aux = cantidad
+                                        for d in Detalle_compra.objects.filter(producto_id=int(i['id']), compra__estado=1):
+                                            if cantidad > 0 and d.stock_actual > 0:
+                                                aux -= d.stock_actual  # 15
+                                                if aux >= 1:
+                                                    dv = Detalle_venta()
+                                                    dv.venta_id = c.id
+                                                    dv.det_compra_id = d.id
+                                                    dv.cantidad = cantidad-aux
+                                                    dv.pvp = float(i['precio'])
+                                                    dv.subtotal = float(i['subtotal'])
+                                                    dv.save()
+                                                    d.stock_actual -= (cantidad-aux)
+                                                    d.save()
+                                                    cantidad = aux  # 15
+                                                else:
+                                                    dv = Detalle_venta()
+                                                    dv.venta_id = c.id
+                                                    dv.det_compra_id = d.id
+                                                    dv.cantidad = cantidad
+                                                    dv.pvp = float(i['precio'])
+                                                    dv.subtotal = float(i['subtotal'])
+                                                    dv.save()
+                                                    d.stock_actual -= cantidad
+                                                    d.save()
+                                                    cantidad = 0
                                 else:
                                     ds = Detalle_servicios()
                                     ds.venta_id = c.id
@@ -202,28 +239,59 @@ class CrudView(ValidatePermissionRequiredMixin, TemplateView):
                                 if i['tipo'] == 'Producto':
                                     dv = Detalle_venta()
                                     dv.venta_id = c.id
-                                    dv.det_compra_id = int(i['id'])
-                                    dv.cantidad = int(i['cantidad'])
-                                    dv.pvp = float(i['precio'])
-                                    dv.subtotal = float(i['subtotal'])
-                                    dv.save()
-                                else:
-
-                                    if Detalle_servicios.objects.get(venta_id=c.id, servicio_id=int(i['id'])):
-                                        ds = Detalle_servicios.objects.get(venta_id=c.id, servicio_id=int(i['id']))
-                                        ds.valor = float(i['precio'])
-                                        ds.cantidad = int(i['cantidad'])
-                                        ds.subtotals = float(i['subtotal'])
-                                        ds.save()
+                                    if Detalle_compra.objects.filter(producto_id=int(i['id']), compra__estado=1,
+                                                                     stock_actual__gte=int(i['cantidad'])).exists():
+                                        for det in Detalle_compra.objects.filter(producto_id=int(i['id']),
+                                                                                 compra__estado=1,
+                                                                                 stock_actual__gte=int(i['cantidad'])):
+                                            dv = Detalle_venta()
+                                            dv.venta_id = c.id
+                                            dv.det_compra_id = det.id
+                                            dv.cantidad = int(i['cantidad'])
+                                            dv.pvp = float(i['precio'])
+                                            dv.subtotal = float(i['subtotal'])
+                                            dv.save()
+                                            det.stock_actual -= int(i['cantidad'])
+                                            det.save()
+                                            break
                                     else:
-                                        ds = Detalle_servicios()
-                                        ds.venta_id = c.id
-                                        ds.empleado_id = int(i['empleado']['id'])
-                                        ds.servicio_id = int(i['id'])
-                                        ds.valor = float(i['precio'])
-                                        ds.cantidad = int(i['cantidad'])
-                                        ds.subtotals = float(i['subtotal'])
-                                        ds.save()
+                                        cantidad = int(i['cantidad'])
+                                        aux = cantidad
+                                        for d in Detalle_compra.objects.filter(producto_id=int(i['id']),
+                                                                               compra__estado=1):
+                                            if cantidad > 0 and d.stock_actual > 0:
+                                                aux -= d.stock_actual  # 15
+                                                if aux >= 1:
+                                                    dv = Detalle_venta()
+                                                    dv.venta_id = c.id
+                                                    dv.det_compra_id = d.id
+                                                    dv.cantidad = cantidad - aux
+                                                    dv.pvp = float(i['precio'])
+                                                    dv.subtotal = float(i['subtotal'])
+                                                    dv.save()
+                                                    d.stock_actual -= (cantidad - aux)
+                                                    d.save()
+                                                    cantidad = aux  # 15
+                                                else:
+                                                    dv = Detalle_venta()
+                                                    dv.venta_id = c.id
+                                                    dv.det_compra_id = d.id
+                                                    dv.cantidad = cantidad
+                                                    dv.pvp = float(i['precio'])
+                                                    dv.subtotal = float(i['subtotal'])
+                                                    dv.save()
+                                                    d.stock_actual -= cantidad
+                                                    d.save()
+                                                    cantidad = 0
+                                else:
+                                    ds = Detalle_servicios()
+                                    ds.venta_id = c.id
+                                    ds.empleado_id = int(i['empleado']['id'])
+                                    ds.servicio_id = int(i['id'])
+                                    ds.valor = float(i['precio'])
+                                    ds.cantidad = int(i['cantidad'])
+                                    ds.subtotals = float(i['subtotal'])
+                                    ds.save()
                         data['id'] = c.id
                         data['resp'] = True
                 else:
@@ -232,14 +300,14 @@ class CrudView(ValidatePermissionRequiredMixin, TemplateView):
             elif action == 'search_prod':
                 data = []
                 ids = json.loads(request.POST['ids'])
-                query = Detalle_compra.objects.values('id', 'producto_id', 'precio_venta').filter(compra__estado=1). \
+                query = Detalle_compra.objects.values('producto_id', 'precio_venta').filter(compra__estado=1). \
                     annotate(stock=Sum('stock_actual')) \
                     .order_by('stock').filter(stock_actual__gte=1)
-                for c in query.exclude(id__in=ids):
+                for c in query.exclude(producto_id__in=ids):
                     pro = Producto.objects.get(id=c['producto_id'])
                     item = pro.toJSON()
                     item['stock'] = c['stock']
-                    item['id_det'] = c['id']
+                    item['id_det'] = pro.id
                     item['precio_venta'] = format(c['precio_venta'], '.2f')
                     data.append(item)
             elif action == 'search_serv':
@@ -592,17 +660,33 @@ class printpdf(View):
     def pvp_cal(self, *args, **kwargs):
         data = []
         try:
-            result = Detalle_venta.objects.filter(venta_id=self.kwargs['pk']).values(
-                'inventario__produccion__producto_id',
-                'cantidad', 'pvp_actual', 'subtotal'). \
-                annotate(Count('inventario__produccion__producto_id'))
-            for i in result:
-                pb = Producto.objects.get(id=int(i['inventario__produccion__producto_id']))
-                item = {'producto': {'producto': pb.toJSON()}}
-                item['pvp'] = format(i['pvp_actual'], '.2f')
-                item['cantidad'] = i['cantidad']
-                item['subtotal'] = i['subtotal']
-                data.append(item)
+            data = []
+            result = Detalle_venta.objects.values('det_compra__producto_id', 'pvp', 'subtotal').\
+                filter(venta_id=self.kwargs['pk'], venta__estado=1).annotate(cantidad=Sum('cantidad')).order_by('cantidad')
+            result2 = Detalle_servicios.objects.filter(venta_id=self.kwargs['pk'])
+            for p1 in result:
+                p = Producto.objects.get(id=p1['det_compra__producto_id'])
+                data.append({
+                    'nombre': p.nombre,
+                    'tipo': 'Producto',
+                    'duracion': 'N/A',
+                    'categoria': p.categoria.nombre,
+                    'presentacion': p.presentacion.nombre,
+                    'cantidad': p1['cantidad'],
+                    'precio': p1['pvp'],
+                    'subtotal': p1['subtotal'],
+                })
+            for s in result2:
+                data.append({
+                    'nombre': s.servicio.nombre,
+                    'tipo': 'Servicio',
+                    'duracion': s.servicio.duracion,
+                    'categoria': s.servicio.categoria.nombre,
+                    'presentacion': 'N/A',
+                    'cantidad': s.cantidad,
+                    'precio': s.valor,
+                    'subtotal': s.subtotals,
+                })
         except:
             pass
         return data
@@ -616,6 +700,7 @@ class printpdf(View):
                        'det_sale': self.pvp_cal(),
                        'icon': 'media/imagen.png'
                        }
+            print(self.pvp_cal())
             html = template.render(context)
             response = HttpResponse(content_type='application/pdf')
             response['Content-Disposition'] = 'attachment; filename="report.pdf"'
