@@ -182,7 +182,7 @@ $(function () {
             var data = datatable.row(tr.row).data();
             var parametros = {'id': data.id, 'action': 'estado'};
             save_estado('Alerta',
-                '/venta/lista', 'Esta seguro que desea anular esta venta?', parametros,
+                window.location.pathname, 'Esta seguro que desea anular esta venta?', parametros,
                 function () {
                     menssaje_ok('Exito!', 'Exito al anular la Venta', 'far fa-smile-wink', function () {
                         datatable.ajax.reload(null, false);

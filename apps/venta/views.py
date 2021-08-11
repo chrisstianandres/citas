@@ -24,6 +24,7 @@ from apps.venta.forms import VentaForm, Detalle_servicioForm
 from apps.venta.models import Venta, Detalle_venta, Detalle_servicios
 from apps.empresa.models import Empresa
 from apps.producto.models import Producto
+from apps.devoluciones.models import Devolucion_venta
 
 import os
 from django.conf import settings
@@ -56,14 +57,14 @@ class lista(ValidatePermissionRequiredMixin, ListView):
                 data = []
                 if start == '' and end == '':
                     if request.user.tipo == 1:
-                        query = Venta.objects.filter(estado=1)
+                        query = Venta.objects.all()
                     else:
-                        query = Venta.objects.filter(estado=1, user_id=request.user.id)
+                        query = Venta.objects.filter(user_id=request.user.id)
                 else:
                     if request.user.tipo == 1:
-                        query = Venta.objects.filter(estado=1, fecha_factura__range=[start, end])
+                        query = Venta.objects.filter(fecha_factura__range=[start, end])
                     else:
-                        query = Venta.objects.filter(estado=1, user_id=request.user.id,
+                        query = Venta.objects.filter(user_id=request.user.id,
                                                      fecha_factura__range=[start, end])
                 for c in query:
                     data.append(c.toJSON())
@@ -71,7 +72,7 @@ class lista(ValidatePermissionRequiredMixin, ListView):
                 id = request.POST['id']
                 if id:
                     data = []
-                    result = Detalle_venta.objects.values('det_compra__producto_id', 'pvp', 'subtotal').filter(venta_id=id, venta__estado=1). \
+                    result = Detalle_venta.objects.values('det_compra__producto_id', 'pvp', 'subtotal').filter(venta_id=id). \
                         annotate(cantidad=Sum('cantidad')).order_by('cantidad')
                     result2 = Detalle_servicios.objects.filter(venta_id=id)
                     for p1 in result:
@@ -97,23 +98,23 @@ class lista(ValidatePermissionRequiredMixin, ListView):
                             'precio': s.valor,
                             'subtotal': s.subtotals,
                         })
-            # elif action == 'estado':
-            #     id = request.POST['id']
-            #     if id:
-            #         with transaction.atomic():
-            #             es = Venta.objects.get(id=id)
-            #             es.estado = 0
-            #             dev = Devolucion()
-            #             dev.venta_id = id
-            #             dev.fecha = datetime.now()
-            #             dev.save()
-            #             for i in Detalle_venta.objects.filter(venta_id=id):
-            #                 for a in Inventario_producto.objects.filter(id=i.inventario.id):
-            #                     a.estado = 1
-            #                     a.save()
-            #             es.save()
-            #     else:
-            #         data['error'] = 'Ha ocurrido un error'
+            elif action == 'estado':
+                id = request.POST['id']
+                if id:
+                    with transaction.atomic():
+                        es = Venta.objects.get(id=id)
+                        es.estado = 0
+                        dev = Devolucion_venta()
+                        dev.venta_id = id
+                        dev.fecha = datetime.now()
+                        dev.save()
+                        for i in Detalle_venta.objects.filter(venta_id=id):
+                            i.det_compra.stock_actual += i.cantidad
+                            i.save()
+                        es.save()
+                        data['resp'] = True
+                else:
+                    data['error'] = 'Ha ocurrido un error'
             else:
                 data['error'] = 'No ha seleccionado una opcion'
         except Exception as e:

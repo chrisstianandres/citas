@@ -1,5 +1,6 @@
-var action = $('#action').val();
+
 $(document).ready(function () {
+    var action = $('#action').val();
     var option = $('input[name="option"]').val();
     if (option === 'editar') {
         $('#id_cedula').attr('readonly', 'true');
@@ -206,6 +207,7 @@ $(document).ready(function () {
     //enviar formulario de nuevo cliente
     $('#form').on('submit', function (e) {
         e.preventDefault();
+        console.log(action);
         var parametros = new FormData(this);
         parametros.append('action', action);
         var isvalid = $(this).valid();

@@ -135,7 +135,7 @@ class CrudView(ValidatePermissionRequiredMixin, TemplateView):
                 if f.is_valid():
                     f.save()
                 else:
-                    data['errior'] = f.errors
+                    data['error'] = f.errors
             else:
                 data['error'] = 'No ha seleccionado ninguna opción'
         except Exception as e:
