@@ -383,7 +383,7 @@ function cargar_eventos() {
                                     var val_fecha = data[0].venta.fecha_reserva >= string;
                                     if (val_fecha) {
                                         if (data[0].venta.fecha_reserva === string) {
-                                            if (parseInt(data[0].venta.hora_inicio) + ':00' >= hora_hoy) {
+                                            if (data[0].venta.hora_inicio + ':00' >= hora_hoy) {
                                                 preguntar('Atencion!', 'Que de desea hacer con este cita?', function () {
                                                     set_data(data[0], hora_inicio);
                                                 }, function () {
