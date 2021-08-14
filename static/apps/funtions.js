@@ -161,21 +161,26 @@ function printpdf(title, content, callback, cancel) {
     });
 }
 
-function preguntar(title, content, callback, cancel) {
+function preguntar(title, content, callback, cancel, nada) {
     Swal.fire({
         title: title,
         text: content,
         icon: 'info',
         showCancelButton: true,
+        showDenyButton: true,
         confirmButtonColor: '#3085d6',
         cancelButtonColor: '#d33',
-        confirmButtonText: 'Editar',
-        cancelButtonText: 'Facturar'
+        denyButtonColor: '#008000',
+        confirmButtonText: '<i class="fa fa-pencil-square-o" aria-hidden="true"></i> Editar',
+        cancelButtonText: '<i class="fa fa-ban" aria-hidden="true"></i> Cerrar Ventana',
+        denyButtonText: '<i class="fa fa-money" aria-hidden="true"></i> Facturar',
     }).then((result) => {
         if (result.isConfirmed) {
             callback();
-        } else {
+        } else if (result.isDenied){
             cancel();
+        } else{
+            nada();
         }
     });
 }
