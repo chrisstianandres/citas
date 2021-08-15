@@ -236,10 +236,9 @@ class CrudView(ValidatePermissionRequiredMixin, TemplateView):
                         c.total = float(datos['total'])
                         c.save()
                         if datos['detalle']:
+                            Detalle_servicios.objects.get(venta_id=c.id).delete()
                             for i in datos['detalle']:
                                 if i['tipo'] == 'Producto':
-                                    dv = Detalle_venta()
-                                    dv.venta_id = c.id
                                     if Detalle_compra.objects.filter(producto_id=int(i['id']), compra__estado=1,
                                                                      stock_actual__gte=int(i['cantidad'])).exists():
                                         for det in Detalle_compra.objects.filter(producto_id=int(i['id']),
@@ -402,7 +401,7 @@ class CitacrudView(ValidatePermissionRequiredMixin, TemplateView):
                         c.user_id = datos['cliente']
                         c.fecha_factura = datos['fecha_reserva']
                         c.fecha_reserva = datos['fecha_reserva']
-                        c.duracion_servicio = datos['duracion']
+                        c.duracion_servicio = int(datos['duracion']) * 60
                         c.hora_inicio = datos['hora_inicio']
                         c.minuto_inicio = datos['minuto_inicio']
                         c.hora_fin = datos['hora_fin']
@@ -413,6 +412,8 @@ class CitacrudView(ValidatePermissionRequiredMixin, TemplateView):
                         dts.venta_id = c.id
                         dts.servicio_id = datos['servicio']
                         dts.empleado_id = datos['empleado']
+                        dts.valor = dts.servicio.precio
+                        dts.cantidad = int(datos['empleado'])
                         dts.save()
                         data['id'] = c.id
                         data['resp'] = True

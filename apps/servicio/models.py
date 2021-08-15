@@ -26,6 +26,7 @@ class Servicio(models.Model):
     def toJSON(self):
         item = model_to_dict(self)
         item['categoria'] = self.categoria.toJSON()
+        item['duracion'] = self.duracion / 60
         item['precio'] = format(self.precio, '.2f')
         item['imagen'] = self.get_image()
         return item

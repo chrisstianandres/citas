@@ -133,7 +133,7 @@ $(function () {
             menssaje_error('Error!', 'Por favor elija una fecha', '', function () {
             })
         } else {
-            var dur = $('#id_duracion_serv').val();
+            var dur = parseInt($('#id_duracion_serv').val())*60;
             var date = $("#id_fecha_reserva").data("datetimepicker").getDate(),
                 formatted = date.getFullYear() + "-" + (date.getMonth() + 1) + "-" + date.getDate(),
                 hours = date.getHours(), minutes = date.getMinutes();
