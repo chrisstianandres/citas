@@ -763,10 +763,10 @@ def data_tarjets():
         citas_dia = Venta.objects.filter(fecha_reserva=datetime.now(), estado=2).count()
         citas_semana_hoy = Venta.objects.filter(fecha_reserva__gte=week_start, fecha_reserva__lt=week_end, estado=2).count()
         total_empleados = Empleado.objects.filter(estado=0).count()
-        recaudacion_dia = Venta.objects.values('total').filter(fecha_reserva=datetime.now(), estado=2).aggregate(
+        recaudacion_dia = Venta.objects.values('total').filter(fecha_reserva=datetime.now(), estado=1).aggregate(
             r=Coalesce(Sum('total'), 0)).get('r')
-        recaudacion_semana = Venta.objects.values('total').filter(fecha_reserva__gte=week_start, fecha_reserva__lt=week_end,
-                                                                  estado=2).aggregate(r=Coalesce(Sum('total'), 0)).get('r')
+        recaudacion_semana = Venta.objects.values('total').filter(fecha_reserva__range=[week_start, week_end],
+                                                                  estado=1).aggregate(r=Coalesce(Sum('total'), 0)).get('r')
         citas_not = Venta.objects.filter(fecha_reserva__gte=week_start, fecha_reserva__lt=datetime.now(), estado=2).count()
         data = {
             'citas_dia': int(citas_dia),
