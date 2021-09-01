@@ -38,7 +38,7 @@ function datatable_fun() {
                 class: 'text-center',
                 orderable: false,
                 render: function (data, type, row) {
-                    var tiempo = data/60;
+                    var tiempo = data;
                     var hora;
                     if(tiempo>1){hora= ' Horas'}
                     else {hora= ' Hora'}

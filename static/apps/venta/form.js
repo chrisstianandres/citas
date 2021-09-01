@@ -400,7 +400,7 @@ $(function () {
                 save_with_ajax('Alerta',
                     window.location.pathname, 'Esta seguro que desea guardar esta Venta?', parametros, function (response) {
                         printpdf('Alerta!', '¿Desea generar el comprobante en PDF?', function () {
-                            window.open('/venta/printpdf/' + response['id'], '_blank');
+                            window.open('/transaccion/printpdf/' + response['id'], '_blank');
                             localStorage.clear();
                             window.location.href = '/transaccion/lista'
                         }, function () {
