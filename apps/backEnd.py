@@ -1,26 +1,27 @@
-from django.contrib.auth.hashers import make_password
-from django.contrib.auth.models import Group
-from django.core.exceptions import ObjectDoesNotExist
-from django.db import transaction
-from django.shortcuts import render, HttpResponseRedirect
-from django.contrib.auth import *
-from django.http import HttpResponse
-from django.http import *
-from django.urls import reverse_lazy
-from django.utils.decorators import method_decorator
-
-from django.views.generic import FormView, TemplateView
-from django.contrib.auth.mixins import LoginRequiredMixin, AccessMixin
 import json
-from django.views.decorators.csrf import csrf_exempt
-from django.contrib.auth import get_user_model
+import smtplib
+from datetime import datetime
+from email.mime.multipart import MIMEMultipart
+from email.mime.text import MIMEText
+
+from django.contrib.auth import *
+from django.contrib.auth.hashers import make_password
 from django.contrib.auth.models import Permission
+from django.db import transaction
+from django.db.models import Sum
+from django.db.models.functions import Coalesce
+from django.http import *
+from django.shortcuts import render
+from django.template.loader import render_to_string
+from django.views.decorators.csrf import csrf_exempt
 
 # -----------------------------------------------PAGINA PRINCIPAL-----------------------------------------------------#
 # from apps.user.forms import UserForm, UserForm_online
+from apps.compra.models import Detalle_compra
+from apps.empresa.models import Empresa
+from apps.producto.models import Producto, envio_stock_dia
 from apps.user.forms import UserForm_cliente
 from apps.user.models import User
-from apps.empresa.models import Empresa
 
 
 def nombre_empresa():
@@ -36,6 +37,18 @@ def menu(request):
         'titulo': 'Menu Principal', 'empresa': nombre_empresa(),
         'icono': 'fas fa-tachometer-alt', 'entidad': 'Menu Principal',
     }
+    if not envio_stock_dia.objects.filter(fecha=datetime.now(), enviado=True).exists():
+        repor = []
+        for p in Producto.objects.all():
+            stock = Detalle_compra.objects.filter(compra__estado=1, producto_id=p.id).aggregate(
+                stock=Coalesce(Sum('stock_actual'), 0)).get('stock')
+            if stock <= 10:
+                item = p.toJSON()
+                item['stock'] = stock
+                repor.append(item)
+        if len(repor) > 0:
+            send_email(repor)
+            envio_stock_dia(fecha=datetime.now(), enviado=True).save()
     return render(request, 'front-end/index.html', data)
 
 
@@ -147,6 +160,29 @@ def cliente_add(request):
 #         data['crud'] = '/signin/'
 #         data['action'] = 'add'
 #         return data
+
+@csrf_exempt
+def send_email(productos):
+    data = {}
+    try:
+        mailServer = smtplib.SMTP(settings.EMAIL_HOST, settings.EMAIL_PORT)
+        mailServer.starttls()
+        mailServer.login(settings.EMAIL_HOST_USER, settings.EMAIL_HOST_PASSWORD)
+        email_to = 'chrisstianandres@gmail.com'
+        mensaje = MIMEMultipart()
+        mensaje['From'] = settings.EMAIL_HOST_USER
+        mensaje['To'] = email_to
+        mensaje['Subject'] = 'Stock bajo de productos'
+        empresa = nombre_empresa()
+        content = render_to_string('front-end/user/email_stock.html', {
+            'productos': productos,
+            'empresa': empresa
+        })
+        mensaje.attach(MIMEText(content, 'html'))
+        mailServer.sendmail(settings.EMAIL_HOST_USER, email_to, mensaje.as_string())
+    except Exception as e:
+        data['error'] = str(e)
+    return data
 
 
 @csrf_exempt

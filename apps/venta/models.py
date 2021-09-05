@@ -33,6 +33,7 @@ class Venta(models.Model):
     iva = models.DecimalField(default=0.00, max_digits=9, decimal_places=2)
     total = models.DecimalField(default=0.00, max_digits=9, decimal_places=2)
     estado = models.IntegerField(choices=estado, default=1)
+    citacancelada = models.BooleanField(default=False)
 
     def __str__(self):
         return '%s %s %s' % (self.user.get_full_name(), self.fecha_factura, self.total)

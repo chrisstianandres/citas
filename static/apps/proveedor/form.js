@@ -22,11 +22,11 @@ $(document).ready(function () {
                 required: true,
                 tipo: true,
                 digits: true,
-                val_ced: true
+                validar: true
             },
             correo: {
                 required: true,
-                email: true
+                email_valido: true
             },
             telefono: {
                 required: true,
@@ -83,11 +83,11 @@ $(document).ready(function () {
                 required: true,
                 tipo: true,
                 digits: true,
-                val_ced: true
+                validar: true
             },
             correo: {
                 required: true,
-                email: true
+                email_valido: true
             },
             telefono: {
                 required: true,

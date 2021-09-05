@@ -130,7 +130,7 @@ class CrudView(ValidatePermissionRequiredMixin, TemplateView):
                         c.proveedor_id = int(datos['proveedor'])
                         c.subtotal = float(datos['subtotal'])
                         c.tasa_iva = float(datos['tasa_iva'])
-                        c.iva = float(datos['iva'])
+                        c.iva_generado = c.subtotal-c.total
                         c.total = float(datos['total'])
                         c.save()
                         for i in datos['productos']:

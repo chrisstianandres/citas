@@ -1,36 +1,34 @@
-from django.contrib.auth.hashers import make_password
-from django.utils.decorators import method_decorator
-from apps.compra.models import Compra, Detalle_compra
-from apps.empleado.models import Empleado
-from apps.mixins import ValidatePermissionRequiredMixin
 import json
+import os
 from datetime import datetime, timedelta
 
+from django.conf import settings
+from django.contrib.auth.hashers import make_password
+from django.contrib.staticfiles import finders
 from django.db import transaction
-from django.db.models import Sum, Count
+from django.db.models import Sum
 from django.db.models.functions import Coalesce
 from django.http import JsonResponse, HttpResponse, HttpResponseRedirect
 from django.shortcuts import render
+from django.template.loader import get_template
 from django.urls import reverse_lazy
+from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt
 from django.views.generic import *
+from xhtml2pdf import pisa
 
-from apps.backEnd import nombre_empresa, verificar
+from apps.backEnd import nombre_empresa, verificar, send_email
+from apps.compra.models import Compra, Detalle_compra
+from apps.devoluciones.models import Devolucion_venta
+from apps.empleado.models import Empleado
+from apps.empresa.models import Empresa
+from apps.mixins import ValidatePermissionRequiredMixin
+from apps.producto.models import Producto
 from apps.servicio.models import Servicio
-
 from apps.user.forms import UserForm, UserForm_cliente
 from apps.user.models import User
 from apps.venta.forms import VentaForm, Detalle_servicioForm
 from apps.venta.models import Venta, Detalle_venta, Detalle_servicios
-from apps.empresa.models import Empresa
-from apps.producto.models import Producto
-from apps.devoluciones.models import Devolucion_venta
-
-import os
-from django.conf import settings
-from django.template.loader import get_template
-from xhtml2pdf import pisa
-from django.contrib.staticfiles import finders
 
 opc_icono = 'fa fa-shopping-basket '
 opc_entidad = 'Ventas'
@@ -72,7 +70,8 @@ class lista(ValidatePermissionRequiredMixin, ListView):
                 id = request.POST['id']
                 if id:
                     data = []
-                    result = Detalle_venta.objects.values('det_compra__producto_id', 'pvp', 'subtotal').filter(venta_id=id). \
+                    result = Detalle_venta.objects.values('det_compra__producto_id', 'pvp', 'subtotal').filter(
+                        venta_id=id). \
                         annotate(cantidad=Sum('cantidad')).order_by('cantidad')
                     result2 = Detalle_servicios.objects.filter(venta_id=id)
                     for p1 in result:
@@ -165,12 +164,16 @@ class CrudView(ValidatePermissionRequiredMixin, TemplateView):
                         c.total = float(datos['total'])
                         c.save()
                         if datos['detalle']:
+                            ids_p = []
                             for i in datos['detalle']:
                                 if i['tipo'] == 'Producto':
                                     dv = Detalle_venta()
                                     dv.venta_id = c.id
-                                    if Detalle_compra.objects.filter(producto_id=int(i['id']), compra__estado=1, stock_actual__gte=int(i['cantidad'])).exists():
-                                        for det in Detalle_compra.objects.filter(producto_id=int(i['id']), compra__estado=1, stock_actual__gte=int(i['cantidad'])):
+                                    if Detalle_compra.objects.filter(producto_id=int(i['id']), compra__estado=1,
+                                                                     stock_actual__gte=int(i['cantidad'])).exists():
+                                        for det in Detalle_compra.objects.filter(producto_id=int(i['id']),
+                                                                                 compra__estado=1,
+                                                                                 stock_actual__gte=int(i['cantidad'])):
                                             dv = Detalle_venta()
                                             dv.venta_id = c.id
                                             dv.det_compra_id = det.id
@@ -180,22 +183,25 @@ class CrudView(ValidatePermissionRequiredMixin, TemplateView):
                                             dv.save()
                                             det.stock_actual -= int(i['cantidad'])
                                             det.save()
+                                            if det.stock_actual <= 3:
+                                                ids_p.append(det.producto.id)
                                             break
                                     else:
                                         cantidad = int(i['cantidad'])
                                         aux = cantidad
-                                        for d in Detalle_compra.objects.filter(producto_id=int(i['id']), compra__estado=1):
+                                        for d in Detalle_compra.objects.filter(producto_id=int(i['id']),
+                                                                               compra__estado=1):
                                             if cantidad > 0 and d.stock_actual > 0:
                                                 aux -= d.stock_actual  # 15
                                                 if aux >= 1:
                                                     dv = Detalle_venta()
                                                     dv.venta_id = c.id
                                                     dv.det_compra_id = d.id
-                                                    dv.cantidad = cantidad-aux
+                                                    dv.cantidad = cantidad - aux
                                                     dv.pvp = float(i['precio'])
                                                     dv.subtotal = float(i['subtotal'])
                                                     dv.save()
-                                                    d.stock_actual -= (cantidad-aux)
+                                                    d.stock_actual -= (cantidad - aux)
                                                     d.save()
                                                     cantidad = aux  # 15
                                                 else:
@@ -209,6 +215,8 @@ class CrudView(ValidatePermissionRequiredMixin, TemplateView):
                                                     d.stock_actual -= cantidad
                                                     d.save()
                                                     cantidad = 0
+                                                if d.stock_actual <= 3:
+                                                    ids_p.append(d.producto.id)
                                 else:
                                     ds = Detalle_servicios()
                                     ds.venta_id = c.id
@@ -218,6 +226,18 @@ class CrudView(ValidatePermissionRequiredMixin, TemplateView):
                                     ds.cantidad = int(i['cantidad'])
                                     ds.subtotals = float(i['subtotal'])
                                     ds.save()
+                        if ids_p > 0:
+                            repor = []
+                            for p in Producto.objects.filter(id__in=ids_p):
+                                stock = Detalle_compra.objects.filter(compra__estado=1, producto_id=p.id).aggregate(
+                                    stock=Coalesce(Sum('stock_actual'), 0)).get('stock')
+                                if stock <= 10:
+                                    item = p.toJSON()
+                                    item['stock'] = stock
+                                    repor.append(item)
+                            if len(repor) > 0:
+                                send_email(repor)
+                            send_email()
                         data['id'] = c.id
                         data['resp'] = True
                 else:
@@ -424,6 +444,12 @@ class CitacrudView(ValidatePermissionRequiredMixin, TemplateView):
                 data = []
                 query = Detalle_servicios.objects.filter(venta__estado=2)
                 for c in query:
+                    cita = Venta.objects.get(id=c.venta.id)
+                    if cita.fecha_reserva < datetime.now().date() and cita.citacancelada == False:
+                        cita.citacancelada = True
+                    elif cita.fecha_reserva == datetime.now().date() and cita.hora_fin < datetime.now().hour and cita.minuto_fin < datetime.now().minute and cita.citacancelada == False:
+                        cita.citacancelada = True
+                    cita.save()
                     item = c.toJSON()
                     item['classname'] = 'label-success'
                     data.append(item)
@@ -604,29 +630,6 @@ class CrudViewOnline(TemplateView):
         return data
 
 
-def CrudView_online(request):
-    data = {}
-    if request.user.is_authenticated:
-        if request.method == 'GET':
-            data['icono'] = opc_icono
-            data['entidad'] = 'Compras'
-            data['boton'] = 'Pagar'
-            data['titulo'] = 'Pagar Compra'
-            data['nuevo'] = '/'
-            data['empresa'] = empresa
-            data['form'] = TransaccionForm()
-            data['form2'] = Detalle_VentaForm()
-            data['detalle'] = []
-            user = Cliente.objects.get(cedula=request.user.cedula)
-            data['user'] = user
-            return render(request, 'front-end/venta/venta_online.html', data)
-    else:
-        data['key'] = 1
-        data['titulo'] = 'Inicio de Sesion'
-        data['nomb'] = nombre_empresa()
-        return render(request, 'front-end/login.html', data)
-
-
 class printpdf(View):
     def link_callback(self, uri, rel):
         """
@@ -663,8 +666,9 @@ class printpdf(View):
         data = []
         try:
             data = []
-            result = Detalle_venta.objects.values('det_compra__producto_id', 'pvp', 'subtotal').\
-                filter(venta_id=self.kwargs['pk'], venta__estado=1).annotate(cantidad=Sum('cantidad')).order_by('cantidad')
+            result = Detalle_venta.objects.values('det_compra__producto_id', 'pvp', 'subtotal'). \
+                filter(venta_id=self.kwargs['pk'], venta__estado=1).annotate(cantidad=Sum('cantidad')).order_by(
+                'cantidad')
             result2 = Detalle_servicios.objects.filter(venta_id=self.kwargs['pk'])
             for p1 in result:
                 p = Producto.objects.get(id=p1['det_compra__producto_id'])
@@ -761,13 +765,16 @@ def data_tarjets():
         week_start -= timedelta(days=week_start.weekday())
         week_end = week_start + timedelta(days=7)
         citas_dia = Venta.objects.filter(fecha_reserva=datetime.now(), estado=2).count()
-        citas_semana_hoy = Venta.objects.filter(fecha_reserva__gte=week_start, fecha_reserva__lt=week_end, estado=2).count()
+        citas_semana_hoy = Venta.objects.filter(fecha_reserva__gte=week_start, fecha_reserva__lt=week_end,
+                                                estado=2).count()
         total_empleados = Empleado.objects.filter(estado=0).count()
         recaudacion_dia = Venta.objects.values('total').filter(fecha_reserva=datetime.now(), estado=1).aggregate(
             r=Coalesce(Sum('total'), 0)).get('r')
         recaudacion_semana = Venta.objects.values('total').filter(fecha_reserva__range=[week_start, week_end],
-                                                                  estado=1).aggregate(r=Coalesce(Sum('total'), 0)).get('r')
-        citas_not = Venta.objects.filter(fecha_reserva__gte=week_start, fecha_reserva__lt=datetime.now(), estado=2).count()
+                                                                  estado=1).aggregate(r=Coalesce(Sum('total'), 0)).get(
+            'r')
+        citas_not = Venta.objects.filter(fecha_reserva__gte=week_start, fecha_reserva__lt=datetime.now(),
+                                         estado=2).count()
         data = {
             'citas_dia': int(citas_dia),
             'citas_semana_hoy': int(citas_semana_hoy),

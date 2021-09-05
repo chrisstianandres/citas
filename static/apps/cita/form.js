@@ -397,16 +397,11 @@ function cargar_eventos() {
                                                 menssaje_error('Alerta!', 'Solo puede editar citas que aun esten vigentes', '', function () {
                                                 })
                                             }
-                                        } else {
-                                            preguntar('Atencion!', 'Esta seguro que desea editar esta cita?', function () {
+                                        }
+                                        else {
+                                            preguntar2('Atencion!', 'Esta seguro que desea editar esta cita?', function () {
                                                 set_data(data[0], hora_inicio);
-                                            }, function () {
-                                                localStorage.clear();
-                                                ventas.items.cliente = data[0].venta.user.id;
-                                                ventas.items.venta = data[0].venta.id;
-                                                ventas.add(data[0].servicio, data[0].empleado);
-                                                window.location.href = '/transaccion/venta/nuevo'
-                                            });
+                                            }, function () {});
                                         }
 
                                     } else {
@@ -430,15 +425,22 @@ function cargar_eventos() {
                 value.venta.hora_fin = value.venta.hora_fin > 9 ? value.venta.hora_fin : "0" + value.venta.hora_fin;
                 var date = new Date(value.venta.fecha_reserva + 'T' + value.venta.hora_inicio + ':' + value.venta.minuto_inicio + ':00');
                 var date_end = new Date(value.venta.fecha_reserva + 'T' + value.venta.hora_fin + ':' + value.venta.minuto_fin + ':00');
+                let clase = value.classname, cncel='', color='green';
+                if (value.venta.citacancelada===true){
+                    clase = 'label-danger';
+                    cncel = 'NO REALIZADA ';
+                    color = 'red'
+                }
+                console.log(clase);
                 calendar.addEvent({
                     id: value.venta.id,
                     title: value.venta.user.full_name,
                     start: date,
-                    className: value.classname,
+                    className: clase,
                     end: date_end,
-                    color: 'green',
+                    color: color,
                     allDay: false,
-                    description: value.servicio.nombre + ' con ' + value.empleado.full_name_list + ' desde las: ' +
+                    description: cncel+value.servicio.nombre + ' con ' + value.empleado.full_name_list + ' desde las: ' +
                         parseInt(value.venta.hora_inicio) + ':' + value.venta.minuto_inicio + ' hasta las ' +
                         parseInt(value.venta.hora_fin) + ':' + value.venta.minuto_fin,
                 });

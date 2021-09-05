@@ -51,6 +51,7 @@ INSTALLED_APPS = [
     'apps.user',
     'apps.venta',
     'apps.devoluciones',
+    'background_task',
 ]
 
 MIDDLEWARE = [
@@ -149,3 +150,15 @@ MEDIA_URL = '/media/'
 
 AUTH_USER_MODEL = 'user.User'
 LOGIN_URL = '/login'
+
+
+EMAIL_HOST = 'smtp.gmail.com'
+
+EMAIL_PORT = 587
+
+EMAIL_HOST_USER = 'negocioslocalesecuador@gmail.com'
+
+EMAIL_HOST_PASSWORD = 'tbymrulqfubnynko'
+
+DOMAIN = ''
+SESSION_SERIALIZER = 'django.contrib.sessions.serializers.PickleSerializer'

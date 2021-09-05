@@ -1,3 +1,5 @@
+from datetime import datetime
+
 from django.db import models
 from django.forms import model_to_dict
 
@@ -35,3 +37,11 @@ class Producto(models.Model):
         verbose_name = 'producto'
         verbose_name_plural = 'productos'
         ordering = ['-id']
+
+
+class envio_stock_dia(models.Model):
+    fecha = models.DateField(default=datetime.now(), unique=True)
+    enviado = models.BooleanField(default=True)
+
+    def __str__(self):
+        return '{}'.format(self.fecha.strftime('%Y-%m-%d'))

@@ -30,7 +30,7 @@ $(document).ready(function () {
             },
             email: {
                 required: true,
-                email: true
+                email_valido: true
             },
             telefono: {
                 required: false,
@@ -110,7 +110,7 @@ $(document).ready(function () {
             },
             email: {
                 required: true,
-                email: true
+                email_valido: true
             },
             telefono: {
                 required: false,
@@ -183,9 +183,10 @@ $(document).ready(function () {
     }).keyup(function (e) {
             var changue = titleCase($(this).val());
             $(this).val(changue);
+
         });
     $('#id_cedula').keypress(function (e) {
-        //if the letter is not digit then display error and don't type anything
+        if ($(this).val().length>9){return false;}
         if (e.which !== 8 && e.which !== 0 && (e.which < 48 || e.which > 57)) {
             return false;
         }

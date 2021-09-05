@@ -184,6 +184,24 @@ function preguntar(title, content, callback, cancel, nada) {
         }
     });
 }
+function preguntar2(title, content, callback, cancel, nada) {
+    Swal.fire({
+        title: title,
+        text: content,
+        icon: 'info',
+        showCancelButton: true,
+        confirmButtonColor: '#3085d6',
+        cancelButtonColor: '#d33',
+        confirmButtonText: '<i class="fa fa-pencil-square-o" aria-hidden="true"></i> Editar',
+        cancelButtonText: '<i class="fa fa-ban" aria-hidden="true"></i> Cerrar Ventana',
+    }).then((result) => {
+        if (result.isConfirmed) {
+            callback();
+        } else if (result.isDenied){
+             nada();
+        }
+    });
+}
 
 function menssaje_error(title, content, icon, callback) {
     var obj = Swal.fire(
@@ -584,6 +602,10 @@ function customize_report(doc) {
 // }
 //
 //
+function validateEmail($email) {
+  var emailReg = /^([\w-\.]+@([\w-]+\.)+[\w-]{2,4})?$/;
+  return emailReg.test( $email );
+}
 function validador() {
     jQuery.validator.addMethod("lettersonly", function (value, element) {
         return this.optional(element) || /^[a-z," "]+$/i.test(value);
@@ -597,6 +619,10 @@ function validador() {
             return ((value.length === 13));
         }
     }, "");
+    $.validator.addMethod("email_valido", function (value, element) {
+      return validateEmail(value);
+    }, "");
+    ///^[a-zA-Z0-9.!#$%&'*+\/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$/
 
 
     $.validator.setDefaults({
@@ -621,7 +647,7 @@ function validador() {
         var longcheck = longitud - 1;
         if (longitud === 10) {
             return aux(total, cad);
-        } else if (longitud === 13 && cad.slice(10, 13) !== '000') {
+        } else if (longitud === 13 && cad.slice(10, 13) === '001') {
             return aux(total, cad);
         } else {
             return false;
