@@ -18,6 +18,7 @@ from django.views.decorators.csrf import csrf_exempt
 # -----------------------------------------------PAGINA PRINCIPAL-----------------------------------------------------#
 # from apps.user.forms import UserForm, UserForm_online
 from apps.compra.models import Detalle_compra
+from apps.empleado.models import Empleado
 from apps.empresa.models import Empresa
 from apps.producto.models import Producto, envio_stock_dia
 from apps.user.forms import UserForm_cliente
@@ -42,13 +43,22 @@ def menu(request):
         for p in Producto.objects.all():
             stock = Detalle_compra.objects.filter(compra__estado=1, producto_id=p.id).aggregate(
                 stock=Coalesce(Sum('stock_actual'), 0)).get('stock')
-            if stock <= 10:
+            if stock <= 5:
                 item = p.toJSON()
                 item['stock'] = stock
                 repor.append(item)
         if len(repor) > 0:
             send_email(repor)
             envio_stock_dia(fecha=datetime.now(), enviado=True).save()
+    prod = []
+    for p in Producto.objects.all():
+        stock = Detalle_compra.objects.filter(compra__estado=1, producto_id=p.id).aggregate(stock=Coalesce(Sum('stock_actual'), 0)).get('stock')
+        if stock <= 5:
+            item = p.toJSON()
+            item['stock'] = stock
+            prod.append(item)
+    data['productos_stock_bajo'] = prod
+    data['empleados'] = Empleado.objects.filter(estado=0)
     return render(request, 'front-end/index.html', data)
 
 

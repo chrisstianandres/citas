@@ -199,7 +199,7 @@ var ventas = {
                     }
                 });
                 $(row).find('input[name="precio"]').TouchSpin({
-                    min: 0.50,
+                    min: 0.00,
                     max: 500.00,
                     step: 0.01,
                     decimals: 2,

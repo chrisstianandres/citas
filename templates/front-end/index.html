@@ -106,6 +106,70 @@
                 <canvas id="myChart" width="300" height="100"></canvas>
             </div>
         </div>
+        <br><br><br>
+
+        <div class="row">
+         <div class="col-sm-6 col-lg-6">
+         <h1><i class="fa fa-warning"> Productos con stock bajo</i></h1>
+               <table style="width: 100%;" id="stock_table" class="table table-striped table-bordered table-hover dataTable no-footer">
+                   <thead>
+                   <tr>
+                       <td>Nombre</td>
+                       <td>Categoria</td>
+                       <td>Presentacion</td>
+                       <td>Stock</td>
+                   </tr>
+                   </thead>
+                   <tbody>
+                   {% if productos_stock_bajo %}
+                   {% for producto in productos_stock_bajo %}
+                   <tr>
+                       <td>{{ producto.nombre }}</td>
+                       <td>{{ producto.categoria.nombre }}</td>
+                       <td>{{ producto.presentacion.nombre }}</td>
+                       <td><span class="label label-danger">{{ producto.stock }}</span></td>
+                   </tr>
+                   {% endfor %}
+                       {% else %}
+                       <tr><td colspan="4" style="text-align: center">SIN REGISTROS</td></tr>
+                   {% endif %}
+
+                   </tbody>
+
+               </table>
+            </div>
+        <div class="col-sm-6 col-lg-6">
+        <h1><i class="fa fa-clock-o"> Listado de citas de empleados (HOY)</i></h1>
+        <table style="width: 100%;" id="stock_table" class="table table-striped table-bordered table-hover dataTable no-footer">
+        <thead>
+        <tr>
+            <td>Empleado</td>
+            <td>Citas</td>
+        </tr>
+        </thead>
+            <tbody>
+            {% for empleado in empleados %}
+              <tr>
+                <td>{{ empleado.nombres }}&nbsp;{{ empleado.apellidos }}</td>
+              {% if  empleado.turnos %}
+               <td>
+                  {% for turno in empleado.turnos  %}
+                  <b>desde: {{ turno.venta.hora_inicio }}:{% if turno.venta.minuto_inicio == 0 %}00{% else %}{{ turno.venta.minuto_inicio }}{% endif %}  hasta {{ turno.venta.hora_fin }}:{% if turno.venta.minuto_fin == 0%}00{% else %}{{ turno.venta.minuto_fin }}{% endif %} </b>
+                      <br>
+                  {% endfor %}
+              </td>
+                  {% else %}
+                  <td>Sin citas asignadas</td>
+              {% endif %}
+
+            </tr>
+            {% endfor %}
+
+
+            </tbody>
+        </table>
+        </div>
+        </div>
     {% endif %}
 {% endblock %}
 

@@ -88,6 +88,7 @@ function cliente() {
 $(function () {
     if (user_tipo === 1) {
         graficos();
+        $('#stock_table').Datatable();
     } else {
         cliente();
     }

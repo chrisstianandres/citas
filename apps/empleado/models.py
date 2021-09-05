@@ -43,6 +43,9 @@ class Empleado(models.Model):
         item['estado_text'] = self.get_estado_display()
         return item
 
+    def turnos(self):
+        return self.detalle_servicios_set.filter(venta__estado=2, venta__fecha_reserva=datetime.today().date())
+
     class Meta:
         db_table = 'empleado'
         verbose_name = 'empleado'
