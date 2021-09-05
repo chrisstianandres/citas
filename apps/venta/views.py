@@ -630,6 +630,29 @@ class CrudViewOnline(TemplateView):
         return data
 
 
+def CrudView_online(request):
+    data = {}
+    if request.user.is_authenticated:
+        if request.method == 'GET':
+            data['icono'] = opc_icono
+            data['entidad'] = 'Compras'
+            data['boton'] = 'Pagar'
+            data['titulo'] = 'Pagar Compra'
+            data['nuevo'] = '/'
+            data['empresa'] = empresa
+            data['form'] = TransaccionForm()
+            data['form2'] = Detalle_VentaForm()
+            data['detalle'] = []
+            user = Cliente.objects.get(cedula=request.user.cedula)
+            data['user'] = user
+            return render(request, 'front-end/venta/venta_online.html', data)
+    else:
+        data['key'] = 1
+        data['titulo'] = 'Inicio de Sesion'
+        data['nomb'] = nombre_empresa()
+        return render(request, 'front-end/login.html', data)
+
+
 class printpdf(View):
     def link_callback(self, uri, rel):
         """
