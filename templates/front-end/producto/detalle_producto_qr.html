@@ -368,8 +368,12 @@
                     <br>
                     <div class="bee-text-content"
                          style="font-size: 14px; line-height: 120%; color: #b5b5b5; font-family: inherit;">
+                        {% if stock >= 1 %}
                         <p style="font-size: 50px; line-height: 20px; text-align: center;"><span
                                 style="font-size: 50px; line-height: 21px;">{{ stock }}</span></p>
+                         {% else %}
+                            <p><i class="far fa-sad-tear" style="font-size: 50px; line-height: 21px;"> LO SENTIMOS ESTE PRODUCTO NO TIENE STOCK DIPONIBLE</i></p>
+                        {% endif %}
                     </div>
                 </div>
             </div>
