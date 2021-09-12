@@ -71,15 +71,14 @@
     <tr>
         <th>N°</th>
         <th>Producto</th>
-        <th>QR</th>
+        <th style="text-align: center">QR</th>
     </tr>
     </thead>
     <tbody>
     {% for d in producto %}
         <tr {% if forloop.first %}style="padding-top: 3px;" {% endif %}>
-            <td>{{ d.pk }}</td>
-            <td>{{ d.nombre }}</td>
-            <td>{{ d.nombre }}</td>
+            <td style="font-size: 16px">{{ d.pk }}</td>
+            <td style="font-size: 16px">{{ d.nombre }}</td>
             <td style="text-align: center;"><img src="file:{{ d.get_qr_2 }}" width="80" alt="qr_code" height="80"  rel="qr_code" class="img-responsive"></td>
         </tr>
     {% endfor %}

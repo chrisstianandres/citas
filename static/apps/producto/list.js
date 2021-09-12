@@ -42,6 +42,13 @@ function datatable_fun() {
             },
             buttons: [
                 {
+                text: '<i class="fa fa-qrcode"></i> Exportar codigos QR</i>',
+                className: 'dt-button btn btn-white btn-danger btn-bold',
+                action: function () {
+                    window.location.href = '/transaccion/printQR'
+                }
+            },
+                {
                     text: '<span><i class="fa fa-print bigger-110 grey"></i> PDF</span>',
                     className: 'dt-button buttons-print btn btn-white btn-primary btn-bold',
                     extend: 'pdfHtml5',

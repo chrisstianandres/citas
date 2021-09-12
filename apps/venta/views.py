@@ -782,7 +782,7 @@ class printQR(View):
                        }
             html = template.render(context)
             response = HttpResponse(content_type='application/pdf')
-            response['Content-Disposition'] = 'attachment; filename="report.pdf"'
+            response['Content-Disposition'] = 'attachment; filename="Lista_de_QR.pdf"'
             pisa_status = pisa.CreatePDF(html, dest=response, link_callback=self.link_callback)
             return response
         except Exception as e:
