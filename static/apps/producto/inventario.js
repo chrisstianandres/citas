@@ -1,4 +1,3 @@
-
 var datatable;
 
 function datatable_fun() {
@@ -27,7 +26,8 @@ function datatable_fun() {
             {"data": "presentacion.nombre"},
             {"data": "descripcion"},
             {"data": "imagen"},
-            {"data": "stock"}
+            {"data": "stock"},
+            {"data": "qr"},
         ],
         buttons: {
             dom: {
@@ -70,27 +70,35 @@ function datatable_fun() {
             "<'row'<'col-sm-12 col-md-5'i><'col-sm-12 col-md-7'p>>",
         columnDefs: [
             {
+                targets: [-3],
+                class: 'text-center',
+                orderable: false,
+                render: function (data, type, row) {
+                    return '<img src="' + data + '" width="50" height="50" alt="image" class="img-circle elevation-2">';
+                }
+            },
+            {
                 targets: [-2],
                 class: 'text-center',
                 orderable: false,
                 render: function (data, type, row) {
-                    return '<img src="' + data + '" width="30" height="30" alt="image" class="img-circle elevation-2">';
+                    var span;
+                    if (data === 0) {
+                        span = '<span class="badge badge-danger">' + data + '</span>';
+                    } else if (data > 1 && data <= 5) {
+                        span = '<span class="badge badge-warning">' + data + '</span>';
+                    } else if (data > 5) {
+                        span = '<span class="badge badge-success">' + data + '</span>';
+                    }
+                    return span
                 }
             },
             {
                 targets: [-1],
                 class: 'text-center',
                 orderable: false,
-                render: function (data, type, row) {
-                    var span;
-                    if (data === 0){
-                         span = '<span class="badge badge-danger">'+data+'</span>';
-                    } else if (data > 1 && data <= 5){
-                        span = '<span class="badge badge-warning">'+data+'</span>';
-                    } else if(data>5){
-                        span = '<span class="badge badge-success">'+data+'</span>';
-                    }
-                    return span
+                render: function (data) {
+                    return '<img src="' + data + '" width="80" alt="qr_code" height="80"  rel="qr_code" class="img-responsive">';
                 }
             },
         ]
@@ -99,4 +107,19 @@ function datatable_fun() {
 
 $(function () {
     datatable_fun();
+    $('#datatable tbody')
+        .on('click', 'img[rel="qr_code"]', function () {
+            var tr = datatable.cell($(this).closest('td, li')).index();
+            var data = datatable.row(tr.row).data();
+            $('#titulo_modal').html('<i class="fa fa-qrcode"> Codigo QR</i>');
+            $('#body_fluid').html('<img src="' + data.qr + '" width="300" alt="qr_code" height="300"  class="img-responsive">');
+            $('#modal_image').modal('show');
+        })
+        .on('click', 'img[alt="image"]', function () {
+            var tr = datatable.cell($(this).closest('td, li')).index();
+            var data = datatable.row(tr.row).data();
+            $('#titulo_modal').html('<i class="fa fa-image"> '+data.nombre+'</i>');
+            $('#body_fluid').html('<img src="' + data.imagen + '" width="300" alt="qr_code" height="300"  class="img-responsive">');
+            $('#modal_image').modal('show');
+        })
 });

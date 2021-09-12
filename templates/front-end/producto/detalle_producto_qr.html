@@ -1,0 +1,409 @@
+<!DOCTYPE html>
+
+<html lang="es">
+<head>
+    <title></title>
+    <meta charset="utf-8"/>
+    <meta content="width=device-width" name="viewport"/>
+    <link href="https://fonts.googleapis.com/css?family=Droid+Serif" rel="stylesheet" type="text/css"/>
+    <link href="https://fonts.googleapis.com/css?family=Playfair+Display" rel="stylesheet" type="text/css"/>
+    <link href="https://fonts.googleapis.com/css?family=Quattrocento+Sans" rel="stylesheet" type="text/css"/>
+    <link href="https://fonts.googleapis.com/css?family=Questrial" rel="stylesheet" type="text/css"/>
+    <style>
+        .bee-row-1,
+        .bee-row-1 .bee-row-content,
+        .bee-row-10 .bee-row-content,
+        .bee-row-11,
+        .bee-row-11 .bee-row-content,
+        .bee-row-12,
+        .bee-row-12 .bee-row-content,
+        .bee-row-2,
+        .bee-row-2 .bee-row-content,
+        .bee-row-3,
+        .bee-row-3 .bee-row-content,
+        .bee-row-4,
+        .bee-row-4 .bee-row-content,
+        .bee-row-5 .bee-row-content,
+        .bee-row-6,
+        .bee-row-6 .bee-row-content,
+        .bee-row-7,
+        .bee-row-7 .bee-row-content,
+        .bee-row-8 .bee-row-content,
+        .bee-row-9 .bee-row-content {
+            background-repeat: no-repeat
+        }
+
+        .bee-button .content {
+            text-align: center
+        }
+
+        .bee-row-5,
+        .bee-row-9 {
+            background-position: center top
+        }
+
+        body {
+            background-color: #fff;
+            color: #000;
+            font-family: Questrial, Trebuchet MS, Helvetica, sans-serif
+        }
+
+        a {
+            color: #0068a5
+        }
+
+        * {
+            box-sizing: border-box
+        }
+
+        body,
+        p {
+            margin: 0
+        }
+
+        .bee-row-content {
+            max-width: 1440px;
+            margin: 0 auto;
+            display: flex
+        }
+
+        .bee-row-content .bee-col-w3 {
+            flex-basis: 25%
+        }
+
+        .bee-row-content .bee-col-w4 {
+            flex-basis: 33%
+        }
+
+        .bee-row-content .bee-col-w6 {
+            flex-basis: 50%
+        }
+
+        .bee-row-content .bee-col-w8 {
+            flex-basis: 67%
+        }
+
+        .bee-row-content .bee-col-w12 {
+            flex-basis: 100%
+        }
+
+        .bee-button a,
+        .bee-icon .bee-icon-label-right a {
+            text-decoration: none
+        }
+
+        .bee-divider,
+        .bee-image {
+            overflow: auto
+        }
+
+        .bee-divider .center,
+        .bee-image .bee-center {
+            margin: 0 auto
+        }
+
+        .bee-row-4 .bee-col-1 .bee-block-1,
+        .bee-row-7 .bee-col-1 .bee-block-2,
+        .bee-row-7 .bee-col-2 .bee-block-1 {
+            width: 100%
+        }
+
+        .bee-icon,
+        .bee-icon .bee-icon-image,
+        .bee-icon .bee-icon-label-right {
+            display: inline-block
+        }
+
+        .bee-icon {
+            vertical-align: middle
+        }
+
+        .bee-icon .bee-icon-image {
+            vertical-align: middle;
+            margin-right: -4px
+        }
+
+        .bee-image img {
+            display: block;
+            width: 100%
+        }
+
+        .bee-text {
+            overflow-wrap: anywhere
+        }
+
+        @media (max-width: 768px) {
+            .bee-mobile_hide {
+                display: none
+            }
+
+            .bee-row-content:not(.no_stack) {
+                display: block
+            }
+        }
+
+        .bee-row-1 .bee-col-1 {
+            padding-bottom: 15px;
+            padding-top: 15px
+        }
+
+        .bee-row-1 .bee-col-2 {
+            padding-bottom: 5px;
+            padding-top: 30px
+        }
+
+        .bee-row-2 .bee-col-1,
+        .bee-row-2 .bee-col-2,
+        .bee-row-2 .bee-col-3,
+        .bee-row-2 .bee-col-4 {
+            border-right: 1px solid #373737;
+            padding-top: 5px;
+            padding-bottom: 5px
+        }
+
+        .bee-row-11,
+        .bee-row-2 {
+            background-color: #141728
+        }
+
+        .bee-row-2 .bee-col-1 {
+            border-left: 1px solid #373737
+        }
+
+        .bee-row-3,
+        .bee-row-4 {
+            background-color: #f7365f
+        }
+
+        .bee-row-3 .bee-col-1 {
+            padding-bottom: 5px;
+            padding-top: 45px
+        }
+
+        .bee-row-3 .bee-col-1 .bee-block-1 {
+            padding: 10px 10px 5px
+        }
+
+        .bee-row-3 .bee-col-1 .bee-block-2,
+        .bee-row-6 .bee-col-2,
+        .bee-row-7 .bee-col-2 {
+            padding-bottom: 10px;
+            padding-left: 10px;
+            padding-right: 10px
+        }
+
+        .bee-row-4 .bee-col-1 {
+            padding-bottom: 5px
+        }
+
+        .bee-row-4 .bee-col-1 .bee-block-2,
+        .bee-row-6 .bee-col-2 .bee-block-3,
+        .bee-row-7 .bee-col-1 .bee-block-5,
+        .bee-row-7 .bee-col-2 .bee-block-4,
+        .bee-row-8 .bee-col-1 .bee-block-1 {
+            text-align: center;
+            padding: 10px
+        }
+
+        .bee-row-5 {
+            background-image: url(images/divider_top_1.png);
+            background-repeat: repeat
+        }
+
+        .bee-row-10 .bee-col-1,
+        .bee-row-12 .bee-col-1,
+        .bee-row-5 .bee-col-1,
+        .bee-row-9 .bee-col-1 {
+            padding-bottom: 5px;
+            padding-top: 5px
+        }
+
+        .bee-row-10 .bee-col-1 .bee-block-3,
+        .bee-row-10 .bee-col-1 .bee-block-4,
+        .bee-row-11 .bee-col-2 .bee-block-1,
+        .bee-row-5 .bee-col-1 .bee-block-1,
+        .bee-row-6 .bee-col-1 .bee-block-1,
+        .bee-row-7 .bee-col-1 .bee-block-1,
+        .bee-row-9 .bee-col-1 .bee-block-1 {
+            padding: 10px
+        }
+
+        .bee-row-6 .bee-col-1,
+        .bee-row-7 .bee-col-1 {
+            padding: 5px 10px
+        }
+
+        .bee-row-10 .bee-col-1 .bee-block-2,
+        .bee-row-6 .bee-col-1 .bee-block-2,
+        .bee-row-6 .bee-col-2 .bee-block-1,
+        .bee-row-6 .bee-col-2 .bee-block-2,
+        .bee-row-7 .bee-col-1 .bee-block-3,
+        .bee-row-7 .bee-col-1 .bee-block-4,
+        .bee-row-7 .bee-col-2 .bee-block-2,
+        .bee-row-7 .bee-col-2 .bee-block-3 {
+            padding-bottom: 5px;
+            padding-left: 10px;
+            padding-right: 10px
+        }
+
+        .bee-row-8 {
+            background-color: #fff;
+            background-repeat: no-repeat
+        }
+
+        .bee-row-10,
+        .bee-row-9 {
+            background-color: #f2eeee
+        }
+
+        .bee-row-8 .bee-col-1 {
+            padding-bottom: 30px;
+            padding-top: 5px
+        }
+
+        .bee-row-9 {
+            background-image: url(images/divider_btm.png);
+            background-repeat: repeat
+        }
+
+        .bee-row-10 {
+            background-repeat: no-repeat
+        }
+
+        .bee-row-10 .bee-col-1 .bee-block-1 {
+            padding-left: 10px;
+            padding-right: 10px;
+            padding-top: 10px
+        }
+
+        .bee-row-10 .bee-col-1 .bee-block-5 {
+            text-align: left;
+            padding: 10px
+        }
+
+        .bee-row-11 .bee-col-1 {
+            padding-bottom: 5px;
+            padding-top: 15px
+        }
+
+        .bee-row-11 .bee-col-2 {
+            padding-bottom: 5px;
+            padding-top: 10px
+        }
+
+        .bee-row-12 .bee-col-1 .bee-block-1 {
+            color: #9d9d9d;
+            font-family: inherit;
+            font-size: 15px;
+            padding-bottom: 5px;
+            padding-top: 5px;
+            text-align: center
+        }
+
+        .bee-row-12 .bee-col-1 .bee-block-1 .bee-icon-image {
+            padding: 5px 6px 5px 5px
+        }
+
+        .bee-row-12 .bee-col-1 .bee-block-1 .bee-icon {
+            margin-left: 0;
+            margin-right: 0
+        }
+
+        .center {
+            position: relative;
+            width: 300px;
+            height: 200px;
+            z-index: 15;
+            top: 50%;
+            left: 50%;
+            margin: 1px 0 0 -150px;
+        }
+    </style>
+
+</head>
+<body>
+<div class="bee-page-container">
+    <div class="bee-row bee-row-3">
+        <div class="bee-row-content">
+            <div class="bee-col bee-col-1 bee-col-w12">
+                <div class="bee-block bee-block-1 bee-text">
+                    <div class="bee-text-content"
+                         style="font-size: 14px; line-height: 120%; font-family: 'Questrial', 'Trebuchet MS', Helvetica, sans-serif; color: #ffffff;">
+                        <p style="font-size: 14px; line-height: 16px; text-align: center;"><span
+                                style="font-size: 34px; line-height: 40px;"><strong
+                                style="">{{ empresa.nombre }}</strong></span></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="bee-row bee-row-5 center">
+        <div class="bee-row-content">
+            <div class="bee-col bee-col-12 bee-col-12">
+                <div class="bee-block bee-block-1 bee-divider bee-mobile_hide">
+                    <div class="spacer" style="height:30px;"></div>
+                </div>
+                <div class="bee-block bee-block-2 bee-image"><img alt="Image" class="bee-center bee-autowidth"
+                                                                  src="{{ producto.get_image }}"
+                                                                  style="max-width:500px;"/>
+                </div>
+                <div class="bee-block bee-block-3 bee-text">
+                    <div class="bee-text-content"
+                         style="font-size: 14px; line-height: 120%; color: #f7365f; font-family: inherit;">
+                        <p style="font-size: 14px; line-height: 16px; text-align: center;"><strong style=""><span
+                                style="font-size: 18px; line-height: 21px;"><b>{{ producto.nombre }}</b></span></strong>
+                        </p>
+                    </div>
+                </div>
+                <div class="bee-block bee-block-4 bee-text">
+                    <div class="bee-text-content"
+                         style="font-size: 14px; line-height: 120%; color: #b5b5b5; font-family: inherit;">
+                        <p style="font-size: 14px; line-height: 16px; text-align: center;"><span
+                                style="font-size: 18px; line-height: 21px;">{{ producto.descripcion }}</span></p>
+                    </div>
+                </div>
+                <div class="bee-block bee-block-5 bee-text">
+                    <br><br><br><br>
+                    <p style="font-size: 12px; line-height: 120%; color: #b5b5b5; font-family: inherit; text-align: center;">STOCK DISPONIBLE</p>
+                    <br>
+                    <div class="bee-text-content"
+                         style="font-size: 14px; line-height: 120%; color: #b5b5b5; font-family: inherit;">
+                        <p style="font-size: 50px; line-height: 20px; text-align: center;"><span
+                                style="font-size: 50px; line-height: 21px;">{{ stock }}</span></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="center"></div>
+    <div class="center"></div>
+    <div class="center"></div>
+    <div class="bee-row bee-row-10">
+        <div class="bee-row-content">
+            <div class="bee-col bee-col-1 bee-col-w4">
+                <div class="bee-block bee-block-1 bee-text">
+                    <div class="bee-text-content"
+                         style="font-size: 14px; line-height: 120%; font-family: 'Questrial', 'Trebuchet MS', Helvetica, sans-serif; color: #555555;">
+                        <p style="font-size: 14px; line-height: 16px; text-align: left;"><span
+                                style="font-size: 20px; line-height: 24px;">Visitanos en nuestro local ubicado en:</span>
+                        </p>
+                    </div>
+                </div>
+                <div class="bee-block bee-block-3 bee-divider">
+                    <div class="left" style="border-top:1px solid #000000;width:30%;"></div>
+                </div>
+                <div class="bee-block bee-block-4 bee-text">
+                    <div class="bee-text-content"
+                         style="font-size: 14px; line-height: 120%; color: #555555; font-family: inherit;">
+                        <p style="font-size: 14px; line-height: 16px; text-align: left;"><span
+                                style="font-size: 18px; line-height: 21px;">{{ empresa.direccion }}</span>
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+</body>
+</html>

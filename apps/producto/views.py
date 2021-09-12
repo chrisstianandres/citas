@@ -6,6 +6,7 @@ from django.db.models.functions import Coalesce
 
 from django.http import HttpResponseRedirect, HttpResponse
 from django.http import JsonResponse
+from django.shortcuts import render
 from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt
 from django.views.generic import *
@@ -469,3 +470,17 @@ def get_prod(request):
     except Exception as e:
         data['error'] = str(e)
     return JsonResponse(data, safe=False)
+
+
+def detalle_producto_qr(request, pk):
+    detalle = []
+    producto = Producto.objects.get(id=pk)
+
+    stock = Detalle_compra.objects.filter(compra__estado=1, producto_id=producto.id).aggregate(
+        stock=Coalesce(Sum('stock_actual'), 0)).get('stock')
+    item = producto.toJSON()
+    item['stock'] = stock
+    detalle.append(item)
+    data = {'empresa': empresa, 'producto': producto, 'stock': stock}
+    return render(request, 'front-end/producto/detalle_producto_qr.html', data)
+
