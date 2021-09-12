@@ -14,6 +14,7 @@ urlpatterns = [
     path('online', views.CrudView_online, name='online'),
     path('chart', login_required(views.grap), name='chart'),
     path('printpdf/<int:pk>', login_required(printpdf.as_view()), name='printpdf'),
+    path('printQR', login_required(printQR.as_view()), name='printQR'),
     path('venta/report_productos', login_required(report.as_view()), name='report_by_product'),
     path('venta/report_services', login_required(report_servicios.as_view()), name='report_by_services'),
     path('venta/report_total', login_required(report_total.as_view()), name='report_total'),

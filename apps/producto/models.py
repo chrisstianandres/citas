@@ -11,7 +11,7 @@ from django.forms import model_to_dict
 
 from apps.categoria.models import Categoria
 from apps.presentacion.models import Presentacion
-from citas.settings import STATIC_URL, MEDIA_URL, BASE_DIR, SECRET_KEY_ENCRIPT
+from citas.settings import STATIC_URL, MEDIA_URL, BASE_DIR, SECRET_KEY_ENCRIPT, MEDIA_ROOT
 
 
 class Producto(models.Model):
@@ -34,6 +34,10 @@ class Producto(models.Model):
     def get_qr(self):
         if self.qr:
             return '{}{}'.format(MEDIA_URL, self.qr)
+
+    def get_qr_2(self):
+        if self.qr:
+            return '{}{}'.format(MEDIA_ROOT, self.qr)
 
     def save(self, *args, **kwargs):
         from apps.backEnd import PrimaryKeyEncryptor

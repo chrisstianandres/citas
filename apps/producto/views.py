@@ -2,7 +2,7 @@ import json
 import rsa
 
 from datetime import datetime
-from django.db.models import Q, Sum
+from django.db.models import Q, Sum, Count
 from django.db.models.functions import Coalesce
 
 from django.http import HttpResponseRedirect, HttpResponse
@@ -475,14 +475,19 @@ def get_prod(request):
 
 
 def detalle_producto_qr(request, pk):
-    detalle = []
-    desencr = PrimaryKeyEncryptor(SECRET_KEY_ENCRIPT).decrypt(pk)
-    producto = Producto.objects.get(id=int(desencr))
-    stock = Detalle_compra.objects.filter(compra__estado=1, producto_id=producto.id).prefetch_related('producto').aggregate(
-        stock=Coalesce(Sum('stock_actual'), 0)).get('stock')
-    item = producto.toJSON()
-    item['stock'] = stock
-    detalle.append(item)
-    data = {'empresa': empresa, 'producto': producto, 'stock': stock}
+    data = {}
+    try:
+        detalle = []
+        desencr = PrimaryKeyEncryptor(SECRET_KEY_ENCRIPT).decrypt(pk)
+        producto = Producto.objects.get(id=int(desencr))
+        prod = Detalle_compra.objects.filter(compra__estado=1, producto_id=producto.id)
+        stock = prod.prefetch_related('producto').aggregate(stock=Coalesce(Sum('stock_actual'), 0)).get('stock')
+        pvp = prod.annotate(pvp=Count('precio_venta'))
+        item = producto.toJSON()
+        item['stock'] = stock
+        detalle.append(item)
+        data = {'empresa': empresa, 'producto': producto, 'stock': stock, 'pvp': pvp.first().precio_venta}
+    except Exception as e:
+        print(e)
     return render(request, 'front-end/producto/detalle_producto_qr.html', data)
 

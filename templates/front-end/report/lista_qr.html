@@ -1,0 +1,89 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<title>{{ title }}</title>
+<meta http-equiv="Content-Type" content="multipart/mixed; charset=UTF-8"/>
+<style>
+    .img-invoice {
+        width: 400px;
+        text-align: center;
+        margin: 0 auto;
+    }
+
+    .head {
+        text-align: center;
+        text-transform: uppercase;
+    {#font-size: xx-large#}
+    }
+
+    .fact {
+        text-align: left;
+        text-transform: uppercase;
+        font-size: xx-large;
+    }
+
+    .tit_emp {
+        text-transform: uppercase;
+        font-size: xx-large;
+    }
+
+    .n {
+        color: red;
+    }
+
+    #invoice thead tr th {
+        text-align: left;
+        border-bottom: 1px solid black;
+        border-top: 1px solid black;
+        padding-top: 4px;
+    }
+
+    #invoice thead tr {
+        margin-bottom: 0;
+        padding-bottom: 0;
+    }
+
+    #invoice tbody tr {
+        padding: 0;
+    }
+
+    .text-center {
+        text-align: center;
+    }
+
+    table th {
+        color: #fff;
+        background-color: #9ab487;
+    }
+</style>
+<body>
+<i class="fas fa-crow fa-5x"></i>
+<p class="head">
+    <b class="tit_emp">SALÓN DE BELLEZA {{ empresa.nombre|upper }}</b><br>
+    <b>RUC: {{ empresa.ruc }}</b><br>
+    <b>TELF: {{ empresa.telefono }}</b>&nbsp;&nbsp;<b>EMAIL: {{ empresa.correo }}</b><br>
+    <b>{{ empresa.ubicaion.provincia.ciudad.nombre|upper }} / ECUADOR</b>
+</p>
+<h1 class="head">
+    {{ title|upper }}</h1>
+<table id="invoice">
+    <thead>
+    <tr>
+        <th>N°</th>
+        <th>Producto</th>
+        <th>QR</th>
+    </tr>
+    </thead>
+    <tbody>
+    {% for d in producto %}
+        <tr {% if forloop.first %}style="padding-top: 3px;" {% endif %}>
+            <td>{{ d.pk }}</td>
+            <td>{{ d.nombre }}</td>
+            <td>{{ d.nombre }}</td>
+            <td style="text-align: center;"><img src="file:{{ d.get_qr_2 }}" width="80" alt="qr_code" height="80"  rel="qr_code" class="img-responsive"></td>
+        </tr>
+    {% endfor %}
+    </tbody>
+</table>
+</body>
+</html>

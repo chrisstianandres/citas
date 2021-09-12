@@ -301,9 +301,20 @@ class UserForm_cliente(forms.ModelForm):
                     use.tipo = 0
                     use.password = make_password(ced)
                     use.save()
+                    grupo = Group.objects.get(name__icontains='cliente')
+                    usersave = User.objects.get(id=u.id)
+                    usersave.groups.add(grupo)
+                    usersave.save()
                     return use
                 else:
                     u.save()
+                    if Group.objects.filter(name__icontains='cliente').exists():
+                        grupo = Group.objects.get(name__icontains='cliente')
+                        usersave = User.objects.get(id=u.id)
+                        if u.tipo == 0:
+                            if not usersave.groups.filter(name='cliente').exists():
+                                usersave.groups.add(grupo)
+                                usersave.save()
                 return u
             else:
                 data['error'] = form.errors
