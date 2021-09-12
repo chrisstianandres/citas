@@ -8,9 +8,10 @@ from django.core.files import File
 from django.db import models
 from django.forms import model_to_dict
 
+
 from apps.categoria.models import Categoria
 from apps.presentacion.models import Presentacion
-from citas.settings import STATIC_URL, MEDIA_URL, BASE_DIR
+from citas.settings import STATIC_URL, MEDIA_URL, BASE_DIR, SECRET_KEY_ENCRIPT
 
 
 class Producto(models.Model):
@@ -35,11 +36,12 @@ class Producto(models.Model):
             return '{}{}'.format(MEDIA_URL, self.qr)
 
     def save(self, *args, **kwargs):
-        from django.urls import path
+        from apps.backEnd import PrimaryKeyEncryptor
         if self.qr:
-            string = 'http://monicagarces.pythonanywhere.com/producto/detalle/'+str(self.pk)
+            encr = PrimaryKeyEncryptor(SECRET_KEY_ENCRIPT).encrypt(self.pk)
+            string = 'http://monicagarces.pythonanywhere.com/producto/detalle/'+str(encr)
             qrcode_code = qrcode.make(str(string))
-            canvas = Image.new('RGB', (400, 400), 'white')
+            canvas = Image.new('RGB', (500, 500), 'white')
             draw = ImageDraw.Draw(canvas)
             canvas.paste(qrcode_code)
             fname = f'qr-code{self.nombre}'+'.png'

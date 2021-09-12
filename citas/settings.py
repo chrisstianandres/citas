@@ -15,7 +15,6 @@ from pathlib import Path
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/3.1/howto/deployment/checklist/
 
@@ -26,7 +25,6 @@ SECRET_KEY = 'j$w)%-qi$9j+h_cutqfhoa!iwd2k+4siw65h&kka-nr5+powzr'
 DEBUG = True
 
 ALLOWED_HOSTS = []
-
 
 # Application definition
 
@@ -85,7 +83,6 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'citas.wsgi.application'
 
-
 # Database
 # https://docs.djangoproject.com/en/3.1/ref/settings/#databases
 
@@ -100,7 +97,6 @@ DATABASES = {
         'STORAGE_ENGINE': 'MyISAM / INNODB / ETC'
     }
 }
-
 
 # Password validation
 # https://docs.djangoproject.com/en/3.1/ref/settings/#auth-password-validators
@@ -119,7 +115,6 @@ AUTH_PASSWORD_VALIDATORS = [
         'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
     },
 ]
-
 
 # Internationalization
 # https://docs.djangoproject.com/en/3.1/topics/i18n/
@@ -144,13 +139,11 @@ STATICFILES_DIRS = [
     os.path.join(BASE_DIR, 'static')
 ]
 
-
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media/')
 MEDIA_URL = '/media/'
 
 AUTH_USER_MODEL = 'user.User'
 LOGIN_URL = '/login'
-
 
 EMAIL_HOST = 'smtp.gmail.com'
 
@@ -162,3 +155,5 @@ EMAIL_HOST_PASSWORD = 'tbymrulqfubnynko'
 
 DOMAIN = ''
 SESSION_SERIALIZER = 'django.contrib.sessions.serializers.PickleSerializer'
+
+SECRET_KEY_ENCRIPT = 'ca8fa30e07f96956097cc49c53150622'

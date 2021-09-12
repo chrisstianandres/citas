@@ -1,4 +1,5 @@
 import json
+import rsa
 
 from datetime import datetime
 from django.db.models import Q, Sum
@@ -10,7 +11,7 @@ from django.shortcuts import render
 from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt
 from django.views.generic import *
-from apps.backEnd import nombre_empresa
+from apps.backEnd import nombre_empresa, PrimaryKeyEncryptor
 from apps.categoria.forms import CategoriaForm
 from apps.compra.models import Detalle_compra
 from apps.empresa.models import Empresa
@@ -20,6 +21,7 @@ from apps.producto.forms import ProductoForm
 from apps.producto.models import Producto
 
 from apps.venta.models import Detalle_venta
+from citas.settings import SECRET_KEY_ENCRIPT
 
 opc_icono = 'fab fa-amazon'
 opc_entidad = 'Productos'
@@ -474,9 +476,9 @@ def get_prod(request):
 
 def detalle_producto_qr(request, pk):
     detalle = []
-    producto = Producto.objects.get(id=pk)
-
-    stock = Detalle_compra.objects.filter(compra__estado=1, producto_id=producto.id).aggregate(
+    desencr = PrimaryKeyEncryptor(SECRET_KEY_ENCRIPT).decrypt(pk)
+    producto = Producto.objects.get(id=int(desencr))
+    stock = Detalle_compra.objects.filter(compra__estado=1, producto_id=producto.id).prefetch_related('producto').aggregate(
         stock=Coalesce(Sum('stock_actual'), 0)).get('stock')
     item = producto.toJSON()
     item['stock'] = stock

@@ -14,6 +14,6 @@ urlpatterns = [
     path('editar/<int:pk>', login_required(Updateview.as_view()), name='editar'),
     path('index', login_required(views.index), name='index'),
     path('get', views.get_prod, name='get'),
-    path('detalle/<int:pk>', views.detalle_producto_qr, name='detalle'),
+    path('detalle/<str:pk>', views.detalle_producto_qr, name='detalle'),
 
 ]

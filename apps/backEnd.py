@@ -4,6 +4,11 @@ from datetime import datetime
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 
+from os import urandom
+from cryptography.hazmat.backends import default_backend
+from cryptography.hazmat.primitives.ciphers import Cipher
+from cryptography.hazmat.primitives.ciphers.algorithms import AES as Algorithm
+from cryptography.hazmat.primitives.ciphers.modes import ECB as Mode
 from django.contrib.auth import *
 from django.contrib.auth.hashers import make_password
 from django.contrib.auth.models import Permission
@@ -15,14 +20,19 @@ from django.shortcuts import render
 from django.template.loader import render_to_string
 from django.views.decorators.csrf import csrf_exempt
 
+
+
+
 # -----------------------------------------------PAGINA PRINCIPAL-----------------------------------------------------#
 # from apps.user.forms import UserForm, UserForm_online
-from apps.compra.models import Detalle_compra
+
 from apps.empleado.models import Empleado
 from apps.empresa.models import Empresa
 from apps.producto.models import Producto, envio_stock_dia
 from apps.user.forms import UserForm_cliente
 from apps.user.models import User
+from apps.compra.models import Detalle_compra
+
 
 
 def nombre_empresa():
@@ -41,8 +51,7 @@ def menu(request):
     if not envio_stock_dia.objects.filter(fecha=datetime.now(), enviado=True).exists():
         repor = []
         for p in Producto.objects.all():
-            stock = Detalle_compra.objects.filter(compra__estado=1, producto_id=p.id).aggregate(
-                stock=Coalesce(Sum('stock_actual'), 0)).get('stock')
+            stock = Detalle_compra.objects.filter(compra__estado=1, producto_id=p.id).aggregate(stock=Coalesce(Sum('stock_actual'), 0)).get('stock')
             if stock <= 5:
                 item = p.toJSON()
                 item['stock'] = stock
@@ -284,3 +293,44 @@ def __validar_ced_ruc(nro, tipo):
     mod = total % base
     val = base - mod if mod != 0 else 0
     return val == d_ver
+
+
+class PrimaryKeyEncryptor:
+    def __init__(self, secret: str):
+        secret_bytes = bytes.fromhex(secret)
+
+        if len(secret_bytes) != 16:
+            raise ValueError('The secret for the PrimaryKeyEncryptor must be 16 bytes in hexadecimal format')
+
+        algorithm = Algorithm(secret_bytes)
+        mode = Mode()
+
+        self.cipher = Cipher(algorithm, mode, backend=default_backend())
+
+    @staticmethod
+    def generate_secret() -> str:
+        return urandom(16).hex()
+
+    def encrypt(self, primary_key: int) -> str:
+        primary_key_bytes = primary_key.to_bytes(8, byteorder='big')
+
+        encryptor = self.cipher.encryptor()
+
+        cipher_bytes = encryptor.update(primary_key_bytes * 2) + encryptor.finalize()
+
+        return cipher_bytes.hex()
+
+    def decrypt(self, encrypted_primary_key: str) -> int:
+        cipher_bytes = bytes.fromhex(encrypted_primary_key)
+
+        if len(cipher_bytes) != 16:
+            raise ValueError('The encrypted primary key must be 16 bytes in hexadecimal format')
+
+        decryptor = self.cipher.decryptor()
+
+        plain_bytes = decryptor.update(cipher_bytes) + decryptor.finalize()
+
+        if plain_bytes[:8] != plain_bytes[8:]:
+            raise ValueError('The encrypted primary key is invalid')
+
+        return int.from_bytes(plain_bytes[:8], byteorder='big')

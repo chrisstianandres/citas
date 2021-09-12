@@ -8,6 +8,7 @@
         <th style="width: 10%;">PRESENTACION</th>
         <th style="width: 13%">DESCRIPCION</th>
         <th style="width: 8%">IMAGEN</th>
+        <th style="width: 8%">QR</th>
         <th style="width: 10%" class="text-center">OPCIONES</th>
     </tr>
     </thead>
@@ -219,6 +220,29 @@
                 </div>
             </div>
         </form>
+
+    </div>
+{% endblock %}
+{% block modal %}
+    <div class="modal fade" id="modal_image" tabindex="-1" aria-labelledby="exampleModalLabel"
+         aria-hidden="true">
+
+        <div class="modal-dialog modal-sm">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3 class="modal-title" id="titulo_modal">&nbsp;</h3>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body center" id="body_fluid">
+                    <div class="container-fluid" >
+
+                    </div>
+
+                </div>
+            </div>
+        </div>
 
     </div>
 {% endblock %}

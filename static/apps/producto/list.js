@@ -27,6 +27,7 @@ function datatable_fun() {
             {"data": "presentacion.nombre"},
             {"data": "descripcion"},
             {"data": "imagen"},
+            {"data": "qr"},
             {"data": "id"}
         ],
         buttons: {
@@ -70,11 +71,11 @@ function datatable_fun() {
             "<'row'<'col-sm-12 col-md-5'i><'col-sm-12 col-md-7'p>>",
         columnDefs: [
             {
-                targets: [-2],
+                targets: [-3],
                 class: 'text-center',
                 orderable: false,
-                render: function (data, type, row) {
-                    return '<img src="' + data + '" width="30" height="30" alt="image" class="img-circle elevation-2">';
+                render: function (data) {
+                    return '<img src="' + data + '" width="50" height="50" alt="image" class="img-circle elevation-2">';
                 }
             },
             {
@@ -88,6 +89,14 @@ function datatable_fun() {
                     var del = '<a type="button" class="btn btn-danger btn-xs"  style="color: white" rel="del" ' +
                         'data-toggle="tooltip" title="Eliminar"><i class="fa fa-trash"></i></a>' + ' ';
                     return edit + del
+                }
+            },
+            {
+                targets: [-2],
+                class: 'text-center',
+                orderable: false,
+                render: function (data) {
+                    return '<img src="' + data + '" width="80" alt="qr_code" height="80"  rel="qr_code" class="img-responsive">';
                 }
             },
         ]
@@ -114,6 +123,20 @@ $(function () {
             var tr = datatable.cell($(this).closest('td, li')).index();
             var data = datatable.row(tr.row).data();
             window.location.href = '/producto/editar/'+data.id
+        })
+        .on('click', 'img[rel="qr_code"]', function () {
+            var tr = datatable.cell($(this).closest('td, li')).index();
+            var data = datatable.row(tr.row).data();
+            $('#titulo_modal').html('<i class="fa fa-qrcode"> Codigo QR</i>');
+            $('#body_fluid').html('<img src="' + data.qr + '" width="300" alt="qr_code" height="300"  class="img-responsive">');
+            $('#modal_image').modal('show');
+        })
+        .on('click', 'img[alt="image"]', function () {
+            var tr = datatable.cell($(this).closest('td, li')).index();
+            var data = datatable.row(tr.row).data();
+            $('#titulo_modal').html('<i class="fa fa-image"> '+data.nombre+'</i>');
+            $('#body_fluid').html('<img src="' + data.imagen + '" width="300" alt="qr_code" height="300"  class="img-responsive">');
+            $('#modal_image').modal('show');
         });
 
     //botones de formulario
