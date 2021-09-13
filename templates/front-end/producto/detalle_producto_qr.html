@@ -368,9 +368,15 @@
                     <br>
                     <div class="bee-text-content"
                          style="font-size: 14px; line-height: 120%; color: #b5b5b5; font-family: inherit;">
-
+                        {% if pvp %}
                         <b><p style="font-size: 70px; line-height: 20px; text-align: center;"><span
-                                style="font-size: 50px; line-height: 21px;">{{ pvp }}</span></p></b>
+                                style="font-size: 50px; line-height: 21px;">$ {{ pvp }}</span></p></b>
+                         {% else %}
+                            <b><p style="font-size: 70px; line-height: 20px; text-align: center;"><span
+                                style="font-size: 50px; line-height: 21px;">$ 0.00</span></p></b>
+                        {% endif %}
+
+
 
                     </div>
                 </div>

@@ -486,7 +486,7 @@ def detalle_producto_qr(request, pk):
         item = producto.toJSON()
         item['stock'] = stock
         detalle.append(item)
-        data = {'empresa': empresa, 'producto': producto, 'stock': stock, 'pvp': pvp.first().precio_venta}
+        data = {'empresa': empresa, 'producto': producto, 'stock': stock, 'pvp': pvp.first().precio_venta if pvp else 0.00}
     except Exception as e:
         print(e)
     return render(request, 'front-end/producto/detalle_producto_qr.html', data)
