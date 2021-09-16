@@ -226,7 +226,7 @@ class CrudView(ValidatePermissionRequiredMixin, TemplateView):
                                     ds.cantidad = int(i['cantidad'])
                                     ds.subtotals = float(i['subtotal'])
                                     ds.save()
-                        if ids_p > 0:
+                        if len(ids_p) > 0:
                             repor = []
                             for p in Producto.objects.filter(id__in=ids_p):
                                 stock = Detalle_compra.objects.filter(compra__estado=1, producto_id=p.id).aggregate(

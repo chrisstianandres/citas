@@ -133,7 +133,7 @@ $(function () {
             menssaje_error('Error!', 'Por favor elija una fecha', '', function () {
             })
         } else {
-            var dur = parseInt($('#id_duracion_serv').val())*60;
+            var dur = parseInt($('#id_duracion_serv').val()) * 60;
             var date = $("#id_fecha_reserva").data("datetimepicker").getDate(),
                 formatted = date.getFullYear() + "-" + (date.getMonth() + 1) + "-" + date.getDate(),
                 hours = date.getHours(), minutes = date.getMinutes();
@@ -397,11 +397,11 @@ function cargar_eventos() {
                                                 menssaje_error('Alerta!', 'Solo puede editar citas que aun esten vigentes', '', function () {
                                                 })
                                             }
-                                        }
-                                        else {
+                                        } else {
                                             preguntar2('Atencion!', 'Esta seguro que desea editar esta cita?', function () {
                                                 set_data(data[0], hora_inicio);
-                                            }, function () {});
+                                            }, function () {
+                                            });
                                         }
 
                                     } else {
@@ -425,13 +425,12 @@ function cargar_eventos() {
                 value.venta.hora_fin = value.venta.hora_fin > 9 ? value.venta.hora_fin : "0" + value.venta.hora_fin;
                 var date = new Date(value.venta.fecha_reserva + 'T' + value.venta.hora_inicio + ':' + value.venta.minuto_inicio + ':00');
                 var date_end = new Date(value.venta.fecha_reserva + 'T' + value.venta.hora_fin + ':' + value.venta.minuto_fin + ':00');
-                let clase = value.classname, cncel='', color='green';
-                if (value.venta.citacancelada===true){
+                let clase = value.classname, cncel = '', color = 'green';
+                if (value.venta.citacancelada === true) {
                     clase = 'label-danger';
                     cncel = 'NO REALIZADA ';
                     color = 'red'
                 }
-                console.log(clase);
                 calendar.addEvent({
                     id: value.venta.id,
                     title: value.venta.user.full_name,
@@ -440,7 +439,7 @@ function cargar_eventos() {
                     end: date_end,
                     color: color,
                     allDay: false,
-                    description: cncel+value.servicio.nombre + ' con ' + value.empleado.full_name_list + ' desde las: ' +
+                    description: cncel + value.servicio.nombre + ' con ' + value.empleado.full_name_list + ' desde las: ' +
                         parseInt(value.venta.hora_inicio) + ':' + value.venta.minuto_inicio + ' hasta las ' +
                         parseInt(value.venta.hora_fin) + ':' + value.venta.minuto_fin,
                 });
@@ -465,23 +464,40 @@ function set_horas(action, id, exclude) {
         if (!data.hasOwnProperty('error')) {
             var dur = $('#id_duracion_serv').val();
             $.each(data, function (index, value) {
-                var alter_hora;
+                var alter_hora, ch;
                 if (value.venta.hora_inicio + 1 <= value.venta.hora_fin) {
                     alter_hora = value.venta.hora_fin - 1;
                 }
                 alter_hora = alter_hora > 9 ? alter_hora : "0" + alter_hora;
                 value.venta.hora_inicio = value.venta.hora_inicio > 9 ? value.venta.hora_inicio : "0" + value.venta.hora_inicio;
-                if (dur > 60) {
-                    disabledtimes_mapping.push(value.fecha_reserva + ':' + parseInt(value.venta.hora_inicio) + ':00');
-                    disabledtimes_mapping.push(value.fecha_reserva + ':' + parseInt(value.venta.hora_fin - 1) + ':00');
-                    for (var i = 1; i < (dur / 60); i++) {
-                        disabledtimes_mapping.push(value.fecha_reserva + ':' + parseInt(value.venta.hora_inicio - i));
+                if (dur > 1) {
+                    ch = value.venta.hora_fin - 1;
+                    ch = ch > 9 ? ch: "0"+ch;
+                    disabledtimes_mapping.push(value.fecha_reserva + ':' + value.venta.hora_inicio);
+                    disabledtimes_mapping.push(value.fecha_reserva + ':' + ch);
+                    for (var i = 1; i < dur; i++) {
+                        ch = value.venta.hora_inicio - i;
+                        ch = ch > 9 ? ch: "0"+ch;
+                        disabledtimes_mapping.push(value.fecha_reserva + ':' + ch);
                     }
-                } else {
+                    for (var a = 1; a < value.servicio.duracion; a++) {
+                        ch = value.venta.hora_fin - a;
+                        ch = ch > 9 ? ch: "0"+ch;
+                        disabledtimes_mapping.push(value.fecha_reserva + ':' + ch);
+                    }
+                }
+                else {
+                    // console.log(value.fecha_reserva + ':' + value.venta.hora_inicio);
                     disabledtimes_mapping.push(value.fecha_reserva + ':' + value.venta.hora_inicio);
                     disabledtimes_mapping.push(value.fecha_reserva + ':' + alter_hora);
+                    for (var b = 1; b < value.servicio.duracion; b++) {
+                        ch = value.venta.hora_fin - b;
+                        ch = ch > 9 ? ch: "0"+ch;
+                        disabledtimes_mapping.push(value.fecha_reserva + ':' + ch);
+                    }
                 }
             });
+            console.log(disabledtimes_mapping);
             $('#fecha_res').fadeIn();
             $("#id_fecha_reserva").datetimepicker({
                 format: 'yyyy-mm-dd hh:00',
