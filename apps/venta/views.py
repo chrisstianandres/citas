@@ -158,6 +158,7 @@ class CrudView(ValidatePermissionRequiredMixin, TemplateView):
                         c.fecha_factura = datos['fecha']
                         c.fecha_reserva = datos['fecha']
                         c.user_id = datos['cliente']
+                        c.empleado_id = datos['empleado']
                         c.duracion_servicio = datos['duracion']
                         c.subtotal = float(datos['subtotal'])
                         c.iva = float(datos['iva'])

@@ -26,6 +26,15 @@ var ventas = {
         });
         return ids;
     },
+    get_valor: function () {
+        var values = [];
+        $.each(this.items.detalle, function (key, value) {
+            if (value.tipo === 'Producto') {
+                values.push(value.precio)
+            }
+        });
+        return values;
+    },
     get_ids_empleado: function () {
         var ids = [];
         $.each(this.items.empleado, function (key, value) {
@@ -390,10 +399,19 @@ $(function () {
             } else if (ventas.items.detalle.length === 0) {
                 menssaje_error('Error!', "Debe seleccionar al menos un producto o servicio", 'far fa-times-circle');
                 return false
-            } else {
+            } else if ($('#id_empleado').val()==="") {
+                menssaje_error('Error!', "Debe seleccionar un empleado", 'far fa-times-circle');
+                return false
+            } else if (ventas.get_ids_serv().length === 0 && ventas.get_valor().length >0){
+                menssaje_error('Error!', "Debe seleccionar un servicio para poder facturar un producto con valor 0", 'far fa-times-circle');
+                return false
+            }
+
+            else {
                 var parametros;
                 ventas.items.fecha = $('#id_fecha_venta').val();
                 ventas.items.cliente = $('#id_user').val();
+                ventas.items.empleado = $('#id_empleado').val();
                 ventas.items.duracion = $('#id_duracion_servicio').val() * 60;
                 parametros = {'ventas': JSON.stringify(ventas.items)};
                 parametros['action'] = action2;
