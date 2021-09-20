@@ -151,8 +151,8 @@ function daterange() {
     $('#fecha').daterangepicker({
         locale: {
             format: 'YYYY-MM-DD',
-            applyLabel: '<i class="fas fa-search"></i> Buscar',
-            cancelLabel: '<i class="fas fa-times"></i> Cancelar',
+            applyLabel: '<i class="fa fa-search"></i> Buscar',
+            cancelLabel: '<i class="fa fa-times"></i> Cancelar',
         }
     }).on('apply.daterangepicker', function (ev, picker) {
         picker['key'] = 1;

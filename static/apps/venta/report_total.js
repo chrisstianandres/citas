@@ -75,6 +75,7 @@ $(function () {
                     orientation: 'landscape', //portrait
                     pageSize: 'A4', //A3 , A5 , A6 , legal , letter
                     download: 'open',
+                    footer:true,
                     exportOptions: {
                         columns: [0, 1, 2, 3, 4],
                         search: 'applied',

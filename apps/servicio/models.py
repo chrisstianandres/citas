@@ -15,7 +15,8 @@ class Servicio(models.Model):
     imagen = models.ImageField(upload_to='servicio', blank=True, null=True)
 
     def __str__(self):
-        return '{}'.format(self.nombre)
+        txt = 'Horas' if (self.duracion/60) > 1 else 'Hora'
+        return '{} ({} {}) '.format(self.nombre, int(self.duracion/60), txt)
 
     def get_image(self):
         if self.imagen:

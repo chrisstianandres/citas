@@ -50,6 +50,13 @@ class Venta(models.Model):
         item['total'] = format(self.total, '.2f')
         return item
 
+    def get_servicios(self):
+        data = []
+        for servicio in self.detalle_servicios_set.all():
+            item = servicio.toJSON()
+            data.append(item)
+        return data
+
     class Meta:
         db_table = 'venta'
         verbose_name = 'venta'

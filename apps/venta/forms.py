@@ -86,18 +86,11 @@ class Detalle_servicioForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         for field in self.Meta.fields:
-            self.fields[field].widget.attrs.update({
-                'class': 'form-control'
-            })
-
-            self.fields['empleado'].widget.attrs = {
-                'class': 'form-control',
-                'disabled': True
-            }
+            self.fields[field].widget.attrs.update({'class': 'form-control'})
+            self.fields['empleado'].widget.attrs = {'class': 'form-control', 'disabled': True}
             self.fields['empleado'].queryset = Empleado.objects.filter(estado=0)
-            self.fields['servicio'].widget.attrs = {
-                'class': 'form-control'
-            }
+            self.fields['servicio'].widget.attrs = {'class': 'form-control ct', 'multiple': 'multiple', 'placeholder_text_multiple': 'Selecciona uno o mas servicios....'}
+            self.fields['servicio'].empty_label = None
         # habilitar, desabilitar, y mas
     class Meta:
         model = Detalle_servicios
@@ -108,4 +101,7 @@ class Detalle_servicioForm(forms.ModelForm):
         labels = {
             'empleado': 'Empleado',
             'servicio': 'Servicio'
+        }
+        widgets = {
+            'servicio': forms.SelectMultiple()
         }

@@ -11,6 +11,7 @@ var citas = {
         hora_fin: '',
         minuto_fin: '',
         empleado: '',
+        servicio: [],
 
     }
 };
@@ -80,18 +81,22 @@ $(function () {
 
     $('#id_servicio')
         .on('change', function () {
-            if ($(this).val() !== '' || null) {
+            if ($(this).val() !== null) {
                 $('#id_empleado').prop('disabled', false).trigger("chosen:updated");
                 $.ajax({
                     dataType: 'JSON',
                     type: 'POST',
                     url: window.location.pathname,
-                    data: {'action': 'search_servicio_cita', 'id': $(this).val()},
+                    data: {'action': 'search_servicio_cita', 'ids': JSON.stringify($(this).chosen('option:selected').val())},
                 }).done(function (data) {
                     if (!data.hasOwnProperty('error')) {
                         $.each(data, function (index, value) {
                             $('#duracion_res').fadeIn();
-                            $('#id_duracion_serv').val(value.duracion);
+                            $('#id_duracion_serv').val(value);
+                            if (value>8){
+                                menssaje_error('Error','Los servicios que elegiste superan nuestro horario laboral' );
+                                $('#id_empleado').prop('disabled', true).trigger("chosen:updated");
+                            }
                             if ($('#id_empleado').val() !== '' || null) {
                                 if ($('#id_duracion_serv').val() > duration_edit) {
                                     set_horas('search_horario_empleado', $('#id_empleado').val(), '');
@@ -99,9 +104,7 @@ $(function () {
                                 } else {
                                     set_horas('search_horario_empleado', $('#id_empleado').val(), id);
                                 }
-
                             }
-
                         });
                         return false;
                     }
@@ -111,7 +114,7 @@ $(function () {
                 })
             } else {
                 $('#duracion_res').fadeOut();
-                $('#id_duracion_serv').val();
+                $('#id_duracion_serv').val(0);
                 $('#id_empleado').prop('disabled', true).trigger("chosen:updated");
                 $("#id_fecha_reserva").datetimepicker('remove');
                 $('#fecha_res').fadeOut()
@@ -120,10 +123,17 @@ $(function () {
 
     $('#form_cita').on('submit', function (e) {
         e.preventDefault();
-        if ($('#id_user').val() === '') {
+        let labor_hour = new Date();
+        let dta = $("#id_fecha_reserva").data("datetimepicker").getDate();
+        labor_hour.setHours(18, 0, 0);
+        labor_hour.setUTCFullYear(parseInt(dta.getFullYear()), parseInt(dta.getMonth()), parseInt(dta.getDate()));
+        dta.setHours(dta.getHours()+parseInt($('#id_duracion_serv').val()), 0, 0);
+        if (parseInt($('#id_duracion_serv').val()) > 8 || dta > labor_hour){
+             menssaje_error('ERROR', 'Los servicios que elegiste superan nuestro horario laboral')
+        } else if ($('#id_user').val() === '') {
             menssaje_error('Error!', 'Por favor elija un cliente', '', function () {
             })
-        } else if ($('#id_servicio').val() === '') {
+        } else if ($('#id_servicio').val() === null) {
             menssaje_error('Error!', 'Por favor elija un servicio', '', function () {
             })
         } else if ($('#id_empleado').val() === '') {
@@ -133,19 +143,20 @@ $(function () {
             menssaje_error('Error!', 'Por favor elija una fecha', '', function () {
             })
         } else {
-            var dur = parseInt($('#id_duracion_serv').val()) * 60;
+            var dur = parseInt($('#id_duracion_serv').val());
             var date = $("#id_fecha_reserva").data("datetimepicker").getDate(),
                 formatted = date.getFullYear() + "-" + (date.getMonth() + 1) + "-" + date.getDate(),
                 hours = date.getHours(), minutes = date.getMinutes();
-            var fin = dur / 60;
+            var fin = dur;
 
             var parametros;
+            citas.items.servicio = [];
             citas.items.fecha_reserva = formatted;
             citas.items.hora_inicio = hours;
             citas.items.minuto_inicio = minutes;
             citas.items.hora_fin = hours + fin;
             citas.items.minuto_fin = minutes;
-            citas.items.servicio = $('#id_servicio').val();
+            citas.items.servicio.push($('#id_servicio').chosen('option:selected').val());
             citas.items.cliente = $('#id_user').val();
             citas.items.empleado = $('#id_empleado').val();
             citas.items.duracion = dur;
@@ -351,6 +362,7 @@ function cargar_eventos() {
                     $(info.el).popover({
                         title: 'Cliente: ' + info.event.title,
                         placement: "auto left",
+                        html:true,
                         trigger: 'hover',
                         container: 'body',
                         content: info.event.extendedProps.description,
@@ -384,7 +396,7 @@ function cargar_eventos() {
                                     if (val_fecha) {
                                         if (data[0].venta.fecha_reserva === string) {
                                             if (data[0].venta.hora_inicio + ':00' >= hora_hoy) {
-                                                preguntar('Atencion!', 'Que de desea hacer con este cita?', function () {
+                                                preguntar('Atencion!', 'Que desea hacer con este cita?', function () {
                                                     set_data(data[0], hora_inicio);
                                                 }, function () {
                                                     localStorage.clear();
@@ -425,12 +437,18 @@ function cargar_eventos() {
                 value.venta.hora_fin = value.venta.hora_fin > 9 ? value.venta.hora_fin : "0" + value.venta.hora_fin;
                 var date = new Date(value.venta.fecha_reserva + 'T' + value.venta.hora_inicio + ':' + value.venta.minuto_inicio + ':00');
                 var date_end = new Date(value.venta.fecha_reserva + 'T' + value.venta.hora_fin + ':' + value.venta.minuto_fin + ':00');
-                let clase = value.classname, cncel = '', color = 'green';
+                var clase = value.classname, cncel = '', color = 'green';
                 if (value.venta.citacancelada === true) {
                     clase = 'label-danger';
                     cncel = 'NO REALIZADA ';
                     color = 'red'
                 }
+                let descr= '<b>'+cncel+'</b> Cita con: '+ value.empleado.full_name_list+ ' desde '+ parseInt(value.venta.hora_inicio) + ':' + value.venta.minuto_inicio + ' hasta las ' +
+                    parseInt(value.venta.hora_fin) + ':' + value.venta.minuto_fin+ ' los servicios de:  <br>';
+                $.each(value.servicios, function (key, value) {
+                    let ch = '<b>'+value.servicio.nombre+'</b><br>';
+                    descr += ch;
+                });
                 calendar.addEvent({
                     id: value.venta.id,
                     title: value.venta.user.full_name,
@@ -439,9 +457,7 @@ function cargar_eventos() {
                     end: date_end,
                     color: color,
                     allDay: false,
-                    description: cncel + value.servicio.nombre + ' con ' + value.empleado.full_name_list + ' desde las: ' +
-                        parseInt(value.venta.hora_inicio) + ':' + value.venta.minuto_inicio + ' hasta las ' +
-                        parseInt(value.venta.hora_fin) + ':' + value.venta.minuto_fin,
+                    description: descr,
                 });
             });
             return false;
@@ -472,32 +488,30 @@ function set_horas(action, id, exclude) {
                 value.venta.hora_inicio = value.venta.hora_inicio > 9 ? value.venta.hora_inicio : "0" + value.venta.hora_inicio;
                 if (dur > 1) {
                     ch = value.venta.hora_fin - 1;
-                    ch = ch > 9 ? ch: "0"+ch;
+                    ch = ch > 9 ? ch : "0" + ch;
                     disabledtimes_mapping.push(value.fecha_reserva + ':' + value.venta.hora_inicio);
                     disabledtimes_mapping.push(value.fecha_reserva + ':' + ch);
                     for (var i = 1; i < dur; i++) {
                         ch = value.venta.hora_inicio - i;
-                        ch = ch > 9 ? ch: "0"+ch;
+                        ch = ch > 9 ? ch : "0" + ch;
                         disabledtimes_mapping.push(value.fecha_reserva + ':' + ch);
                     }
                     for (var a = 1; a < value.servicio.duracion; a++) {
                         ch = value.venta.hora_fin - a;
-                        ch = ch > 9 ? ch: "0"+ch;
+                        ch = ch > 9 ? ch : "0" + ch;
                         disabledtimes_mapping.push(value.fecha_reserva + ':' + ch);
                     }
-                }
-                else {
+                } else {
                     // console.log(value.fecha_reserva + ':' + value.venta.hora_inicio);
                     disabledtimes_mapping.push(value.fecha_reserva + ':' + value.venta.hora_inicio);
                     disabledtimes_mapping.push(value.fecha_reserva + ':' + alter_hora);
                     for (var b = 1; b < value.servicio.duracion; b++) {
                         ch = value.venta.hora_fin - b;
-                        ch = ch > 9 ? ch: "0"+ch;
+                        ch = ch > 9 ? ch : "0" + ch;
                         disabledtimes_mapping.push(value.fecha_reserva + ':' + ch);
                     }
                 }
             });
-            console.log(disabledtimes_mapping);
             $('#fecha_res').fadeIn();
             $("#id_fecha_reserva").datetimepicker({
                 format: 'yyyy-mm-dd hh:00',
@@ -576,7 +590,10 @@ function mostrar() {
     $('#new').fadeOut();
     $('#formulario_cita').fadeIn();
     $('#id_empleado').chosen({no_results_text: "No se encontraron resultados para: "});
-    $('#id_servicio').chosen({no_results_text: "No se encontraron resultados para: "});
+    $('#id_servicio').chosen({
+        no_results_text: "No se encontraron resultados para: ",
+        placeholder_text_multiple: "Selecciona uno o mas servicios.....",
+    });
     $('#id_user').chosen({no_results_text: "No se encontraron resultados para: "});
 
 }

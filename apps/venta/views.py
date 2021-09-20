@@ -237,7 +237,6 @@ class CrudView(ValidatePermissionRequiredMixin, TemplateView):
                                     repor.append(item)
                             if len(repor) > 0:
                                 send_email(repor)
-                            send_email()
                         data['id'] = c.id
                         data['resp'] = True
                 else:
@@ -421,20 +420,21 @@ class CitacrudView(ValidatePermissionRequiredMixin, TemplateView):
                         c.user_id = datos['cliente']
                         c.fecha_factura = datos['fecha_reserva']
                         c.fecha_reserva = datos['fecha_reserva']
-                        c.duracion_servicio = int(datos['duracion']) * 60
+                        c.duracion_servicio = int(datos['duracion'])
                         c.hora_inicio = datos['hora_inicio']
                         c.minuto_inicio = datos['minuto_inicio']
                         c.hora_fin = datos['hora_fin']
                         c.minuto_fin = datos['minuto_fin']
                         c.estado = 2
                         c.save()
-                        dts = Detalle_servicios()
-                        dts.venta_id = c.id
-                        dts.servicio_id = datos['servicio']
-                        dts.empleado_id = datos['empleado']
-                        dts.valor = dts.servicio.precio
-                        dts.cantidad = int(datos['empleado'])
-                        dts.save()
+                        for ser in datos['servicio'][0]:
+                            dts = Detalle_servicios()
+                            dts.venta_id = c.id
+                            dts.servicio_id = int(ser)
+                            dts.empleado_id = datos['empleado']
+                            dts.valor = dts.servicio.precio
+                            dts.cantidad = int(datos['empleado'])
+                            dts.save()
                         data['id'] = c.id
                         data['resp'] = True
                 else:
@@ -447,10 +447,12 @@ class CitacrudView(ValidatePermissionRequiredMixin, TemplateView):
                     cita = Venta.objects.get(id=c.venta.id)
                     if cita.fecha_reserva < datetime.now().date() and cita.citacancelada == False:
                         cita.citacancelada = True
+                        cita.save()
                     elif cita.fecha_reserva == datetime.now().date() and cita.hora_fin < datetime.now().hour and cita.minuto_fin < datetime.now().minute and cita.citacancelada == False:
                         cita.citacancelada = True
-                    cita.save()
+                        cita.save()
                     item = c.toJSON()
+                    item['servicios'] = cita.get_servicios()
                     item['classname'] = 'label-success'
                     data.append(item)
             elif action == 'search_citas_cliente':
@@ -484,11 +486,13 @@ class CitacrudView(ValidatePermissionRequiredMixin, TemplateView):
                     data.append(item)
             elif action == 'search_servicio_cita':
                 data = []
-                id = request.POST['id']
-                query = Servicio.objects.filter(id=id)
+                ids = json.loads(request.POST['ids'])
+                query = Servicio.objects.filter(id__in=ids)
+                dur = 0
                 for p in query:
                     item = p.toJSON()
-                    data.append(item)
+                    dur += p.duracion
+                data = {'duracion': dur/60}
             elif action == 'edit_event':
                 data = []
                 id = request.POST['id']
