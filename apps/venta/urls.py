@@ -17,6 +17,7 @@ urlpatterns = [
     path('printQR', login_required(printQR.as_view()), name='printQR'),
     path('venta/report_productos', login_required(report.as_view()), name='report_by_product'),
     path('venta/report_services', login_required(report_servicios.as_view()), name='report_by_services'),
+    path('venta/report_empleado_venta', login_required(report_venta_empleado.as_view()), name='report_empleado_venta'),
     path('venta/report_total', login_required(report_total.as_view()), name='report_total'),
     path('report_total_pedidos', login_required(report_total_reserva.as_view()), name='report_total_pedidos'),
     path('data_tarjets', login_required(views.data_tarjets), name='data_tarjets'),

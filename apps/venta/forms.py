@@ -31,9 +31,8 @@ class VentaForm(forms.ModelForm):
             }
             self.fields['fecha_factura'].initial = datetime.now().strftime('%Y-%m-%d')
             self.fields['fecha_reserva'].initial = ''
-            self.fields['user'].widget.attrs = {
-                'class': 'form-control'
-            }
+            self.fields['user'].widget.attrs = {'class': 'form-control'}
+            self.fields['empleado'].widget.attrs = {'class': 'form-control'}
             self.fields['user'].queryset = User.objects.filter(tipo=0)
             self.fields['subtotal'].widget.attrs = {
                 'value': '0.00',
@@ -59,6 +58,7 @@ class VentaForm(forms.ModelForm):
             'fecha_factura',
             'fecha_reserva',
             'user',
+            'empleado',
             'duracion_servicio',
             'subtotal',
             'iva',
@@ -68,6 +68,7 @@ class VentaForm(forms.ModelForm):
             'fecha_factura': 'Fecha de Venta',
             'fecha_reserva': 'Fecha',
             'user': 'Cliente',
+            'empleado': 'Empleado',
             'duracion_servicio': 'Duracion de antencion',
             'subtotal': 'Subtotal',
             'iva': 'I.V.A.',

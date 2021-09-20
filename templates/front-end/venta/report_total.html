@@ -16,6 +16,9 @@
                 <a type="button" class="btn btn-white btn-default" href="{% url 'venta:report_by_services' %}"><i
                         class="fa fa-bullhorn"></i> Por Servicios
                 </a>
+                 <a type="button" class="btn btn-white btn-primary" href="{% url 'venta:report_empleado_venta'%}"><i
+                        class="fa fa-users"></i> Por Empleado
+                </a>
             </div>
             <div class="form-group col-lg-3">
                 <label for="fecha"><strong>Filtar por Fecha:</strong></label>
@@ -40,7 +43,7 @@
         <th>Cliente</th>
         <th>Total (sin Iva)</th>
         <th>Total (Iva)</th>
-        <th>Total (con Iva)</th>
+        <th>Total</th>
     </tr>
     </thead>
     <tbody>

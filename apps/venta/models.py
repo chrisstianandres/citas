@@ -22,6 +22,7 @@ estado = (
 
 class Venta(models.Model):
     user = models.ForeignKey(User, on_delete=models.PROTECT)
+    empleado = models.ForeignKey(Empleado, on_delete=models.PROTECT, null=True, blank=True)
     fecha_factura = models.DateField(default=datetime.now)
     fecha_reserva = models.DateField(default=datetime.now)
     duracion_servicio = models.DecimalField(default=0.00, max_digits=9, decimal_places=2)

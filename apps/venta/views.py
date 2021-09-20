@@ -6,7 +6,7 @@ from django.conf import settings
 from django.contrib.auth.hashers import make_password
 from django.contrib.staticfiles import finders
 from django.db import transaction
-from django.db.models import Sum
+from django.db.models import Sum, Count
 from django.db.models.functions import Coalesce
 from django.http import JsonResponse, HttpResponse, HttpResponseRedirect
 from django.shortcuts import render
@@ -1007,6 +1007,60 @@ class report_servicios(ValidatePermissionRequiredMixin, ListView):
         data['icono'] = opc_icono
         data['entidad'] = opc_entidad
         data['titulo'] = 'Reporte de ventas por servicios'
+        data['empresa'] = empresa
+        data['filter_prod'] = '/transaccion/venta/lista'
+        return data
+
+
+class report_venta_empleado(ValidatePermissionRequiredMixin, ListView):
+    model = Venta
+    template_name = 'front-end/venta/report_venta_empleado.html'
+    permission_required = 'venta.view_venta'
+
+    @csrf_exempt
+    def dispatch(self, request, *args, **kwargs):
+        return super().dispatch(request, *args, **kwargs)
+
+    def get_queryset(self):
+        return Venta.objects.none()
+
+    def post(self, request, *args, **kwargs):
+        data = {}
+        try:
+            start_date = request.POST.get('start_date', '')
+            end_date = request.POST.get('end_date', '')
+            empresa = Empresa.objects.first()
+            iva = float(empresa.iva / 100)
+            action = request.POST['action']
+            if action == 'report':
+                data = []
+                if start_date == '' and end_date == '':
+                    query = Venta.objects.values('empleado_id', 'fecha_factura', 'user_id').annotate(Count('id')).annotate(Sum('subtotal')).annotate(Sum('iva')).annotate(Sum('total')).filter(estado=1)
+                else:
+                    query = Venta.objects.values('empleado_id', 'fecha_factura', 'user_id').annotate(Count('id')).annotate(Sum('subtotal')).annotate(Sum('iva')).annotate(Sum('total')).filter(fecha_factura__range=[start_date, end_date], estado=1)
+                for p in query:
+                    emp = Empleado.objects.get(id=int(p['empleado_id'])) if p['empleado_id'] else Empleado.objects.first()
+                    cli = User.objects.get(id=int(p['user_id']))
+                    data.append([
+                        p['fecha_factura'].strftime("%d/%m/%Y"),
+                        emp.get_full_name(),
+                        cli.get_full_name(),
+                        int(p['id__count']),
+                        format(p['subtotal__sum'], '.2f'),
+                        format(p['iva__sum'], '.2f'),
+                        format(p['total__sum'], '.2f')
+                    ])
+            else:
+                data['error'] = 'No ha seleccionado una opcion'
+        except Exception as e:
+            data['error'] = 'No ha seleccionado una opcion' + str(e)
+        return JsonResponse(data, safe=False)
+
+    def get_context_data(self, **kwargs):
+        data = super().get_context_data(**kwargs)
+        data['icono'] = opc_icono
+        data['entidad'] = opc_entidad
+        data['titulo'] = 'Reporte de ventas por empleado'
         data['empresa'] = empresa
         data['filter_prod'] = '/transaccion/venta/lista'
         return data
