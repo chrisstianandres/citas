@@ -1,7 +1,13 @@
 import json
+from io import BytesIO
+
+import qrcode
 import rsa
 
 from datetime import datetime
+
+from PIL import Image, ImageDraw
+from django.core.files import File
 from django.db.models import Q, Sum, Count
 from django.db.models.functions import Coalesce
 
@@ -56,6 +62,10 @@ class lista(ValidatePermissionRequiredMixin, ListView):
                     item['cantidad'] = 1
                     item['subtotal'] = 0.00
                     data.append(item)
+            elif action == 'delete':
+                pk = request.POST['id']
+                f = self.model.objects.get(pk=pk)
+                f.delete()
             # elif action == 'list_venta':
             #     data = []
             #     vent = Producto.objects.filter(stock__gte=1)
@@ -334,18 +344,28 @@ class Createview(ValidatePermissionRequiredMixin, CreateView):
         action = request.POST['action']
         try:
             if action == 'add':
+                from apps.backEnd import PrimaryKeyEncryptor
                 f = self.form_class(request.POST or None, request.FILES or None)
                 if f.is_valid():
                     var = f.save()
+                    if var.pk:
+                        encr = PrimaryKeyEncryptor(SECRET_KEY_ENCRIPT).encrypt(var.pk)
+                        string = 'http://monicagarces.pythonanywhere.com/producto/detalle/' + str(encr)
+                        qrcode_code = qrcode.make(str(string))
+                        canvas = Image.new('RGB', (500, 500), 'white')
+                        draw = ImageDraw.Draw(canvas)
+                        canvas.paste(qrcode_code)
+                        fname = f'qr-code{var.nombre}' + '.png'
+                        buffer = BytesIO()
+                        canvas.save(buffer, 'png')
+                        var.qr.save(fname, File(buffer), save=False)
+                        canvas.close()
+                        var.save()
                     data['producto'] = var.toJSON()
                     data['resp'] = True
                 else:
                     data['error'] = f.errors
                     data['form'] = f
-            elif action == 'delete':
-                pk = request.POST['id']
-                f = self.model.objects.get(pk=pk)
-                f.delete()
             elif action == 'search':
                 data = []
                 term = request.POST['term']

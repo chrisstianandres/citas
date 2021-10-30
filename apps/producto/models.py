@@ -15,8 +15,8 @@ from citas.settings import STATIC_URL, MEDIA_URL, BASE_DIR, SECRET_KEY_ENCRIPT, 
 
 
 class Producto(models.Model):
-    categoria = models.ForeignKey(Categoria, on_delete=models.PROTECT)
-    presentacion = models.ForeignKey(Presentacion, on_delete=models.PROTECT)
+    categoria = models.ForeignKey(Categoria, on_delete=models.PROTECT, null=True, blank=True)
+    presentacion = models.ForeignKey(Presentacion, on_delete=models.PROTECT, null=True, blank=True)
     nombre = models.CharField(max_length=100)
     descripcion = models.CharField(max_length=200)
     imagen = models.ImageField(upload_to='productos', blank=True, null=True)
@@ -39,21 +39,9 @@ class Producto(models.Model):
         if self.qr:
             return '{}{}'.format(MEDIA_ROOT, self.qr)
 
-    def save(self, *args, **kwargs):
-        from apps.backEnd import PrimaryKeyEncryptor
-        if self.qr:
-            encr = PrimaryKeyEncryptor(SECRET_KEY_ENCRIPT).encrypt(self.pk)
-            string = 'http://monicagarces.pythonanywhere.com/producto/detalle/'+str(encr)
-            qrcode_code = qrcode.make(str(string))
-            canvas = Image.new('RGB', (500, 500), 'white')
-            draw = ImageDraw.Draw(canvas)
-            canvas.paste(qrcode_code)
-            fname = f'qr-code{self.nombre}'+'.png'
-            buffer = BytesIO()
-            canvas.save(buffer, 'png')
-            self.qr.save(fname, File(buffer), save=False)
-            canvas.close()
-        super().save(*args, *kwargs)
+    # def save(self, *args, **kwargs):
+    #
+    #     super().save(*args, *kwargs)
 
     def toJSON(self):
         item = model_to_dict(self)

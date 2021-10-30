@@ -119,7 +119,7 @@ $(function () {
             var data = datatable.row(tr.row).data();
             var parametros = {'id': data.id, 'action': 'delete'};
             save_estado('Alerta',
-                '/producto/eliminar/'+data.id, 'Esta seguro que desea eliminar este producto?', parametros,
+                window.location.pathname, 'Esta seguro que desea eliminar este producto?', parametros,
                 function () {
                     menssaje_ok('Exito!', 'Exito al eliminar el producto!', 'far fa-smile-wink', function () {
                         datatable.ajax.reload(null, false);

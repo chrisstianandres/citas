@@ -312,9 +312,13 @@ function reset(formulario) {
 
 function menssaje_error_form(title, content, icon, callback) {
     var html = '<ul>';
-    $.each(content, function (key, value) {
-        html += '<li>' + key + ': ' + value + '</li>'
-    });
+    if(typeof content==='string'){
+         html += '<li>' + content + '</li>'
+    }else {
+        $.each(content, function (key, value) {
+            html += '<li>' + key + ': ' + value + '</li>'
+        });
+    }
     html += '</ul>';
     Swal.fire({
         title: title,
