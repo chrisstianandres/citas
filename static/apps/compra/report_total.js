@@ -76,7 +76,7 @@ $(function () {
                     pageSize: 'A4', //A3 , A5 , A6 , legal , letter
                     download: 'open',
                     exportOptions: {
-                        columns: [0, 1, 2, 3],
+                        columns: [0, 1, 2],
                         search: 'applied',
                         order: 'applied'
                     },
