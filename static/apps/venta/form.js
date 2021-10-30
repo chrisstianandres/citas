@@ -29,8 +29,8 @@ var ventas = {
     get_valor: function () {
         var values = [];
         $.each(this.items.detalle, function (key, value) {
-            if (value.tipo === 'Producto') {
-                values.push(value.precio)
+            if (value.tipo === 'Producto' && value.precio <=0) {
+                values.push(value.id)
             }
         });
         return values;
@@ -403,6 +403,7 @@ $(function () {
                 menssaje_error('Error!', "Debe seleccionar un empleado", 'far fa-times-circle');
                 return false
             } else if (ventas.get_ids_serv().length === 0 && ventas.get_valor().length >0){
+                console.log(ventas.get_valor());
                 menssaje_error('Error!', "Debe seleccionar un servicio para poder facturar un producto con valor 0", 'far fa-times-circle');
                 return false
             }
