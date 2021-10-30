@@ -302,7 +302,7 @@ class UserForm_cliente(forms.ModelForm):
                     use.password = make_password(ced)
                     use.save()
                     grupo = Group.objects.get(name__icontains='cliente')
-                    usersave = User.objects.get(id=u.id)
+                    usersave = User.objects.get(id=use.id)
                     usersave.groups.add(grupo)
                     usersave.save()
                     return use
