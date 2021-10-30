@@ -128,7 +128,7 @@ $(function () {
         labor_hour.setHours(18, 0, 0);
         labor_hour.setUTCFullYear(parseInt(dta.getFullYear()), parseInt(dta.getMonth()), parseInt(dta.getDate()));
         dta.setHours(dta.getHours()+parseInt($('#id_duracion_serv').val()), 0, 0);
-        if (parseInt($('#id_duracion_serv').val()) > 8 || dta > labor_hour){
+        if (parseInt($('#id_duracion_serv').val()) > 8 || dta > labor_hour || (parseInt(dta.getHours()))>18){
              menssaje_error('ERROR', 'Los servicios que elegiste superan nuestro horario laboral')
         } else if ($('#id_user').val() === '') {
             menssaje_error('Error!', 'Por favor elija un cliente', '', function () {
@@ -480,37 +480,40 @@ function set_horas(action, id, exclude) {
         if (!data.hasOwnProperty('error')) {
             var dur = $('#id_duracion_serv').val();
             $.each(data, function (index, value) {
+                // disabledtimes_mapping.push(value.fecha_full);
+                disabledtimes_mapping.push(value.fecha_reserva + ':' + value.hora_reserva);
                 var alter_hora, ch;
-                if (value.venta.hora_inicio + 1 <= value.venta.hora_fin) {
-                    alter_hora = value.venta.hora_fin - 1;
-                }
-                alter_hora = alter_hora > 9 ? alter_hora : "0" + alter_hora;
-                value.venta.hora_inicio = value.venta.hora_inicio > 9 ? value.venta.hora_inicio : "0" + value.venta.hora_inicio;
+                // if (value.venta.hora_inicio + 1 <= value.venta.hora_fin) {
+                //     alter_hora = value.venta.hora_fin - 1;
+                // }
+                // alter_hora = alter_hora > 9 ? alter_hora : "0" + alter_hora;
+                // value.venta.hora_inicio = value.venta.hora_inicio > 9 ? value.venta.hora_inicio : "0" + value.venta.hora_inicio;
                 if (dur > 1) {
-                    ch = value.venta.hora_fin - 1;
+                    ch = value.hora_reserva - 1;
                     ch = ch > 9 ? ch : "0" + ch;
-                    disabledtimes_mapping.push(value.fecha_reserva + ':' + value.venta.hora_inicio);
-                    disabledtimes_mapping.push(value.fecha_reserva + ':' + ch);
+                    disabledtimes_mapping.push(value.fecha_reserva + ':' + value.hora_reserva);
+                    // disabledtimes_mapping.push(value.fecha_reserva + ':' + ch);
                     for (var i = 1; i < dur; i++) {
-                        ch = value.venta.hora_inicio - i;
+                        ch = value.hora_reserva - i;
                         ch = ch > 9 ? ch : "0" + ch;
                         disabledtimes_mapping.push(value.fecha_reserva + ':' + ch);
                     }
-                    for (var a = 1; a < value.servicio.duracion; a++) {
-                        ch = value.venta.hora_fin - a;
-                        ch = ch > 9 ? ch : "0" + ch;
-                        disabledtimes_mapping.push(value.fecha_reserva + ':' + ch);
-                    }
-                } else {
-                    // console.log(value.fecha_reserva + ':' + value.venta.hora_inicio);
-                    disabledtimes_mapping.push(value.fecha_reserva + ':' + value.venta.hora_inicio);
-                    disabledtimes_mapping.push(value.fecha_reserva + ':' + alter_hora);
-                    for (var b = 1; b < value.servicio.duracion; b++) {
-                        ch = value.venta.hora_fin - b;
+                    for (var a = 1; a < value.detalle.servicio.duracion; a++) {
+                        ch = value.hora_reserva - a;
                         ch = ch > 9 ? ch : "0" + ch;
                         disabledtimes_mapping.push(value.fecha_reserva + ':' + ch);
                     }
                 }
+                // else {
+                //     // console.log(value.fecha_reserva + ':' + value.venta.hora_inicio);
+                //     disabledtimes_mapping.push(value.fecha_reserva + ':' + value.venta.hora_inicio);
+                //     disabledtimes_mapping.push(value.fecha_reserva + ':' + alter_hora);
+                //     for (var b = 1; b < value.servicio.duracion; b++) {
+                //         ch = value.venta.hora_fin - b;
+                //         ch = ch > 9 ? ch : "0" + ch;
+                //         disabledtimes_mapping.push(value.fecha_reserva + ':' + ch);
+                //     }
+                // }
             });
             $('#fecha_res').fadeIn();
             $("#id_fecha_reserva").datetimepicker({
@@ -522,7 +525,7 @@ function set_horas(action, id, exclude) {
                 hoursDisabled: ['18', '19', '20', '21', '22', '23', '0', '1', '2', '3', '4', '5', '6', '7'],
                 startDate: new Date(),
                 showMinute: false,
-                datesDisabled: ['2021-11-15 19:00'],
+                // datesDisabled: ['2021-11-03:14'],
                 minutesDisabled: ["05", "10", "15", "20", "20", "25", "30", "35", "40", "45", "50", "55"],
                 onRenderHour: function (date) {
                     var hora = date.getUTCHours() > 9 ? date.getUTCHours() : "0" + date.getUTCHours();

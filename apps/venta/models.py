@@ -96,7 +96,7 @@ class Detalle_servicios(models.Model):
     subtotals = models.DecimalField(default=0.00, max_digits=9, decimal_places=2)
 
     def __str__(self):
-        return '%s' % (self.venta)
+        return '%s' % self.venta
 
     def toJSON(self):
         item = model_to_dict(self)
@@ -111,6 +111,27 @@ class Detalle_servicios(models.Model):
         db_table = 'detalle_venta_servicio'
         verbose_name = 'detalle_venta_servicio'
         verbose_name_plural = 'detalles_venta_servicios'
+
+
+class Detalle_servicios_duracion(models.Model):
+    detalle = models.ForeignKey(Detalle_servicios, on_delete=models.PROTECT)
+    fecha_reserva = models.DateField(null=True, blank=True)
+    hora_reserva = models.IntegerField(default=0)
+    minuto_reserva = models.IntegerField(default=0)
+
+    def __str__(self):
+        return '%s' % self.detalle
+
+    def toJSON(self):
+        item = model_to_dict(self)
+        item['detalle'] = self.detalle.toJSON()
+        item['fecha_reserva'] = self.fecha_reserva.strftime('%Y-%m-%d')
+        return item
+
+    class Meta:
+        db_table = 'detalle_servicio_duracion'
+        verbose_name = 'detalle_servicio_duracion'
+        verbose_name_plural = 'detalle_servicio_duraciones'
 
 
 class Detalle_maquinas(models.Model):

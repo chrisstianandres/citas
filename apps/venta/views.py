@@ -6,7 +6,7 @@ from django.conf import settings
 from django.contrib.auth.hashers import make_password
 from django.contrib.staticfiles import finders
 from django.db import transaction
-from django.db.models import Sum, Count
+from django.db.models import Sum, Count, Q
 from django.db.models.functions import Coalesce
 from django.http import JsonResponse, HttpResponse, HttpResponseRedirect
 from django.shortcuts import render
@@ -28,7 +28,7 @@ from apps.servicio.models import Servicio
 from apps.user.forms import UserForm, UserForm_cliente
 from apps.user.models import User
 from apps.venta.forms import VentaForm, Detalle_servicioForm
-from apps.venta.models import Venta, Detalle_venta, Detalle_servicios
+from apps.venta.models import Venta, Detalle_venta, Detalle_servicios, Detalle_servicios_duracion
 
 opc_icono = 'fa fa-shopping-basket '
 opc_entidad = 'Ventas'
@@ -434,8 +434,17 @@ class CitacrudView(ValidatePermissionRequiredMixin, TemplateView):
                             dts.servicio_id = int(ser)
                             dts.empleado_id = datos['empleado']
                             dts.valor = dts.servicio.precio
-                            dts.cantidad = int(datos['empleado'])
+                            dts.cantidad = 1
                             dts.save()
+                        for duracion in range(0, int(datos['duracion'])+1):
+                            drs = Detalle_servicios_duracion()
+                            drs.detalle = dts
+                            drs.fecha_reserva = datos['fecha_reserva']
+                            drs.hora_reserva = datos['hora_inicio'] + duracion
+                            if duracion == int(datos['duracion']):
+                                drs.hora_reserva = (datos['hora_inicio'] + duracion)-1
+                                drs.minuto_reserva = 59
+                            drs.save()
                         data['id'] = c.id
                         data['resp'] = True
                 else:
@@ -460,18 +469,32 @@ class CitacrudView(ValidatePermissionRequiredMixin, TemplateView):
                 data = []
                 query = Detalle_servicios.objects.filter(venta__estado=2, venta__user_id=request.user.id)
                 for c in query:
+                    cita = Venta.objects.get(id=c.venta.id)
+                    if cita.fecha_reserva < datetime.now().date() and cita.citacancelada == False:
+                        cita.citacancelada = True
+                        cita.save()
+                    elif cita.fecha_reserva == datetime.now().date() and cita.hora_fin < datetime.now().hour and cita.minuto_fin < datetime.now().minute and cita.citacancelada == False:
+                        cita.citacancelada = True
+                        cita.save()
                     item = c.toJSON()
-                    item['classname'] = 'label-info'
+                    item['servicios'] = cita.get_servicios()
+                    item['classname'] = 'label-success'
                     data.append(item)
             elif action == 'search_horario_empleado':
                 data = []
                 id = request.POST['id']
-                query = Detalle_servicios.objects.filter(empleado_id=id, venta__estado=2,
-                                                         venta__fecha_reserva__gte=datetime.now())
+                # query = Detalle_servicios.objects.filter(empleado_id=id, venta__estado=2,
+                #                                          venta__fecha_reserva__gte=datetime.now())
+                #
+                query = Detalle_servicios_duracion.objects.filter(Q(detalle__venta__user__id=request.user.id,
+                                                                    detalle__venta__estado=2,
+                                                                    detalle__venta__fecha_reserva__gte=datetime.now().date()
+                                                                    )|
+                                                                  Q(detalle__empleado_id=id, detalle__venta__estado=2,
+                                                                    detalle__venta__fecha_reserva__gte=datetime.now().date()))
                 for p in query:
                     item = p.toJSON()
-                    item['fecha_factura'] = p.venta.fecha_factura.strftime('%m/%d/%Y')
-                    item['fecha_reserva'] = p.venta.fecha_reserva.strftime('%m/%d/%Y')
+                    item['fecha_reserva'] = p.fecha_reserva.strftime('%m/%d/%Y')
                     data.append(item)
             elif action == 'search_horario_empleado_edit':
                 data = []
