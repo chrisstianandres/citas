@@ -8,6 +8,9 @@ $(document).ready(function () {
                 maxlength: 50,
                 lettersonly: true,
             },
+            categoria: {
+                required: true
+            },
             descripcion: {
                 required: true,
                 minlength: 5,
@@ -20,6 +23,9 @@ $(document).ready(function () {
                 minlength: "Debe ingresar al menos 3 letras",
                 lettersonly: "Debe ingresar unicamente letras y espacios",
                 maxlength: "La descripcion debe tener maximo 50 caracteres",
+            },
+            categoria: {
+                required: "Por favor selecciona una categoria"
             },
             descripcion: {
                 required: "Por favor ingresa una descripcion",
@@ -36,6 +42,9 @@ $(document).ready(function () {
                 maxlength: 50,
                 lettersonly: true,
             },
+            categoria: {
+                required: true
+            },
             descripcion: {
                 required: true,
                 minlength: 5,
@@ -48,6 +57,9 @@ $(document).ready(function () {
                 minlength: "Debe ingresar al menos 3 letras",
                 lettersonly: "Debe ingresar unicamente letras y espacios",
                 maxlength: "La descripcion debe tener maximo 50 caracteres",
+            },
+            categoria: {
+                required: "Por favor selecciona una categoria"
             },
             descripcion: {
                 required: "Por favor ingresa una descripcion",
