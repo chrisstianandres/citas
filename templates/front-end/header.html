@@ -19,9 +19,27 @@
 						</small>
 					</a>
 				</div>
-
 				<div class="navbar-buttons navbar-header pull-right" role="navigation">
 					<ul class="nav ace-nav">
+                    {% if request.user.groups.all %}
+                        <li class="green dropdown-modal">
+                            <a data-toggle="dropdown" class="dropdown-toggle" href="#" aria-expanded="false">
+                                <p><i class="fa fa-users"></i> {{ request.session.group }}</p>
+                            </a>
+                        {% if request.user.groups.all.count > 1 %}
+                            <ul class="dropdown-menu-right dropdown-navbar dropdown-menu dropdown-caret dropdown-close">
+                                {% for g in request.user.groups.all %}
+                                    {% if g.id != request.session.group.id %}
+                                    <li class="dropdown-header">
+                                        <a href="{% url 'user:user_change_group' g.id %}"><i class="ace-icon fa fa-user"></i>{{ g.name }}</a>
+                                    </li>
+                                    {% endif %}
+                                {% endfor %}
+                            </ul>
+                            {% endif %}
+                        </li>
+                    {% endif %}
+
 						<li class="light-blue dropdown-modal">
 							<a data-toggle="dropdown" href="#" class="dropdown-toggle">
 								<img class="nav-user-photo" src="{{ request.user.get_image }}" alt="user_foto" />

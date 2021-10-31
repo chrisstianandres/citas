@@ -43,7 +43,13 @@ def nombre_empresa():
     return empresa
 
 
+def permisos(request):
+    return request.session.groups.permissions.all()
+
+
 def menu(request):
+    if request.method == 'GET':
+        request.user.get_group_session()
     data = {
         'titulo': 'Menu Principal', 'empresa': nombre_empresa(),
         'icono': 'fas fa-tachometer-alt', 'entidad': 'Menu Principal',

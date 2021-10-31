@@ -1,3 +1,4 @@
+from crum import get_current_request
 from django.contrib.auth.models import User, AbstractUser
 from django.db import models
 from django.forms import model_to_dict
@@ -55,9 +56,28 @@ class User(AbstractUser):
             item['groups'] = [{'id': g.id, 'name': g.name} for g in self.groups.all()]
         return item
 
+    def get_group_session(self):
+        try:
+            request = get_current_request()
+            groups = self.groups.all()
+            if groups.exists():
+                if 'group' not in request.session:
+                    request.session['group'] = groups[0]
+                if 'permisos' not in request.session:
+                    permisos = []
+                else:
+                    permisos = []
+                    request.session['permisos'] = []
+                for p in request.session['group'].permissions.all():
+                    permisos.append(p.codename)
+                request.session['permisos'] = permisos
+        except Exception as e:
+            pass
+
     class Meta:
         db_table = 'usuario'
         verbose_name = 'usuario'
         verbose_name_plural = 'usuarios'
         ordering = ['-first_name', '-last_name', '-cedula']
+
 

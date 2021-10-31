@@ -6,9 +6,11 @@ from django.contrib.auth.hashers import make_password
 from django.contrib.auth.models import Group
 from django.http import HttpResponseRedirect, JsonResponse, HttpResponse, request
 from django.shortcuts import render
+from django.urls import reverse_lazy
 from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt
 from django.views.generic import ListView, UpdateView, TemplateView
+from django.views.generic.base import View
 
 from apps.backEnd import nombre_empresa, send_email_contrasena
 from apps.mixins import ValidatePermissionRequiredMixin
@@ -534,6 +536,16 @@ class Profile(ValidatePermissionRequiredMixin, TemplateView):
         data['form_password'] = PasswordChangeForm(user=self.request.user)
         data['empresa'] = empresa
         return data
+
+
+class UserChangeGroup(View):
+
+    def get(self, request, *args, **kwargs):
+        try:
+            request.session['group'] = Group.objects.get(pk=self.kwargs['pk'])
+        except:
+            pass
+        return HttpResponseRedirect(reverse_lazy('menu'))
 
 @csrf_exempt
 def ResetPass(request):
