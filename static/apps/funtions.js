@@ -250,7 +250,7 @@ function login(url, parametros, callback, callback2) {
         data: parametros,
     }).done(function (data) {
         if (!data.hasOwnProperty('error')) {
-            callback();
+            callback(data);
             return false;
         }
         menssaje_error('Error!', data.error, 'far fa-times-circle');

@@ -45,14 +45,16 @@ $(function () {
         };
         var isvalid = $(this).valid();
         if (isvalid) {
-            login('/connect/', parametros, function () {
+            login('/connect/', parametros, function (data) {
                 $.isLoading({
                     text: "<strong>" + 'Iniciando Sesion...' + "</strong>",
                     tpl: '<span class="isloading-wrapper %wrapper%"><i class="fa fa-refresh fa-2x fa-spin"></i><br>%text%</span>',
                 });
                 setTimeout(function () {
                     $.isLoading('hide');
-                    window.location.href = '/menu';
+                    if (data.reset){
+                        window.location.href = '/persona/reset'
+                    }  else {window.location.href = '/menu';}
                 }, 1000);
                 return false;
 

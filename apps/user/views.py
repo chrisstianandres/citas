@@ -2,6 +2,7 @@ import json
 
 from django.contrib.auth import update_session_auth_hash
 from django.contrib.auth.forms import PasswordChangeForm
+from django.contrib.auth.hashers import make_password
 from django.contrib.auth.models import Group
 from django.http import HttpResponseRedirect, JsonResponse, HttpResponse, request
 from django.shortcuts import render
@@ -9,7 +10,7 @@ from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt
 from django.views.generic import ListView, UpdateView, TemplateView
 
-from apps.backEnd import nombre_empresa
+from apps.backEnd import nombre_empresa, send_email_contrasena
 from apps.mixins import ValidatePermissionRequiredMixin
 from apps.producto.forms import GroupForm
 from apps.user.forms import UserForm, UserForm_online, UserForm_cliente, UserForm_profile, UserForm_password
@@ -509,6 +510,9 @@ class Profile(ValidatePermissionRequiredMixin, TemplateView):
                 f = PasswordChangeForm(user=request.user, data=request.POST)
                 if f.is_valid():
                     f.save()
+                    user = User.objects.get(id=request.user.id)
+                    user.resetpass = False
+                    user.save()
                     update_session_auth_hash(request, f.user)
                 else:
                     data['error'] = f.errors
@@ -530,4 +534,37 @@ class Profile(ValidatePermissionRequiredMixin, TemplateView):
         data['form_password'] = PasswordChangeForm(user=self.request.user)
         data['empresa'] = empresa
         return data
+
+@csrf_exempt
+def ResetPass(request):
+    if request.user.is_authenticated:
+       context = {'form_password': PasswordChangeForm(request.user), 'empresa': nombre_empresa()}
+       return render(request, 'front-end/password_change.html', context)
+    else:
+        data={}
+        cedula = request.POST['cedula']
+        if User.objects.filter(cedula=cedula).exists():
+            usuario = User.objects.get(cedula=cedula)
+            passw = get_random_string(8)
+            usuario.password = make_password(passw)
+            usuario.resetpass = True
+            usuario.save()
+            send_email_contrasena(cliente=usuario, password=passw)
+            data['resp'] = True
+        else:
+            data['error'] = 'No existe usuario con ese numero de cedula'
+        return HttpResponse(json.dumps(data), content_type='application/json')
+
+
+import random
+import string
+
+def get_random_string(length):
+    # choose from all lowercase letter
+    letters = string.ascii_lowercase
+    result_str = ''.join(random.choice(letters) for i in range(length))
+    return result_str
+
+
+
 

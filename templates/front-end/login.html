@@ -105,6 +105,10 @@
                                             Registrarse
                                             <i class="ace-icon fa fa-arrow-right"></i>
                                         </a>
+                                        <br>
+                                        <a href="#" data-target="#reset_password" class="user-signup-link" onclick="reset('#form_paswword');">
+                                            Olvido su contraseña?
+                                        </a>
                                     </div>
                                 </div>
                             </div><!-- /.widget-body -->
@@ -199,15 +203,74 @@
                                 </div>
                             </div><!-- /.widget-body -->
                         </div><!-- /.signup-box -->
+                        <div id="reset_password" class="signup-box widget-box no-border">
+                            <div class="widget-body">
+                                <div class="widget-main">
+                                    <h4 class="green lighter bigger">
+                                        <i class="ace-icon fa fa-sort-numeric-asc blue"></i>
+                                        Formulario de Reseteo de contraseña
+                                    </h4>
+
+                                    <div class="space-6"></div>
+                                    <p> Ingrese tu numero de cedula para validar tu cuenta: </p>
+
+                                    <form id="form_paswword">
+                                        <fieldset>
+                                            <label class="block clearfix">
+														<span class="block input-icon input-icon-right">
+															<input type="text" id="cedula_cliente">
+														</span>
+                                            </label>
+                                            <div class="space-24"></div>
+
+                                            <div class="clearfix">
+                                                <button type="reset" class="width-30 pull-left btn btn-sm">
+                                                    <i class="ace-icon fa fa-refresh"></i>
+                                                    <span class="bigger-110">Limpiar</span>
+                                                </button>
+
+                                                <button type="submit"
+                                                        class="width-65 pull-right btn btn-sm btn-success">
+                                                    <span class="bigger-110">Resetear contraseña</span>
+
+                                                    <i class="ace-icon fa fa-arrow-right icon-on-right"></i>
+                                                </button>
+                                            </div>
+                                        </fieldset>
+                                    </form>
+                                </div>
+
+                                <div class="toolbar center">
+                                    <a href="#" data-target="#login-box" class="back-to-login-link" onclick="reset('#formlogin');">
+                                        <i class="ace-icon fa fa-arrow-left"></i>
+                                        Regresar al login
+                                    </a>
+                                </div>
+                            </div><!-- /.widget-body -->
+                        </div><!-- /.signup-box -->
                     </div><!-- /.position-relative -->
                 </div>
             </div><!-- /.col -->
         </div><!-- /.row -->
     </div><!-- /.main-content -->
 </div><!-- /.main-container -->
-
+<script src="{% static 'assets/js/jquery-2.1.4.min.js' %}"></script>
 <!-- basic scripts -->
+<script>
+    $(function () {
+        $('#form_paswword').on('submit', function (e) {
+            e.preventDefault();
+            save_with_ajax('Alerta!', '/persona/reset', 'Esta seguro que desea resetar su contraseña?',{'cedula':$('#cedula_cliente').val()}, function () {
+                menssaje_ok('Correcto!', 'Su contraseña temporal fue enviada a su correo electronico', 'success', function () {
+                    window.location.reload();
+                })
 
+            })
+
+        })
+
+    })
+</script>
 <!--[if !IE]> -->
 <script src="{% static 'assets/js/jquery-2.1.4.min.js' %}"></script>
 

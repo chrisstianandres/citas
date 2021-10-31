@@ -29,6 +29,7 @@ class User(AbstractUser):
     sexo = models.IntegerField(choices=SEXO, default=1)
     estado = models.IntegerField(choices=ESTADO, default=1)
     tipo = models.IntegerField(choices=tipo, default=1)
+    resetpass = models.BooleanField(default=False)
 
     def __str__(self):
         return '{}'.format(self.get_full_name())

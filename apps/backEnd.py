@@ -203,6 +203,31 @@ def send_email(productos):
         data['error'] = str(e)
     return data
 
+@csrf_exempt
+def send_email_contrasena(cliente, password):
+    data = {}
+    try:
+        mailServer = smtplib.SMTP(settings.EMAIL_HOST, settings.EMAIL_PORT)
+        mailServer.starttls()
+        mailServer.login(settings.EMAIL_HOST_USER, settings.EMAIL_HOST_PASSWORD)
+        email_to = cliente.email
+        mensaje = MIMEMultipart()
+        mensaje['From'] = settings.EMAIL_HOST_USER
+        mensaje['To'] = email_to
+        mensaje['Subject'] = 'Reseteo de Contraseña'
+        empresa = nombre_empresa()
+        content = render_to_string('front-end/user/send_email_password.html', {
+            'cliente': cliente,
+            'empresa': empresa,
+            'pass': password
+        })
+        mensaje.attach(MIMEText(content, 'html'))
+        mailServer.sendmail(settings.EMAIL_HOST_USER, email_to, mensaje.as_string())
+    except Exception as e:
+        print('AQUI ESTA EL ERROR'+str(e))
+        data['error'] = str(e)
+    return data
+
 
 @csrf_exempt
 def connect(request):
@@ -215,6 +240,7 @@ def connect(request):
             if user.estado == 1:
                 login(request, user)
                 data['resp'] = True
+                data['reset'] = user.resetpass
             else:
                 data['error'] = '<strong>Usuario Inactivo </strong>'
         else:
