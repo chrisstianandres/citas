@@ -30,28 +30,34 @@
             <b class="arrow"></b>
         </li> <!-- /Menu -->
         {% if request.user.tipo == 1 %}
-            <li class="">
-                <a href="{% url 'user:lista_cliente' %}">
-                    <i class="menu-icon fa fa-user"></i>
-                    <span class="menu-text">
+
+            {% if 'view_user' in request.session.permisos %}
+                <li class="">
+                    <a href="{% url 'user:lista_cliente' %}">
+                        <i class="menu-icon fa fa-user"></i>
+                        <span class="menu-text">
 								Clientes
 							</span>
-                </a>
-            </li>
-            <li class="">
-                <a href="{% url 'servicio:lista' %}">
-                    <i class="menu-icon fa fa-server"></i>
-                    <span class="menu-text">Gestion de Servicio</span>
-                </a>
-            </li>
-            <li class="">
-                <a href="{% url 'venta:cita_nuevo' %}">
-                    <i class="menu-icon fa fa-book"></i>
-                    <span class="menu-text">
+                    </a>
+                </li>
+            {% endif %}
+            {% if 'view_servicio' in request.session.permisos %}
+                <li class="">
+                    <a href="{% url 'servicio:lista' %}">
+                        <i class="menu-icon fa fa-server"></i>
+                        <span class="menu-text">Gestion de Servicio</span>
+                    </a>
+                </li>
+            {% endif %}
+            {% if 'view_citas' in request.session.permisos %}
+                <li class="">
+                    <a href="{% url 'venta:cita_nuevo' %}">
+                        <i class="menu-icon fa fa-book"></i>
+                        <span class="menu-text">
 								Gestion de Agenda
 							</span>
-                </a>
-            </li>
+                    </a>
+                </li>{% endif %}
             <li class="">
                 <a href="#" class="dropdown-toggle">
                     <i class="menu-icon fa fa-money"></i>
@@ -63,172 +69,189 @@
                 <b class="arrow"></b>
 
                 <ul class="submenu">
-                    <li class="">
-                        <a href="{% url 'compra:lista' %}">
-                            <i class="menu-icon fa fa-caret-right"></i>
-                            Compras
-                        </a>
+                    {% if 'view_compra' in request.session.permisos %}
+                        <li class="">
+                            <a href="{% url 'compra:lista' %}">
+                                <i class="menu-icon fa fa-caret-right"></i>
+                                Compras
+                            </a>
 
-                        <b class="arrow"></b>
-                    </li>
+                            <b class="arrow"></b>
+                        </li>
+                    {% endif %}
+                    {% if 'view_venta' in request.session.permisos %}
+                        <li class="">
+                            <a href="{% url 'venta:lista' %}">
+                                <i class="menu-icon fa fa-caret-right"></i>
+                                Ventas
+                            </a>
 
-                    <li class="">
-                        <a href="{% url 'venta:lista' %}">
-                            <i class="menu-icon fa fa-caret-right"></i>
-                            Ventas
-                        </a>
+                            <b class="arrow"></b>
+                        </li>
+                        </ul>
+                        </li>
+                    {% endif %}
+            {% if 'view_producto' in request.session.permisos %}
+                <li class="">
+                    <a href="{% url 'producto:inventario' %}">
+                        <i class="menu-icon fa fa-pencil-square-o"></i>
+                        <span class="menu-text"> Inventario </span>
+                    </a>
+                </li>
+            {% endif %}
+            {% if 'view_producto' in request.session.permisos %}
+                <li class="">
+                    <a href="#" class="dropdown-toggle">
+                        <i class="menu-icon fa fa-list-alt"></i>
+                        <span class="menu-text"> Productos </span>
 
-                        <b class="arrow"></b>
-                    </li>
-                </ul>
-            </li>
+                        <b class="arrow fa fa-angle-down"></b>
+                    </a>
 
-            <li class="">
-                <a href="{% url 'producto:inventario' %}">
-                    <i class="menu-icon fa fa-pencil-square-o"></i>
-                    <span class="menu-text"> Inventario </span>
-                </a>
-            </li>
+                    <b class="arrow"></b>
 
-            <li class="">
-                <a href="#" class="dropdown-toggle">
-                    <i class="menu-icon fa fa-list-alt"></i>
-                    <span class="menu-text"> Productos </span>
+                    <ul class="submenu">
+                        {% if 'add_producto' in request.session.permisos %}
+                            <li class="">
+                                <a href="{% url 'producto:nuevo' %}">
+                                    <i class="menu-icon fa fa-caret-right"></i>
+                                    Nuevo Producto
+                                </a>
 
-                    <b class="arrow fa fa-angle-down"></b>
-                </a>
+                                <b class="arrow"></b>
+                            </li>
+                        {% endif %}
+                        <li class="">
+                            <a href="{% url 'producto:lista' %}">
+                                <i class="menu-icon fa fa-caret-right"></i>
+                                Lista de Productos
+                            </a>
 
-                <b class="arrow"></b>
+                            <b class="arrow"></b>
+                        </li>
+                        {% if 'add_categoria' in request.session.permisos %}
+                            <li class="">
+                                <a href="{% url 'categoria:nuevo' %}">
+                                    <i class="menu-icon fa fa-caret-right"></i>
+                                    Nueva Categoria
+                                </a>
 
-                <ul class="submenu">
-                    <li class="">
-                        <a href="{% url 'producto:nuevo' %}">
-                            <i class="menu-icon fa fa-caret-right"></i>
-                            Nuevo Producto
-                        </a>
+                                <b class="arrow"></b>
+                            </li>
+                        {% endif %}
+                        {% if 'view_categoria' in request.session.permisos %}
+                            <li class="">
+                                <a href="{% url 'categoria:lista' %}">
+                                    <i class="menu-icon fa fa-caret-right"></i>
+                                    Lista de Categorias
+                                </a>
 
-                        <b class="arrow"></b>
-                    </li>
+                                <b class="arrow"></b>
+                            </li>
+                        {% endif %}
+                        {% if 'add_presentacion' in request.session.permisos %}
+                            <li class="">
+                                <a href="{% url 'presentacion:nuevo' %}">
+                                    <i class="menu-icon fa fa-caret-right"></i>
+                                    Nueva Presentacion
+                                </a>
 
-                    <li class="">
-                        <a href="{% url 'producto:lista' %}">
-                            <i class="menu-icon fa fa-caret-right"></i>
-                            Lista de Productos
-                        </a>
+                                <b class="arrow"></b>
+                            </li>
+                        {% endif %}
+                        {% if 'view_presentacion' in request.session.permisos %}
+                            <li class="">
+                                <a href="{% url 'presentacion:lista' %}">
+                                    <i class="menu-icon fa fa-caret-right"></i>
+                                    Lista de Presentaciones
+                                </a>
 
-                        <b class="arrow"></b>
-                    </li>
-
-                    <li class="">
-                        <a href="{% url 'categoria:nuevo' %}">
-                            <i class="menu-icon fa fa-caret-right"></i>
-                            Nueva Categoria
-                        </a>
-
-                        <b class="arrow"></b>
-                    </li>
-
-                    <li class="">
-                        <a href="{% url 'categoria:lista' %}">
-                            <i class="menu-icon fa fa-caret-right"></i>
-                            Lista de Categorias
-                        </a>
-
-                        <b class="arrow"></b>
-                    </li>
-
-                    <li class="">
-                        <a href="{% url 'presentacion:nuevo' %}">
-                            <i class="menu-icon fa fa-caret-right"></i>
-                            Nueva Presentacion
-                        </a>
-
-                        <b class="arrow"></b>
-                    </li>
-
-                    <li class="">
-                        <a href="{% url 'presentacion:lista' %}">
-                            <i class="menu-icon fa fa-caret-right"></i>
-                            Lista de Presentaciones
-                        </a>
-
-                        <b class="arrow"></b>
-                    </li>
-                </ul>
-            </li>
-
-            <li class="">
-                <a href="{% url 'empleado:lista' %}">
-                    <i class="menu-icon fa fa-group"></i>
-                    <span class="menu-text">
+                                <b class="arrow"></b>
+                            </li>
+                            </ul>
+                            </li>
+                        {% endif %}
+            {% endif %}
+            {% if 'view_empleado' in request.session.permisos %}
+                <li class="">
+                    <a href="{% url 'empleado:lista' %}">
+                        <i class="menu-icon fa fa-group"></i>
+                        <span class="menu-text">
 								Emplelados
 							</span>
-                </a>
-            </li>
-
-            <li class="">
-                <a href="{% url 'user:lista_usuario' %}">
-                    <i class="menu-icon fa fa-male"></i>
-                    <span class="menu-text">
+                    </a>
+                </li>
+            {% endif %}
+            {% if 'view_user_sys' in request.session.permisos %}
+                <li class="">
+                    <a href="{% url 'user:lista_usuario' %}">
+                        <i class="menu-icon fa fa-male"></i>
+                        <span class="menu-text">
 								Usuarios
 							</span>
-                </a>
-            </li>
-            <li class="">
-                <a href="{% url 'proveedor:lista' %}">
-                    <i class="menu-icon fa fa-cart-plus"></i>
-                    <span class="menu-text">
+                    </a>
+                </li>
+            {% endif %}
+            {% if 'view_proveedor' in request.session.permisos %}
+                <li class="">
+                    <a href="{% url 'proveedor:lista' %}">
+                        <i class="menu-icon fa fa-cart-plus"></i>
+                        <span class="menu-text">
 								Proveedores
 							</span>
-                </a>
-            </li>
-            <li class="">
-                <a href="{% url 'equipos:lista' %}">
-                    <i class="menu-icon fa fa-rocket"></i>
-                    <span class="menu-text"> Equipos </span>
-                </a>
+                    </a>
+                </li>
+            {% endif %}
+            {% if 'view_maquina' in request.session.permisos %}
+                <li class="">
+                    <a href="{% url 'equipos:lista' %}">
+                        <i class="menu-icon fa fa-rocket"></i>
+                        <span class="menu-text"> Equipos </span>
+                    </a>
 
-                <b class="arrow"></b>
-            </li>
+                    <b class="arrow"></b>
+                </li>
+            {% endif %}
+            {% if 'view_reportes' in request.session.permisos %}
+                <li class="">
+                    <a href="#" class="dropdown-toggle">
+                        <i class="menu-icon fa fa-file-archive-o"></i>
+                        <span class="menu-text"> Informes </span>
 
-            <li class="">
-                <a href="#" class="dropdown-toggle">
-                    <i class="menu-icon fa fa-file-archive-o"></i>
-                    <span class="menu-text"> Informes </span>
+                        <b class="arrow fa fa-angle-down"></b>
+                    </a>
 
-                    <b class="arrow fa fa-angle-down"></b>
-                </a>
+                    <b class="arrow"></b>
 
-                <b class="arrow"></b>
+                    <ul class="submenu">
+                        <li class="">
+                            <a href="{% url 'venta:report_total' %}">
+                                <i class="menu-icon fa fa-caret-right"></i>
+                                Ventas
+                            </a>
 
-                <ul class="submenu">
-                    <li class="">
-                        <a href="{% url 'venta:report_total' %}">
-                            <i class="menu-icon fa fa-caret-right"></i>
-                            Ventas
-                        </a>
+                            <b class="arrow"></b>
+                        </li>
 
-                        <b class="arrow"></b>
-                    </li>
+                        <li class="">
+                            <a href="{% url 'compra:report_total' %}">
+                                <i class="menu-icon fa fa-caret-right"></i>
+                                Compras
+                            </a>
 
-                    <li class="">
-                        <a href="{% url 'compra:report_total' %}">
-                            <i class="menu-icon fa fa-caret-right"></i>
-                            Compras
-                        </a>
+                            <b class="arrow"></b>
+                        </li>
 
-                        <b class="arrow"></b>
-                    </li>
-
-                    <li class="">
-                        <a href="{% url 'empleado:reporte' %}">
-                            <i class="menu-icon fa fa-caret-right"></i>
-                            Empleados
-                        </a>
-                        <b class="arrow"></b>
-                    </li>
-                </ul>
-            </li>
+                        <li class="">
+                            <a href="{% url 'empleado:reporte' %}">
+                                <i class="menu-icon fa fa-caret-right"></i>
+                                Empleados
+                            </a>
+                            <b class="arrow"></b>
+                        </li>
+                    </ul>
+                </li>
+            {% endif %}
         {% else %}
             <li class="">
                 <a href="{% url 'venta:cita_nuevo' %}">

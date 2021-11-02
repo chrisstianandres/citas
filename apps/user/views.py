@@ -3,7 +3,9 @@ import json
 from django.contrib.auth import update_session_auth_hash
 from django.contrib.auth.forms import PasswordChangeForm
 from django.contrib.auth.hashers import make_password
-from django.contrib.auth.models import Group
+from django.contrib.auth.models import Group, Permission
+from django.contrib.contenttypes.models import ContentType
+from django.db import transaction
 from django.http import HttpResponseRedirect, JsonResponse, HttpResponse, request
 from django.shortcuts import render
 from django.urls import reverse_lazy
@@ -220,12 +222,11 @@ class Listgroupsview(ValidatePermissionRequiredMixin, ListView):
                 for c in user:
                     data.append({'id': int(c.id), 'nombre': str(c.name),
                                  'permisos': [{'id': p.id, 'nombre': p.name} for p in c.permissions.all()]})
-                    print(data)
             elif action == 'delete':
                 try:
                     id = request.POST['id']
                     if id:
-                        ps = User.objects.get(pk=id)
+                        ps = Group.objects.get(pk=id)
                         ps.delete()
                         data['resp'] = True
                     else:
@@ -244,7 +245,7 @@ class Listgroupsview(ValidatePermissionRequiredMixin, ListView):
         data['entidad'] = 'Grupos'
         data['boton'] = 'Nuevo Grupo'
         data['titulo'] = 'Listado de Grupos'
-        data['nuevo'] = '/usuario/grupo'
+        data['nuevo'] = reverse_lazy('user:newgroup')
         data['form'] = UserForm
         data['empresa'] = empresa
         return data
@@ -263,13 +264,17 @@ class CrudViewGroup(ValidatePermissionRequiredMixin, TemplateView):
         action = request.POST['action']
         try:
             if action == 'add':
-                f = GroupForm(request.POST)
-                if f.is_valid():
-                    f.save()
-                    return HttpResponseRedirect('user/groups')
-                else:
-                    data['form'] = f
-                return render(request, 'front-end/group/group_form.html', data)
+                with transaction.atomic():
+                    datos = json.loads(request.POST['permisos'])
+                    grupo = Group()
+                    grupo.name = datos['nombre']
+                    grupo.save()
+                    if datos['detalle']:
+                        for p in datos['detalle']:
+                            name = '{}_{}'.format(p['tipo'], p['modelo'])
+                            permiso = Permission.objects.get(codename=name)
+                            grupo.permissions.add(permiso.id)
+                    data['resp'] = True
             elif action == 'delete':
                 pk = request.POST['id']
                 cli = Group.objects.get(pk=pk)
@@ -291,7 +296,127 @@ class CrudViewGroup(ValidatePermissionRequiredMixin, TemplateView):
         data['form'] = GroupForm
         data['action'] = 'add'
         data['empresa'] = empresa
+        data['permisos'] = ContentType.objects.all().exclude(model__in=['logentry', 'permission', 'session', 'contenttype',
+                                                                        'detalle_venta', 'detalle_compra', 'detalle_maquinas',
+                                                                        'detalle_servicios', 'detalle_servicios_duracion',
+                                                                        'envio_stock_dia', 'devolucion_compra', 'devolucion_venta'])
         return data
+
+
+class UpdateGroup(ValidatePermissionRequiredMixin, UpdateView):
+    model = Group
+    form_class = GroupForm
+    template_name = 'front-end/group/group_form.html'
+    success_url = 'user:groups'
+    permission_required = 'auth.add_change'
+
+    @method_decorator(csrf_exempt)
+    def dispatch(self, request, *args, **kwargs):
+        return super().dispatch(request, *args, **kwargs)
+
+    def post(self, request, *args, **kwargs):
+        data = {}
+        action = request.POST['action']
+        try:
+            if action == 'edit':
+                datos = json.loads(request.POST['permisos'])
+                grupo = Group.objects.get(id=self.kwargs['pk'])
+                grupo.permissions.clear()
+                grupo.name = datos['nombre']
+                grupo.save()
+                if datos['detalle']:
+                    for p in datos['detalle']:
+                        name = '{}_{}'.format(p['tipo'], p['modelo'])
+                        permiso = Permission.objects.get(codename=name)
+                        grupo.permissions.add(permiso.id)
+                data['resp'] = True
+            elif action == 'add':
+                datos = json.loads(request.POST['permisos'])
+                grupo = Group.objects.get(id=self.kwargs['pk'])
+                grupo.permissions.clear()
+                grupo.name = datos['nombre']
+                grupo.save()
+                for p in datos['modelos']:
+                    if p['check'] == 1:
+                        add = '{}_{}'.format('add', p['nombre'])
+                        permiso_add = Permission.objects.get(codename=add)
+                        grupo.permissions.add(permiso_add.id)
+                        view = '{}_{}'.format('view', p['nombre'])
+                        permiso_view = Permission.objects.get(codename=view)
+                        grupo.permissions.add(permiso_view.id)
+                        change = '{}_{}'.format('change', p['nombre'])
+                        permiso_change = Permission.objects.get(codename=change)
+                        grupo.permissions.add(permiso_change.id)
+                        delete = '{}_{}'.format('delete', p['nombre'])
+                        permiso_delete = Permission.objects.get(codename=delete)
+                        grupo.permissions.add(permiso_delete.id)
+                    grupo.save()
+                data['resp'] = True
+            else:
+                data['error'] = 'No ha seleccionado ninguna opción'
+        except Exception as e:
+            print(e)
+            data['error'] = str(e)
+        return HttpResponse(json.dumps(data), content_type='application/json')
+
+    def get(self, request, *args, **kwargs):
+        try:
+            context = {}
+            data = []
+            pk = self.kwargs['pk']
+            contentype = ContentType.objects.all().order_by('model')
+            x = 1
+            for c in contentype.exclude(model__in=['logentry', 'permission', 'session', 'contenttype',
+                                                   'detalle_venta', 'detalle_compra', 'detalle_maquinas',
+                                                   'detalle_servicios', 'detalle_servicios_duracion',
+                                                   'envio_stock_dia', 'devolucion_compra', 'devolucion_venta']):
+                nombre = c.model
+                set_add = 0
+                set_delete = 0
+                set_edit = 0
+                set_view = 0
+                permisos_select = []
+                if Group.objects.filter(permissions__content_type__model=nombre, id=pk,
+                                        permissions__codename='add_' + str(nombre)):
+                    set_add = 1
+                    permisos_select.append({'tipo': 'add', 'modelo': nombre})
+                if Group.objects.filter(permissions__content_type__model=nombre, id=pk,
+                                        permissions__codename='change_' + str(nombre)):
+                    set_edit = 1
+                    permisos_select.append({'tipo': 'edit', 'modelo': nombre})
+                if Group.objects.filter(permissions__content_type__model=nombre, id=pk,
+                                        permissions__codename='delete_' + str(nombre)):
+                    set_delete = 1
+                    permisos_select.append({'tipo': 'delete', 'modelo': nombre})
+                if Group.objects.filter(permissions__content_type__model=nombre, id=pk,
+                                        permissions__codename='view_' + str(nombre)):
+                    set_view = 1
+                    permisos_select.append({'tipo': 'view', 'modelo': nombre})
+                data.append({'model': nombre, 'num': x, 'add': set_add, 'edit': set_edit, 'delete': set_delete,
+                             'view': set_view})
+                x += 1
+            grupo = self.model.objects.get(id=self.kwargs['pk'])
+            context['icono'] = opc_icono
+            context['entidad'] = 'Grupos'
+            context['boton'] = 'Guardar Grupo'
+            context['titulo'] = 'Editar Grupos'
+            context['nuevo'] = '/usuario/newgroup'
+            context['form'] = GroupForm(instance=grupo)
+            context['action'] = 'edit'
+            context['empresa'] = empresa
+            context['option'] = 'editar'
+            context['permisos'] = data
+            context['permisos_select'] =  permisos_select
+            return render(request, self.template_name, context)
+        except Exception as e:
+            print(e)
+            pass
+
+    def get_context_data(self, **kwargs):
+        data = super().get_context_data(**kwargs)
+        return data
+
+
 
 
 class lista_user(ValidatePermissionRequiredMixin, ListView):
@@ -576,6 +701,10 @@ def get_random_string(length):
     letters = string.ascii_lowercase
     result_str = ''.join(random.choice(letters) for i in range(length))
     return result_str
+
+
+
+
 
 
 

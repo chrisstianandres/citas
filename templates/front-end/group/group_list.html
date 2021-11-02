@@ -16,10 +16,10 @@
 
     </tbody>
 {% endblock %}
-{% block table_footer %}
-    <a href="{% url 'user:newgroup' %}" type="button" class="btn btn-success"><i class="fa fa-plus"></i> Nuevo Grupo</a>
-    <button  type="button" class="btn btn-default" onclick="window.location.reload();"><i class="fas fa-sync-alt"></i> Actualizar</button>
-{% endblock %}
+{#{% block table_footer %}#}
+{#    <a href="{% url 'user:newgroup' %}" type="button" class="btn btn-success"><i class="fa fa-plus"></i> Nuevo Grupo</a>#}
+{#    <button  type="button" class="btn btn-default" onclick="window.location.reload();"><i class="fas fa-sync-alt"></i> Actualizar</button>#}
+{#{% endblock %}#}
 {% block extra %}
     <script src="{% static 'apps/group/group_list.js' %}"></script>
 

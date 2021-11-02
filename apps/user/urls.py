@@ -17,9 +17,9 @@ urlpatterns = [
     path('usuario/perfil', login_required(Profile.as_view()), name='perfil'),
     path('change_group/<int:pk>', login_required(UserChangeGroup.as_view()), name='user_change_group'),
     path('reset', views.ResetPass, name='Reset'),
-    # path('groups', login_required(Listgroupsview.as_view()), name='groups'),
-    # path('newgroup', login_required(CrudViewGroup.as_view()), name='newgroup'),
-    # path('estado', login_required(views.estado), name='estado'),
+    path('groups', login_required(Listgroupsview.as_view()), name='groups'),
+    path('newgroup', login_required(CrudViewGroup.as_view()), name='newgroup'),
+    path('grupo_editar/<int:pk>', login_required(UpdateGroup.as_view()), name='grupo_editar'),
 
     # path('profile', login_required(views.profile), name='profile'),
 

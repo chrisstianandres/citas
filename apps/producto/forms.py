@@ -62,11 +62,6 @@ class GroupForm(forms.ModelForm):
 
     class Meta:
         model = Group
-        fields = ['name', 'permissions']
-        labels = {'name': 'Nombre', 'permissions': 'Permisos'}
-        widgets = {'name': forms.TextInput(),
-                   'permissions': forms.SelectMultiple(attrs={
-                       'class': 'form-control c',
-                       'style': 'width: 100%',
-                       'multiple': 'multiple'
-                   })}
+        fields = ['name']
+        labels = {'name': 'Nombre'}
+        widgets = {'name': forms.TextInput()}
