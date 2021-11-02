@@ -570,10 +570,10 @@ class Updateview_user(ValidatePermissionRequiredMixin, UpdateView):
         try:
             pk = self.kwargs.get('pk', 0)
             user = self.model.objects.get(id=pk)
-            print(request.POST)
             if action == 'edit':
                 f = self.form_class(request.POST, request.FILES, instance=user)
                 f.save()
+                data['resp'] = True
             else:
                 data['error'] = 'No ha seleccionado ninguna opción'
         except Exception as e:

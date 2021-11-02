@@ -60,17 +60,17 @@ $(function () {
             {"data": "username"},
             {"data": "full_name"},
             {"data": "cedula"},
-            {"data": "celular"},
             {"data": "telefono"},
             {"data": "direccion"},
             {"data": "sexo"},
             {"data": "avatar"},
             {"data": "estado"},
+            {"data": "groups"},
             {"data": "id"},
         ],
         columnDefs: [
             {
-                targets: [-2],
+                targets: [-3],
                 class: 'text-center',
                 orderable: false,
                 render: function (data, type, row) {
@@ -78,7 +78,28 @@ $(function () {
                 }
             },
             {
-                targets: [-3],
+                targets: [-2],
+                class: 'text-center',
+                orderable: false,
+                render: function (data, type, row) {
+                    var resp = '';
+                    $.each(data, function (key, value) {
+                        resp += '<span class="badge badge-success">' + value.name + '</span><br>'
+                    });
+                    return resp;
+                }
+            },
+             {
+                targets: [3],
+                class: 'text-center',
+                orderable: false,
+                render: function (data, type, row) {
+                    console.log(data);
+                    return row.telefono+'<br>'+row.celular;
+                }
+            },
+            {
+                targets: [-4],
                 class: 'text-center',
                 orderable: false,
                 render: function (data, type, row) {
@@ -102,9 +123,9 @@ $(function () {
         ],
         createdRow: function (row, data, dataIndex) {
             if (data.estado === 'ACTIVO') {
-                $('td', row).eq(8).find('span').addClass('badge badge-success');
+                $('td', row).eq(7).find('span').addClass('badge badge-success');
             } else if (data.estado === 'INACTIVO') {
-                $('td', row).eq(8).find('span').addClass('badge badge-danger');
+                $('td', row).eq(7).find('span').addClass('badge badge-danger');
             }
 
         }

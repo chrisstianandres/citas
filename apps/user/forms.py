@@ -52,6 +52,7 @@ class UserForm(forms.ModelForm):
                   'sexo',
                   'telefono',
                   'celular',
+                  'groups',
                   'direccion',
                   'password'
                   ]
@@ -65,6 +66,7 @@ class UserForm(forms.ModelForm):
             'sexo': 'Genero',
             'telefono': 'Telefono',
             'celular': 'Celular',
+            'groups': 'Perfiles',
             'direccion': 'Direccion',
             'password': 'Contraseña',
 
@@ -78,6 +80,7 @@ class UserForm(forms.ModelForm):
             'correo': forms.EmailInput(),
             'telefono': forms.TextInput(),
             'celular': forms.TextInput(),
+            'groups': forms.SelectMultiple(attrs={'class': 'form-control select2', 'multiple': 'multiple'}),
             'direccion': forms.Textarea(),
             'password': forms.PasswordInput(attrs={'class': 'form-control'}, render_value=True)
         }
@@ -95,6 +98,14 @@ class UserForm(forms.ModelForm):
                     user = User.objects.get(pk=u.pk)
                     if user.password != pwd:
                         u.set_password(pwd)
+                    if self.cleaned_data['groups']:
+                        user.groups.clear()
+                        for g in self.cleaned_data['groups']:
+                            user.groups.add(g)
+                        user.save()
+                    if not self.cleaned_data['groups'] and user.groups.exists():
+                        user.groups.all().clear()
+                        user.save()
                 u.save()
             else:
                 data['error'] = form.errors

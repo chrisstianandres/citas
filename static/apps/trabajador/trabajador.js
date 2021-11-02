@@ -32,7 +32,7 @@ $(document).ready(function () {
                 minlength: 10,
                 maxlength: 10,
                 digits: true,
-                val_ced: true
+                validar: true
             },
             email: {
                 required: true,
@@ -84,7 +84,7 @@ $(document).ready(function () {
                 minlength: "Tu numero de documento debe tener al menos 10 digitos",
                 digits: "Debe ingresar unicamente numeros",
                 maxlength: "Tu numero de documento debe tener maximo 10 digitos",
-                val_ced: 'Cedula no valida para Ecuador'
+                // validar: 'Cedula no valida para Ecuador'
             },
             email: "Debe ingresar un correo valido",
             password: {
