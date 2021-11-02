@@ -252,6 +252,17 @@
                     </ul>
                 </li>
             {% endif %}
+            {% if  'view_reportes' in request.session.permisos%}
+            <hr>
+                <li class="">
+                    <a href="{% url 'user:groups' %}">
+                        <i class="menu-icon fa fa-users"></i>
+                        <span class="menu-text"> Perfiles </span>
+                    </a>
+
+                    <b class="arrow"></b>
+                </li>
+            {% endif %}
         {% else %}
             <li class="">
                 <a href="{% url 'venta:cita_nuevo' %}">

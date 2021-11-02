@@ -13,7 +13,7 @@
         <div class="col-lg-12">
             <div class="card">
                 <div class="card-header">
-                    <h5><i class="fas fa-user-plus"></i> {{ titulo }}</h5>
+                    <h5><i class="{{ icono }}"></i> {{ titulo }}</h5>
                 </div>
                 <div class="card-body">
                     <div class="form">
@@ -46,7 +46,13 @@
                                         <tbody>
                                         {% for permiso in permisos %}
                                             <tr>
-                                                <td>{{ permiso.model }}</td>
+                                                <td>{% if permiso.model == 'group' %}
+                                                PERFILES
+                                                    {% elif permiso.model == 'user' %}
+                                                    USUARIOS
+                                                    {% else %}
+                                                    {{ permiso.model|upper }}
+                                                {% endif %} </td>
                                                 <td><input type="checkbox" class="check_view" {% if permiso.view %} checked="checked"{% endif %} idp = "{{permiso.model }}"></td>
                                                 <td><input type="checkbox" class="check_add"{% if permiso.add %} checked="checked"{% endif %} idp = "{{permiso.model }}"></td>
                                                 {% if permiso.model == 'venta' or permiso.model == 'compra' %}

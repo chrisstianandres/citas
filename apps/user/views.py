@@ -241,10 +241,10 @@ class Listgroupsview(ValidatePermissionRequiredMixin, ListView):
 
     def get_context_data(self, **kwargs):
         data = super().get_context_data(**kwargs)
-        data['icono'] = 'fa fa-user-lock'
-        data['entidad'] = 'Grupos'
-        data['boton'] = 'Nuevo Grupo'
-        data['titulo'] = 'Listado de Grupos'
+        data['icono'] = 'fa fa-lock'
+        data['entidad'] = 'Perfiles'
+        data['boton'] = 'Nuevo Perfil'
+        data['titulo'] = 'Listado de Perfiles'
         data['nuevo'] = reverse_lazy('user:newgroup')
         data['form'] = UserForm
         data['empresa'] = empresa
@@ -288,10 +288,10 @@ class CrudViewGroup(ValidatePermissionRequiredMixin, TemplateView):
 
     def get_context_data(self, **kwargs):
         data = super().get_context_data(**kwargs)
-        data['icono'] = opc_icono
+        data['icono'] = 'fa fa-lock'
         data['entidad'] = opc_entidad
-        data['boton'] = 'Guardar Grupo'
-        data['titulo'] = 'Nuevo Grupos'
+        data['boton'] = 'Guardar Perfil'
+        data['titulo'] = 'Nuevo Perfil'
         data['nuevo'] = '/usuario/newgroup'
         data['form'] = GroupForm
         data['action'] = 'add'
@@ -299,7 +299,8 @@ class CrudViewGroup(ValidatePermissionRequiredMixin, TemplateView):
         data['permisos'] = ContentType.objects.all().exclude(model__in=['logentry', 'permission', 'session', 'contenttype',
                                                                         'detalle_venta', 'detalle_compra', 'detalle_maquinas',
                                                                         'detalle_servicios', 'detalle_servicios_duracion',
-                                                                        'envio_stock_dia', 'devolucion_compra', 'devolucion_venta'])
+                                                                        'envio_stock_dia', 'devolucion_compra', 'devolucion_venta',
+                                                                        'completedtask', 'task', 'empresa'])
         return data
 
 
@@ -366,16 +367,18 @@ class UpdateGroup(ValidatePermissionRequiredMixin, UpdateView):
             pk = self.kwargs['pk']
             contentype = ContentType.objects.all().order_by('model')
             x = 1
+            permisos_select = []
             for c in contentype.exclude(model__in=['logentry', 'permission', 'session', 'contenttype',
                                                    'detalle_venta', 'detalle_compra', 'detalle_maquinas',
                                                    'detalle_servicios', 'detalle_servicios_duracion',
-                                                   'envio_stock_dia', 'devolucion_compra', 'devolucion_venta']):
+                                                   'envio_stock_dia', 'devolucion_compra', 'devolucion_venta',
+                                                   'completedtask', 'task', 'empresa']):
                 nombre = c.model
                 set_add = 0
                 set_delete = 0
                 set_edit = 0
                 set_view = 0
-                permisos_select = []
+
                 if Group.objects.filter(permissions__content_type__model=nombre, id=pk,
                                         permissions__codename='add_' + str(nombre)):
                     set_add = 1
@@ -396,7 +399,7 @@ class UpdateGroup(ValidatePermissionRequiredMixin, UpdateView):
                              'view': set_view})
                 x += 1
             grupo = self.model.objects.get(id=self.kwargs['pk'])
-            context['icono'] = opc_icono
+            context['icono'] = 'fa fa-user-lock'
             context['entidad'] = 'Grupos'
             context['boton'] = 'Guardar Grupo'
             context['titulo'] = 'Editar Grupos'
@@ -406,7 +409,7 @@ class UpdateGroup(ValidatePermissionRequiredMixin, UpdateView):
             context['empresa'] = empresa
             context['option'] = 'editar'
             context['permisos'] = data
-            context['permisos_select'] =  permisos_select
+            context['permisos_select'] = permisos_select
             return render(request, self.template_name, context)
         except Exception as e:
             print(e)
