@@ -272,8 +272,9 @@ class CrudViewGroup(ValidatePermissionRequiredMixin, TemplateView):
                     if datos['detalle']:
                         for p in datos['detalle']:
                             name = '{}_{}'.format(p['tipo'], p['modelo'])
-                            permiso = Permission.objects.get(codename=name)
-                            grupo.permissions.add(permiso.id)
+                            if Permission.objects.filter(codename=name).exists():
+                                permiso = Permission.objects.get(codename=name)
+                                grupo.permissions.add(permiso.id)
                     data['resp'] = True
             elif action == 'delete':
                 pk = request.POST['id']
@@ -328,8 +329,9 @@ class UpdateGroup(ValidatePermissionRequiredMixin, UpdateView):
                 if datos['detalle']:
                     for p in datos['detalle']:
                         name = '{}_{}'.format(p['tipo'], p['modelo'])
-                        permiso = Permission.objects.get(codename=name)
-                        grupo.permissions.add(permiso.id)
+                        if Permission.objects.filter(codename=name).exists():
+                            permiso = Permission.objects.get(codename=name)
+                            grupo.permissions.add(permiso.id)
                 data['resp'] = True
             elif action == 'add':
                 datos = json.loads(request.POST['permisos'])
@@ -386,7 +388,7 @@ class UpdateGroup(ValidatePermissionRequiredMixin, UpdateView):
                 if Group.objects.filter(permissions__content_type__model=nombre, id=pk,
                                         permissions__codename='change_' + str(nombre)):
                     set_edit = 1
-                    permisos_select.append({'tipo': 'edit', 'modelo': nombre})
+                    permisos_select.append({'tipo': 'change', 'modelo': nombre})
                 if Group.objects.filter(permissions__content_type__model=nombre, id=pk,
                                         permissions__codename='delete_' + str(nombre)):
                     set_delete = 1

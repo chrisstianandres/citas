@@ -54,8 +54,10 @@
                                                     {{ permiso.model|upper }}
                                                 {% endif %} </td>
                                                 <td><input type="checkbox" class="check_view" {% if permiso.view %} checked="checked"{% endif %} idp = "{{permiso.model }}"></td>
-                                                <td><input type="checkbox" class="check_add"{% if permiso.add %} checked="checked"{% endif %} idp = "{{permiso.model }}"></td>
-                                                {% if permiso.model == 'venta' or permiso.model == 'compra' %}
+                                                <td>{% if not permiso.model == 'reportes' %}
+                                                <input type="checkbox" class="check_add"{% if permiso.add %} checked="checked"{% endif %} idp = "{{permiso.model }}">
+                                                {% endif %} </td>
+                                                {% if permiso.model == 'venta' or permiso.model == 'compra' or permiso.model == 'reportes' %}
                                                     <td colspan="2"></td>
                                                 {% else %}
                                                     <td><input type="checkbox" class="check_edit" {% if permiso.edit %} checked="checked"{% endif %}  idp = "{{permiso.model }}"></td>

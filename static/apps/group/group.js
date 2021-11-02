@@ -46,7 +46,7 @@ $("#form").validate({
     },
 });
 
-$('.check_view').click(function () {
+$('.check_add').click(function () {
     let modelo = $(this).attr('idp');
     let info = {'tipo': 'add', 'modelo': modelo};
     if ($(this).prop('checked')){
@@ -56,7 +56,7 @@ $('.check_view').click(function () {
     }
 
 });
-$('.check_add').click(function () {
+$('.check_view').click(function () {
     let modelo = $(this).attr('idp');
     let info = {'tipo': 'view', 'modelo': modelo};
     if ($(this).prop('checked')){
@@ -89,6 +89,7 @@ $('.check_delete').click(function () {
 
 $("#form").on('submit', function (e) {
     e.preventDefault();
+    console.log(permisos.items);
     var isvalid = $(this).valid();
     if (isvalid) {
         permisos.items.nombre = $('#id_name').val();

@@ -29,7 +29,7 @@
 
             <b class="arrow"></b>
         </li> <!-- /Menu -->
-        {% if request.user.tipo == 1 %}
+        {% if request.user.tipo == 1 and not request.session.group.name == 'CLIENTE' %}
 
             {% if 'view_user' in request.session.permisos %}
                 <li class="">
@@ -58,6 +58,7 @@
 							</span>
                     </a>
                 </li>{% endif %}
+            {% if 'view_compra' in request.session.permisos or  'view_venta' in request.session.permisos %}
             <li class="">
                 <a href="#" class="dropdown-toggle">
                     <i class="menu-icon fa fa-money"></i>
@@ -91,6 +92,7 @@
                         </ul>
                         </li>
                     {% endif %}
+            {% endif %}
             {% if 'view_producto' in request.session.permisos %}
                 <li class="">
                     <a href="{% url 'producto:inventario' %}">
@@ -252,7 +254,7 @@
                     </ul>
                 </li>
             {% endif %}
-            {% if  'view_reportes' in request.session.permisos%}
+            {% if  'view_group' in request.session.permisos %}
             <hr>
                 <li class="">
                     <a href="{% url 'user:groups' %}">
