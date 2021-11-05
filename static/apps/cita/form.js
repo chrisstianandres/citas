@@ -570,7 +570,7 @@ function set_data(data, hora_inicio) {
         }
         var date = new Date(data.venta.fecha_reserva + 'T' + hora_inicio + ':00:00');
         setTimeout(function () {
-            $("#id_fecha_reserva").data("datetimepicker").setDate(date);
+            $("#id_fecha_reserva").datetimepicker().data("datetimepicker").setDate(date);
         }, 800);
     }, 2000);
 

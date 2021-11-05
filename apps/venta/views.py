@@ -256,7 +256,10 @@ class CrudView(ValidatePermissionRequiredMixin, TemplateView):
                         c.total = float(datos['total'])
                         c.save()
                         if datos['detalle']:
-                            Detalle_servicios.objects.get(venta_id=c.id).delete()
+                            for d in Detalle_servicios.objects.filter(venta=c):
+                                d.detalle_servicios_duracion_set.all().delete()
+                            Detalle_servicios.objects.filter(venta=c).delete()
+
                             for i in datos['detalle']:
                                 if i['tipo'] == 'Producto':
                                     if Detalle_compra.objects.filter(producto_id=int(i['id']), compra__estado=1,
@@ -312,6 +315,15 @@ class CrudView(ValidatePermissionRequiredMixin, TemplateView):
                                     ds.cantidad = int(i['cantidad'])
                                     ds.subtotals = float(i['subtotal'])
                                     ds.save()
+                                    for duracion in range(0, int(datos['duracion']/60) + 1):
+                                        drs = Detalle_servicios_duracion()
+                                        drs.detalle = ds
+                                        drs.fecha_reserva = c.fecha_reserva
+                                        drs.hora_reserva = c.hora_inicio + duracion
+                                        if duracion == int(datos['duracion']):
+                                            drs.hora_reserva = (c.hora_inicio + duracion) - 1
+                                            drs.minuto_reserva = 59
+                                        drs.save()
                         data['id'] = c.id
                         data['resp'] = True
                 else:
@@ -428,6 +440,9 @@ class CitacrudView(ValidatePermissionRequiredMixin, TemplateView):
                         c.minuto_fin = datos['minuto_fin']
                         c.estado = 2
                         c.save()
+                        for d in Detalle_servicios.objects.filter(venta=c):
+                            d.detalle_servicios_duracion_set.all().delete()
+                        Detalle_servicios.objects.filter(venta=c).delete()
                         for ser in datos['servicio'][0]:
                             dts = Detalle_servicios()
                             dts.venta_id = c.id
@@ -527,12 +542,26 @@ class CitacrudView(ValidatePermissionRequiredMixin, TemplateView):
                 datos = json.loads(request.POST['cita'])
                 if datos:
                     with transaction.atomic():
-                        dts = Detalle_servicios.objects.get(id=id)
-                        dts.venta_id = dts.venta.id
-                        dts.servicio_id = datos['servicio']
-                        dts.empleado_id = datos['empleado']
-                        dts.save()
-                        c = self.model.objects.get(id=dts.venta.id)
+                        for d in Detalle_servicios.objects.filter(id=id):
+                            d.detalle_servicios_duracion_set.all().delete()
+                        pk_venta = Detalle_servicios.objects.filter(id=id).first().venta.id
+                        Detalle_servicios.objects.filter(id=id).delete()
+                        for serv in datos['servicio']:
+                            dts = Detalle_servicios()
+                            dts.venta_id = pk_venta
+                            dts.servicio_id = serv[0]
+                            dts.empleado_id = datos['empleado']
+                            dts.save()
+                        for duracion in range(0, int(datos['duracion'])+1):
+                            drs = Detalle_servicios_duracion()
+                            drs.detalle = dts
+                            drs.fecha_reserva = datos['fecha_reserva']
+                            drs.hora_reserva = datos['hora_inicio'] + duracion
+                            if duracion == int(datos['duracion']):
+                                drs.hora_reserva = (datos['hora_inicio'] + duracion)-1
+                                drs.minuto_reserva = 59
+                            drs.save()
+                        c = self.model.objects.get(id=pk_venta)
                         c.user_id = datos['cliente']
                         c.fecha_factura = datos['fecha_reserva']
                         c.fecha_reserva = datos['fecha_reserva']
