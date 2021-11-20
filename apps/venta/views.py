@@ -444,24 +444,30 @@ class CitacrudView(ValidatePermissionRequiredMixin, TemplateView):
                             d.detalle_servicios_duracion_set.all().delete()
                         Detalle_servicios.objects.filter(venta=c).delete()
                         for ser in datos['servicio'][0]:
-                            dts = Detalle_servicios()
-                            dts.venta_id = c.id
-                            dts.servicio_id = int(ser)
-                            dts.empleado_id = datos['empleado']
-                            dts.valor = dts.servicio.precio
-                            dts.cantidad = 1
-                            dts.save()
+                                dts = Detalle_servicios()
+                                dts.venta_id = c.id
+                                dts.servicio_id = int(ser)
+                                dts.empleado_id = datos['empleado']
+                                dts.valor = dts.servicio.precio
+                                dts.cantidad = 1
+                                dts.save()
                         for duracion in range(0, int(datos['duracion'])+1):
-                            drs = Detalle_servicios_duracion()
-                            drs.detalle = dts
-                            drs.fecha_reserva = datos['fecha_reserva']
-                            drs.hora_reserva = datos['hora_inicio'] + duracion
-                            if duracion == int(datos['duracion']):
-                                drs.hora_reserva = (datos['hora_inicio'] + duracion)-1
-                                drs.minuto_reserva = 59
-                            drs.save()
-                        data['id'] = c.id
-                        data['resp'] = True
+                            if not Detalle_servicios_duracion.objects.filter(detalle__empleado_id=datos['empleado'], detalle__venta__fecha_reserva=datos['fecha_reserva'], hora_reserva=datos['hora_inicio'] + duracion).exists():
+                                drs = Detalle_servicios_duracion()
+                                drs.detalle = dts
+                                drs.fecha_reserva = datos['fecha_reserva']
+                                drs.hora_reserva = datos['hora_inicio'] + duracion
+                                if duracion == int(datos['duracion']):
+                                    drs.hora_reserva = (datos['hora_inicio'] + duracion)-1
+                                    drs.minuto_reserva = 59
+                                drs.save()
+                                data['id'] = c.id
+                                data['resp'] = True
+                            else:
+                                transaction.set_rollback(True)
+                                data['error'] = "Esa hora ya esta reservada por otro cliente con el mismo empleado"
+                                return HttpResponse(json.dumps(data), content_type='application/json')
+
                 else:
                     data['resp'] = False
                     data['error'] = "Datos Incompletos"
